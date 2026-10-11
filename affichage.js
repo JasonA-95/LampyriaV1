@@ -32,22 +32,36 @@ function startTraining(i){EX.group=null;EX.on=false;EX.tok++;cfg.renc=i;hideMenu
 function leaveFight(){combatLive=false;if(EX.group){const q=EX.group;EX.group=null;EX.start()}else openMenu('jouer')}
 
 // ---------- dimensions et initialisation ----------
-function size(){const N=DATA.taille,S=$('stage'),L=matchMedia('(orientation:landscape) and (max-height:600px)').matches;
-W=S.clientWidth||innerWidth;H=S.clientHeight||innerHeight*.55;tw=L?Math.min(W/11,H/6.2):Math.min(W/8,H/6.2);th=tw/2;const d=devicePixelRatio||1;
-cv.width=Math.round(W*d);cv.height=Math.round(H*d);cv.style.width=W+'px';cv.style.height=H+'px';g.setTransform(d,0,0,d,0,0);cam(Math.floor(N/2),Math.floor(N/2))}
-// Caméra : la carte est plus grande que l'écran en portrait ; elle suit le personnage.
-function cam(x,y){const N=DATA.taille,m=th*1.5,tot=m+(N-1)*th+th*.6;
-ox=N*tw<=W?W/2:Math.max(W-N*tw/2,Math.min(N*tw/2,W/2-(x-y)*tw/2));
-oy=tot<=H?(H-tot)/2+m:Math.max(H-(N-1)*th-th*.6,Math.min(m,H/2-(x+y)*th/2))}
+// Caméra libre : on zoome (pincement ou molette) et on déplace la vue en faisant glisser. Aucun suivi automatique.
+let TW0=1,LAND=false;const V={z:1,px:0,py:0};
+function applyZoom(){tw=TW0*V.z;th=tw/2}
+function clampPan(){const N=DATA.taille;V.px=Math.max(-N*tw/2,Math.min(N*tw/2,V.px));V.py=Math.max(-N*th/2,Math.min(N*th/2,V.py))}
+function cam(){const N=DATA.taille;clampPan();ox=W/2+V.px;oy=H/2-(N-1)*th/2+V.py}
+function size(){const N=DATA.taille,S=$('stage');LAND=matchMedia('(orientation:landscape) and (min-width:700px)').matches||matchMedia('(orientation:landscape) and (max-height:600px)').matches;
+W=S.clientWidth||innerWidth;H=S.clientHeight||innerHeight*.55;TW0=Math.min(W/N,H/((N+1.3)/2));applyZoom();const d=devicePixelRatio||1;
+cv.width=Math.round(W*d);cv.height=Math.round(H*d);cv.style.width=W+'px';cv.style.height=H+'px';g.setTransform(d,0,0,d,0,0);cam()}
+function recenter(){applyZoom();const N=DATA.taille,u=EX.on?{x:EX.x,y:EX.y}:(C&&C.hero);if(!u)return;V.px=-(u.x-u.y)*tw/2;V.py=(N-1)*th/2-(u.x+u.y)*th/2;cam()}
+function resetView(){V.z=LAND?1.1:1.7;recenter()}
+function setZoom(z2,fx,fy){const N=DATA.taille;cam();const u=(fx-ox)/tw,v=(fy-oy)/tw;V.z=Math.max(.8,Math.min(3.5,z2));applyZoom();V.px=fx-u*tw-W/2;V.py=fy-v*tw-(H/2-(N-1)*th/2);cam()}
+const ptrs=new Map();let drag=null,moved=false,pinch=null;
+cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+if(ptrs.size==1){drag={x:e.clientX,y:e.clientY,px:V.px,py:V.py};moved=false}else if(ptrs.size==2){const [p,q]=[...ptrs.values()];pinch={d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:V.z};moved=true}});
+cv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+if(ptrs.size==2&&pinch){const [p,q]=[...ptrs.values()],r=cv.getBoundingClientRect();setZoom(pinch.z*Math.hypot(p.x-q.x,p.y-q.y)/pinch.d,(p.x+q.x)/2-r.left,(p.y+q.y)/2-r.top);draw();return}
+if(drag&&ptrs.size==1){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!moved&&Math.hypot(dx,dy)>8)moved=true;if(moved){V.px=drag.px+dx;V.py=drag.py+dy;cam();draw()}}});
+const ptrUp=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(!ptrs.size)drag=null};
+cv.addEventListener('pointerup',ptrUp);cv.addEventListener('pointercancel',ptrUp);
+cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();setZoom(V.z*(e.deltaY<0?1.15:1/1.15),e.clientX-r.left,e.clientY-r.top);draw()},{passive:false});
+$('zin').onclick=()=>{setZoom(V.z*1.25,W/2,H/2);draw()};$('zout').onclick=()=>{setZoom(V.z/1.25,W/2,H/2);draw()};$('zhome').onclick=()=>{recenter();draw()};
 const cellPx=(x,y)=>[(x-y)*tw/2+ox,(x+y)*th/2+oy];
 function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('game').classList.contains('hide'))return;
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
-function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t});mode='move';busy=false;pend=null;after=null;combatLive=true;
+function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t});resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
 hideBubble();say(DATA.rencontres[cfg.renc].say||'debut');$('tip').textContent='Maintiens un sort pour lire sa description.';
 msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw()}
-cv.onclick=e=>{if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);
+cv.onclick=e=>{if(moved){moved=false;return}if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);
 const x=Math.round((a+b)/2),y=Math.round((b-a)/2);if(x<0||y<0||x>=DATA.taille||y>=DATA.taille)return;act(x,y)};
 
 // ---------- actions ----------

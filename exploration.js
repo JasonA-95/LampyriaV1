@@ -18,12 +18,12 @@ if(nx<0||ny<0||nx>=N||ny>=N||d[k])continue;
 if(B.has(k)&&!(ent&&ent.t=='e'&&nx==tx&&ny==ty))continue;
 d[k]=1;p[k]=[x,y];if(goal(nx,ny)){end=[nx,ny];break}q.push([nx,ny])}}
 if(!end)return null;const r=[];let c=end;while(c&&!(c[0]==EX.x&&c[1]==EX.y)){r.unshift(c);c=p[exK(c[0],c[1])]}return r}
-EX.enter=(name,x,y)=>{const d=DATA.cartes[name];EX.map=name;sv.map=name;store();
+EX.enter=(name,x,y)=>{const d=DATA.cartes[name],chg=EX.map!==name;EX.map=name;sv.map=name;store();
 EX.x=x??d.start[0];EX.y=y??d.start[1];EX.groups=d.groups.map(q=>({...q}));EX.nodes=d.nodes.map(n=>({...n,until:0}));EX.pend=null;const Q=qs(),on=(p,i)=>{const s=Q[p.quest];return s&&s.s==1&&!(s.got||[]).includes(name+i)};
 (d.picks||[]).forEach((p,i)=>{if(on(p,i))EX.nodes.push({x:p.x,y:p.y,pick:1,quest:p.quest,id:name+i,until:0})});
-(d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})})}
+(d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})});if(chg&&W)resetView()}
 EX.start=()=>{hideBubble();EX.on=true;EX.tok++;EX.walking=false;EX.group=null;hideMenu();closeModal();$('game').classList.remove('hide');size();
-if(EX.map!==(sv.map||'village'))EX.enter(sv.map||'village');
+if(EX.map!==(sv.map||'village'))EX.enter(sv.map||'village');resetView();
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
 msg('Tu es : '+DATA.cartes[EX.map].n+'.');EX.ui();EX.draw()};
 EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span><span class="chip">Niv '+sv.niv+'</span>'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')};
