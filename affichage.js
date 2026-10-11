@@ -35,13 +35,13 @@ function leaveFight(){combatLive=false;if(EX.group){const q=EX.group;EX.group=nu
 // Caméra libre : on zoome (pincement ou molette) et on déplace la vue en faisant glisser. Aucun suivi automatique.
 let TW0=1,LAND=false;const V={z:1,px:0,py:0};
 function applyZoom(){tw=TW0*V.z;th=tw/2}
-function clampPan(){const N=DATA.taille;if(V.z<=1.01){V.px=V.py=0;return}V.px=Math.max(-N*tw/2,Math.min(N*tw/2,V.px));V.py=Math.max(-N*th/2,Math.min(N*th/2,V.py))}
+function clampPan(){const N=DATA.taille;if(V.z<=1.01){V.px=V.py=0;return}const mx=N*tw/2+W/2-50,my=N*th/2+H/2-50;V.px=Math.max(-mx,Math.min(mx,V.px));V.py=Math.max(-my,Math.min(my,V.py))}
 function cam(){const N=DATA.taille;clampPan();ox=W/2+V.px;oy=H/2-(N-1)*th/2+th*.35+V.py}
 function size(){const N=DATA.taille,S=$('stage');LAND=matchMedia('(orientation:landscape) and (min-width:700px)').matches||matchMedia('(orientation:landscape) and (max-height:600px)').matches;
 W=S.clientWidth||innerWidth;H=S.clientHeight||innerHeight*.55;TW0=Math.min(W/N,H/((N+1.3)/2));applyZoom();const d=devicePixelRatio||1;
 cv.width=Math.round(W*d);cv.height=Math.round(H*d);cv.style.width=W+'px';cv.style.height=H+'px';g.setTransform(d,0,0,d,0,0);cam()}
 function resetView(){V.z=1;V.px=V.py=0;applyZoom();cam()}
-function setZoom(z2,fx,fy){const N=DATA.taille;cam();const u=(fx-ox)/tw,v=(fy-oy)/tw;V.z=Math.max(1,Math.min(3.5,z2));applyZoom();V.px=fx-u*tw-W/2;V.py=fy-v*tw-(H/2-(N-1)*th/2-th*.35);cam()}
+function setZoom(z2,fx,fy){const N=DATA.taille;cam();const u=(fx-ox)/tw,v=(fy-oy)/tw;V.z=Math.max(1,Math.min(3.5,z2));applyZoom();V.px=fx-u*tw-W/2;V.py=fy-v*tw-(H/2-(N-1)*th/2+th*.35);cam()}
 const ptrs=new Map();let drag=null,moved=false,pinch=null;
 cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
 if(ptrs.size==1){drag={x:e.clientX,y:e.clientY,px:V.px,py:V.py};moved=false}else if(ptrs.size==2){const [p,q]=[...ptrs.values()];pinch={d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:V.z};moved=true}});
