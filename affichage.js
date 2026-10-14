@@ -86,7 +86,7 @@ C.newTurn();busy=false;msg(C.pm==0?'À toi de jouer (tu ne peux pas te déplacer
 // ---------- boutons ----------
 function mk(t,sub,cls,fn,dis){const b=btn(t,sub,cls,fn,dis);$('bar').appendChild(b);return b}
 function pips(cls,n,max){let s='';for(let i=0;i<max;i++)s+='<i class="'+(i<n?'f':'')+'"></i>';return '<span class="pip '+cls+'">'+cls.toUpperCase()+' '+s+'</span>'}
-function foesUI(){const F=$('foes'),live=C.foes.filter(f=>f.hp>0);F.replaceChildren();F.classList.toggle('hide',!live.length);
+function foesUI(){const F=$('foes');if(!F)return;const live=C.foes.filter(f=>f.hp>0);F.replaceChildren();F.classList.toggle('hide',!live.length);
 for(const f of live){const item=document.createElement('div'),name=document.createElement('span'),hp=document.createElement('span');item.className='foe';name.className='name';name.textContent=f.n;hp.className='hp';hp.textContent=f.hp+'/'+f.max;item.textContent=f.e+' ';item.append(name,hp);F.appendChild(item)}}
 function ui(){const h=C.hero;foesUI();
 $('hud').innerHTML='<div class="pv"><span><b style="color:var(--ink)">'+h.hp+'</b> / '+h.max+' PV · Niv '+sv.niv+'</span><div class="bar"><i style="width:'+Math.max(0,Math.round(100*h.hp/h.max))+'%"></i></div></div>'+pips('pa',C.pa,C.PA)+pips('pm',C.pm,C.PM)+'<span class="pip">Tour '+C.turn+'</span>'+(h.rage?'<span class="tag">RAGE</span>':'')+(h.mur?'<span class="tag">MUR</span>':'');
