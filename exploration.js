@@ -27,7 +27,7 @@ if(EX.map!==(sv.map||'village'))EX.enter(sv.map||'village');resetView();
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
 msg('Tu es : '+DATA.cartes[EX.map].n+'.');EX.ui();EX.draw()};
 EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span><span class="chip">Niv '+sv.niv+'</span>'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')};
-EX.ui=()=>{EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';F.appendChild(btn('☰ Menu','','pri',()=>openMenu()));F.appendChild(btn('📜 Quêtes','','',()=>openMenu('quetes')))};
+EX.ui=()=>{$('foes').replaceChildren();$('foes').classList.add('hide');EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';F.appendChild(btn('☰ Menu','','pri',()=>openMenu()));F.appendChild(btn('📜 Quêtes','','',()=>openMenu('quetes')))};
 EX.gain=r=>{let t='';if(r.xp){sv.xp+=r.xp;t+=' +'+r.xp+' XP';while(sv.xp>=40*sv.niv){sv.xp-=40*sv.niv;sv.niv++;t+=' Niveau '+sv.niv+' !'}}
 for(const k in (r.res||{})){sv.res[k]+=r.res[k];t+=' +'+r.res[k]+' '+DATA.res[k].split(' ')[0]}
 if(r.lueur&&!sv.deb.includes(r.lueur)){sv.deb.push(r.lueur);t+=' Nouvelle Lueur : '+DATA.lueurs[r.lueur].n+' !'}store();return t};
