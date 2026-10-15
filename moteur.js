@@ -2,8 +2,8 @@
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
 class Combat{
 constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,dmg:0,res:0,pm:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
-this.S=[...c.sorts,...cfg.lueurs.map(id=>D.lueurs[id].sort)];
-this.hero={x:D.heros.x,y:D.heros.y,hp:c.hp+8*(cfg.niv-1)+G.pv,max:c.hp+8*(cfg.niv-1)+G.pv,e:c.e,rage:false,mur:0};
+this.S=[...(cfg.sorts||c.sorts),...cfg.lueurs.map(id=>D.lueurs[id].sort)];
+this.hero={x:D.heros.x,y:D.heros.y,hp:c.hp+8*(cfg.niv-1)+G.pv,max:c.hp+8*(cfg.niv-1)+G.pv,e:c.e,rage:false,mur:0,garde:0};
 this.foes=D.rencontres[cfg.renc].m.map(m=>({...m,sortCd:0}));this.bonus=cfg.niv-1+G.dmg;this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
 this.ash=new Set(this.foes.filter(f=>f.cendre).map(f=>f.x+','+f.y));this.turn=1;this.cd=this.S.map(()=>0);this.result=null;this.noMove=0;this.malus=0;this.vuln=0}
 shield(f){return !!f.boss&&f.hp>0&&(f.cendre?this.ash.has(f.x+','+f.y):this.foes.some(g=>g.form&&g.hp>0))}
@@ -22,12 +22,14 @@ if((x!=b.x||y!=b.y)&&this.rocks.has(x+','+y))return false}return true}
 ranged(i){const s=this.S[i],h=this.hero,r=[];
 for(let x=0;x<this.N;x++)for(let y=0;y<this.N;y++){const m=this.dist(h,{x,y}),u=this.at(x,y);
 if(m<s.r[0]||m>s.r[1]||!this.ok(x,y)||(s.los&&!this.los(h,{x,y})))continue;
-if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap)&&!(u&&u!==h))continue;r.push([x,y])}return r}
+if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge)&&!(u&&u!==h))continue;
+if(s.charge&&!DIRS.some(([dx,dy])=>this.free(u.x+dx,u.y+dy)))continue;r.push([x,y])}return r}
 move(x,y){const d=this.reach()[x+','+y];if(!(d>0))return{ok:false,tag:'loin'};
 this.pm-=d;this.hero.x=x;this.hero.y=y;return{ok:true,tag:''}}
 cast(i,x,y){const s=this.S[i],h=this.hero;if(this.pa<s.pa||this.cd[i]>0)return{ok:false,tag:'cout'};
 if(!this.ranged(i).some(t=>t[0]==x&&t[1]==y))return{ok:false,tag:'cible'};
-this.pa-=s.pa;this.cd[i]=s.cd||0;const r={ok:true,tag:s.say||'',dmg:0,hit:[],effects:[]},inv0=this.foes.some(g=>g.form&&g.hp>0),sh=new Set(this.foes.filter(f=>this.shield(f)));
+this.pa-=s.pa;this.cd[i]=s.cd||0;const target=this.at(x,y),r={ok:true,tag:s.say||'',dmg:0,hit:[],effects:[]},inv0=this.foes.some(g=>g.form&&g.hp>0),sh=new Set(this.foes.filter(f=>this.shield(f)));
+if(s.charge){const cells=DIRS.map(([dx,dy])=>({x:target.x+dx,y:target.y+dy})).filter(p=>this.free(p.x,p.y));cells.sort((a,b)=>this.dist(h,a)-this.dist(h,b));if(!cells.length)return{ok:false,tag:'cible'};h.x=cells[0].x;h.y=cells[0].y;r.charge=1}
 if(s.dmg){const m=h.rage?2:1;h.rage=false;
 const T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[this.at(x,y)];
 const dm=s.dmg+this.bonus,alive=new Set(T.filter(f=>f.hp>0));for(const f of T){if(sh.has(f)){r.blocked=1;continue}f.hp-=dm*m;f.sleep=false;r.hit.push(f)}r.dmg=dm*m;for(const k of [...this.ash]){const [ax,ay]=k.split(',').map(Number);if(this.dist({x:ax,y:ay},{x,y})<=(s.aoe??0)){this.ash.delete(k);r.ashCleared=1}}
@@ -36,6 +38,8 @@ if(s.push)for(const f of T){if(f.boss||f.hp<=0)continue;const ax=f.x-h.x,ay=f.y-
 for(let i=0;i<s.push;i++){const nx=f.x+dx,ny=f.y+dy;if(nx<0||ny<0||nx>=this.N||ny>=this.N){if(f.form){f.hp=0;r.out=1}break}if(this.free(nx,ny)){f.x=nx;f.y=ny}else break}}}
 if(s.drain)h.hp=Math.min(h.max,h.hp+Math.round(s.dmg*(1-h.hp/h.max))+2);
 if(s.heal)h.hp=Math.min(h.max,h.hp+s.heal);
+if(s.recul&&target&&target!==h){const ax=h.x-target.x,ay=h.y-target.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay),nx=h.x+dx,ny=h.y+dy;if(this.free(nx,ny)){h.x=nx;h.y=ny;r.recul=1}}
+if(s.garde){h.garde=Math.max(h.garde||0,s.garde);r.garde=1}
 if(s.tp){h.x=x;h.y=y}
 if(s.rage){h.rage=true;this.malus=Math.min(2,this.malus+1)}
 if(s.mur){h.mur=2;this.noMove=1;this.pm=0}
@@ -47,7 +51,7 @@ path(x,y){const h=this.hero,p={},d={[h.x+','+h.y]:0},q=[[h.x,h.y]];
 while(q.length){const [a,b]=q.shift();if(a==x&&b==y)break;const k=d[a+','+b];if(k>=this.pm)continue;
 for(const [i,j] of DIRS){const nx=a+i,ny=b+j,n=nx+','+ny;if(this.free(nx,ny)&&d[n]==null){d[n]=k+1;p[n]=[a,b];q.push([nx,ny])}}}
 const r=[];let c=[x,y];while(c&&(c[0]!=h.x||c[1]!=h.y)){r.push(c);c=p[c[0]+','+c[1]]}return r}
-hurtHero(raw){if(raw<=0)return 0;const h=this.hero,amount=Math.max(1,Math.round((h.mur>0?Math.ceil(raw/2):raw)*(1-this.res/100)));h.hp=Math.max(0,h.hp-amount);if(h.hp<=0)this.result='lose';return amount}
+hurtHero(raw){if(raw<=0)return 0;const h=this.hero,amount=Math.max(1,Math.round((h.mur>0||h.garde>0?Math.ceil(raw/2):raw)*(1-this.res/100)));h.hp=Math.max(0,h.hp-amount);if(h.hp<=0)this.result='lose';return amount}
 moveToRange(f,target,range,o={}){const start=f.x+','+f.y,steps={[start]:0},previous={},q=[[f.x,f.y]];
 while(q.length){const [x,y]=q.shift(),k=x+','+y;if(steps[k]>=this.N*this.N)continue;
 for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy,n=nx+','+ny,u=this.at(nx,ny);if(steps[n]!=null||!this.ok(nx,ny)||(u&&u!==f))continue;steps[n]=steps[k]+1;previous[n]=k;q.push([nx,ny])}}
@@ -78,7 +82,7 @@ if(f.boss)this.followForm(f);if(f.cendre)this.ash.add(f.x+','+f.y);
 let action=null;if(f.sort&&f.sortCd===0){if(f.ia=='soin'){ally=this.injuredAlly(f);if(ally&&this.inSpellRange(f,ally,f.sort))action=this.castFoe(f,f.sort,ally)}else if(this.inSpellRange(f,h,f.sort))action=this.castFoe(f,f.sort,h)}
 if(!action&&this.dist(f,h)==1){const amount=this.hurtHero(f.d);action={dmg:amount,text:f.n+' te frappe : -'+amount+' PV.',tag:'contact',cible:h,effects:amount?[{cible:h,texte:'-'+amount,couleur:'#e5564a'}]:[]}}
 return action||{skip:true,text:'',effects:[]}}
-newTurn(){const h=this.hero;this.turn++;this.pa=this.PA;this.pm=this.noMove>0?0:Math.max(1,this.PM-this.malus);this.malus=0;
+newTurn(){const h=this.hero;this.turn++;this.pa=this.PA;this.pm=this.noMove>0?0:Math.max(1,this.PM-this.malus);this.malus=0;h.garde=Math.max(0,(h.garde||0)-1);
 if(this.vuln>0&&--this.vuln==0){const b=this.foes.find(f=>f.boss&&f.hp>0),fm=this.foes.find(f=>f.form);
 if(b&&fm)for(const [a,c] of DIRS)if(this.free(b.x+a,b.y+c)){fm.x=b.x+a;fm.y=b.y+c;fm.hp=fm.max;break}}
 if(this.noMove>0)this.noMove--;h.mur=Math.max(0,h.mur-1);this.cd=this.cd.map(c=>Math.max(0,c-1))}

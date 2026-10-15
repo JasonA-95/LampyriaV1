@@ -9,11 +9,26 @@ monstres:[
 {x:9,y:10,hp:30,max:30,pm:2,d:10,e:'🍄',n:'Le champignon bavard'}],
 classes:{
 porte:{n:'Porte-Lanterne',e:'🏮',hp:70,info:'mêlée, résistant',sorts:[
-{n:'Coup de lanterne',pa:2,r:[1,1],dmg:14,push:1},{n:'Balayage',pa:4,r:[0,0],dmg:10,aoe:1}]},
+{id:'coup',n:'Coup de lanterne',niv:1,pa:2,r:[1,1],dmg:14,push:1,rg:[{dmg:3},{dmg:3}]},
+{id:'balayage',n:'Balayage',niv:1,pa:4,r:[0,0],dmg:10,aoe:1,rg:[{dmg:3},{pa:-1}]},
+{id:'charge',n:'Charge',niv:3,pa:3,r:[2,4],los:1,dmg:12,charge:1,cd:2,rg:[{dmg:3},{rmax:1}]},
+{id:'garde',n:'Garde de lanterne',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
+{id:'boutoir',n:'Coup de boutoir',niv:10,pa:3,r:[1,1],dmg:18,push:2,cd:2,rg:[{dmg:4},{cd:-1}]},
+{id:'ardente',n:'Lanterne ardente',niv:14,pa:5,r:[0,0],aoe:2,dmg:14,cd:3,rg:[{dmg:4},{cd:-1}]}]},
 archer:{n:'Archer Farceur',e:'🏹',hp:45,info:'distance, fragile',sorts:[
-{n:'Tir précis',pa:2,r:[2,6],los:1,dmg:11},{n:'Tir double',pa:4,r:[2,5],los:1,dmg:24}]},
+{id:'tir',n:'Tir précis',niv:1,pa:2,r:[2,6],los:1,dmg:11,rg:[{dmg:3},{dmg:3}]},
+{id:'tir2',n:'Tir double',niv:1,pa:4,r:[2,5],los:1,dmg:24,rg:[{dmg:4},{rmax:1}]},
+{id:'retrait',n:'Tir en retrait',niv:3,pa:2,r:[2,5],los:1,dmg:8,recul:1,cd:2,rg:[{dmg:3},{cd:-1}]},
+{id:'repoussant',n:'Tir repoussant',niv:6,pa:3,r:[2,5],los:1,dmg:10,push:2,cd:2,rg:[{dmg:3},{rmax:1}]},
+{id:'perforant',n:'Tir perforant',niv:10,pa:4,r:[3,7],los:1,dmg:30,cd:2,rg:[{dmg:4},{cd:-1}]},
+{id:'pluie',n:'Pluie de flèches',niv:14,pa:5,r:[3,6],aoe:2,dmg:14,cd:3,rg:[{dmg:4},{cd:-1}]}]},
 mage:{n:'Mage Distrait',e:'🧙',hp:38,info:'zone, peu de vie',sorts:[
-{n:'Éclair',pa:2,r:[2,6],los:1,dmg:9},{n:'Cendres',pa:4,r:[2,5],dmg:12,aoe:1}]}},
+{id:'eclair',n:'Éclair',niv:1,pa:2,r:[2,6],los:1,dmg:9,rg:[{dmg:3},{dmg:3}]},
+{id:'cendres',n:'Cendres',niv:1,pa:4,r:[2,5],dmg:12,aoe:1,rg:[{dmg:3},{pa:-1}]},
+{id:'flaque',n:'Flaque enflammée',niv:3,pa:3,r:[2,5],aoe:1,dmg:15,cd:2,rg:[{dmg:3},{cd:-1}]},
+{id:'fumee',n:'Bouclier de fumée',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
+{id:'rafale',n:'Rafale',niv:10,pa:3,r:[1,4],los:1,dmg:10,push:3,cd:2,rg:[{dmg:3},{rmax:1}]},
+{id:'tempete',n:'Tempête de cendres',niv:14,pa:6,r:[2,5],aoe:2,dmg:26,cd:4,rg:[{dmg:5},{cd:-1}]}]}},
 lueurs:{
 colerique:{n:'Colérique',t:5,sort:{n:'Accès de rage',pa:1,r:[0,0],rage:1,cd:3,say:'rage'}},
 peureuse:{n:'Peureuse',t:2,sort:{n:'Sauve-qui-peut',pa:2,r:[1,5],tp:1,cd:3,say:'fuite'}},

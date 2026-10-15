@@ -56,7 +56,7 @@ function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('g
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
-function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t});resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
+function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes()});resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
 hideBubble();say(DATA.rencontres[cfg.renc].say||'debut');$('tip').textContent='Maintiens un sort pour lire sa description.';
 msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw()}
 cv.onclick=e=>{if(moved){moved=false;return}if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);
@@ -73,11 +73,14 @@ if(r.hit)r.hit.forEach(f=>pop(f,'-'+r.dmg,'#ff6b5e'));if(r.blocked)pop(C.foes.fi
 const P={rage:['RAGE','#ffb454'],mur:['MUR','#c9b8ff'],sommeil:['Zzz','#9ecbff'],fuite:['Fuite !','#ffe08a'],farce:['Hop !','#ffe08a']}[r.tag];
 if(r.resist)pop(C.foes.find(f=>f.boss&&f.hp>0),'Résiste','#c9b8ff');
 if(P&&!r.resist)pop(r.tag=='sommeil'?(C.foes.find(f=>f.sleep&&f.hp>0)||C.hero):C.hero,...P);
+if(r.charge)pop(C.hero,'Charge !','#ffb454');if(r.recul)pop(C.hero,'Recul','#ffe08a');if(r.garde)pop(C.hero,'Garde','#9ecbff');
 (r.effects||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));
 const k=r.hit?r.hit.filter(f=>f.hp<=0).length:0;
 const ash=C.foes.some(f=>f.cendre&&f.hp>0);
 const mortText=(r.mortEvents||[]).map(e=>e.text).join(' ');
-msg(mortText||(r.resist?'Le boss est insensible au sommeil.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):''));
+const effectText=[r.charge?'Charge !':'',r.recul?'Recul':'',r.garde?'Garde':''].filter(Boolean).join(' ');
+const combatText=r.resist?'Le boss est insensible au sommeil.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'';
+msg(mortText||[effectText,combatText].filter(Boolean).join(' '));
 if(C.result=='lose'){ui();draw();setTimeout(()=>endFight('lose'),500);return}
 if(C.result=='win'){const rw=reward();ui();draw();setTimeout(()=>endFight('win',rw),500);return}
 ui();draw()}
@@ -98,8 +101,8 @@ $('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';
 if(C.result){F.appendChild(btn('Menu','','',()=>after&&after()));F.appendChild(btn('Continuer','','pri',()=>after&&after()));return}
 const off=busy;
 mk('Se déplacer',C.PM+' PM par tour',mode=='move'?'on':'',()=>{if(off)return;mode='move';pend=null;ui();draw()},off);
-C.S.forEach((s,i)=>{const no=C.pa<s.pa||C.cd[i]>0;
-const b=mk(s.n,s.pa+' PA'+(C.cd[i]?' · recharge '+C.cd[i]:''),mode===i?'on':'',()=>{if(off)return;$('tip').textContent=descr(s);
+C.S.forEach((s,i)=>{const no=C.pa<s.pa||C.cd[i]>0,name=s.n+(s.rang>1?' ★'+s.rang:'');
+const b=mk(name,s.pa+' PA'+(C.cd[i]?' · recharge '+C.cd[i]:''),mode===i?'on':'',()=>{if(off)return;$('tip').textContent=descr(s);
 if(no){msg(C.cd[i]>0?'En recharge : encore '+C.cd[i]+' tour(s).':'Pas assez de PA pour ce sort.');return}mode=i;pend=s.r[1]==0?{x:C.hero.x,y:C.hero.y}:null;msg(pend?'Zone affichée. Touche ton personnage pour confirmer.':'Touche une case bleue pour voir la zone, puis touche-la encore pour confirmer.');ui();draw()},false);
 b.title=descr(s);if(no||off)b.classList.add('dim');
 b.onpointerdown=()=>{clearTimeout(tt);tt=setTimeout(()=>$('tip').textContent=descr(s),400)};b.onpointerup=b.onpointerleave=()=>clearTimeout(tt)});

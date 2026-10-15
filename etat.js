@@ -1,10 +1,18 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.3.0';
+const VERSION='0.4.0';
 const $=i=>document.getElementById(i);
 let sv;try{sv=JSON.parse(localStorage.getItem('lampyria'))}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,dmg:0,res:0},classe:'porte',lueurs:['gourmande'],q:{}};
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,dmg:0,res:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
+const ALL_SORT_IDS=new Set(Object.values(DATA.classes).flatMap(c=>c.sorts.map(s=>s.id)));
+if(!sv.sp||typeof sv.sp!='object'||Array.isArray(sv.sp))sv.sp={eq:[],rg:{},seen:[]};
+if(!Array.isArray(sv.sp.eq))sv.sp.eq=[];
+if(!sv.sp.rg||typeof sv.sp.rg!='object'||Array.isArray(sv.sp.rg))sv.sp.rg={};
+if(!Array.isArray(sv.sp.seen))sv.sp.seen=[];
+sv.sp.eq=[...new Set(sv.sp.eq.filter(id=>ALL_SORT_IDS.has(id)))];
+sv.sp.seen=[...new Set(sv.sp.seen.filter(id=>ALL_SORT_IDS.has(id)))];
+for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg[id]!='number')delete sv.sp.rg[id];else sv.sp.rg[id]=Math.max(1,Math.min(3,Math.floor(sv.sp.rg[id])))}
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 for(const k of ['pv','dmg','res'])if(typeof sv.tal[k]!='number')sv.tal[k]=0;
 if(!DATA.classes[sv.classe])sv.classe='porte';
@@ -14,7 +22,18 @@ const saveCfg=()=>{sv.classe=cfg.classe;sv.lueurs=[...cfg.lueurs];store()};
 const sum=()=>cfg.lueurs.reduce((a,k)=>a+DATA.lueurs[k].t,0);
 const avail=()=>cfg.test?Object.keys(DATA.lueurs):sv.deb;
 const capNow=()=>cfg.test?12:sv.cap;
-function normL(){const av=avail(),cap=capNow();cfg.lueurs=cfg.lueurs.filter(k=>av.includes(k));while(sum()>cap||cfg.lueurs.length>4)cfg.lueurs.pop()}
+function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(3,Math.floor(rang||1)));
+for(let i=0;i<rank-1;i++){const b=sort.rg[i]||{};if(b.dmg)s.dmg=(s.dmg||0)+b.dmg;if(b.pa)s.pa+=b.pa;if(b.cd)s.cd=Math.max(0,(s.cd||0)+b.cd);if(b.rmax)s.r[1]+=b.rmax;if(b.push)s.push=(s.push||0)+b.push;if(b.garde)s.garde=(s.garde||0)+b.garde}
+s.rang=rank;return s}
+function sortsDispo(){return DATA.classes[cfg.classe].sorts.filter(s=>cfg.test||s.niv<=sv.niv).map(s=>applyRang(s,cfg.test?3:(sv.sp.rg[s.id]||1)))}
+const spSpent=()=>Object.values(sv.sp.rg).reduce((n,r)=>n+(r>=3?3:r>=2?1:0),0),spLeft=()=>Math.max(0,sv.niv-1-spSpent());
+function sortsEquipes(){const available=new Map(sortsDispo().map(s=>[s.id,s]));return sv.sp.eq.map(id=>available.get(id)).filter(Boolean)}
+function syncSorts(){const all=DATA.classes[cfg.classe].sorts,available=new Set(sortsDispo().map(s=>s.id)),unlocked=all.filter(s=>s.niv<=sv.niv),first=all[0].id;
+sv.sp.eq=sv.sp.eq.filter(id=>available.has(id));if(!sv.sp.eq.includes(first))sv.sp.eq.unshift(first);
+for(const s of unlocked)if(!sv.sp.seen.includes(s.id)&&!sv.sp.eq.includes(s.id)&&sv.sp.eq.length+cfg.lueurs.length<6)sv.sp.eq.push(s.id);
+sv.sp.seen=[...new Set([...sv.sp.seen,...unlocked.map(s=>s.id)])];
+while(sv.sp.eq.length+cfg.lueurs.length>6){let i=-1;for(let j=sv.sp.eq.length-1;j>=0;j--)if(sv.sp.eq[j]!==first){i=j;break}if(i<0)break;sv.sp.eq.splice(i,1)}store()}
+function normL(){const av=avail(),cap=capNow();cfg.lueurs=cfg.lueurs.filter(k=>av.includes(k));while(sum()>cap||cfg.lueurs.length>4)cfg.lueurs.pop();syncSorts()}
 
 // ---------- petits outils d'interface ----------
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.innerHTML=x;return e};
@@ -44,11 +63,12 @@ const costChips=c=>'<span class="chips">'+Object.keys(c).map(k=>'<span class="ch
 const rg=r=>r[0]==r[1]?r[0]:r[0]+'-'+r[1];
 function descrBody(s){const a=[s.pa+' PA, '+(s.r[1]?'portée '+rg(s.r):'sur soi')+(s.los?', ligne de vue':'')];
 if(s.dmg)a.push('inflige '+s.dmg+' dégâts'+(s.aoe!=null?' en zone (rayon '+s.aoe+')':'')+(s.drain?' et te soigne (plus ta vie est basse, plus tu récupères)':''));
-if(s.heal)a.push('soigne '+s.heal+' PV');if(s.tp)a.push('te téléporte sur une case libre');if(s.push)a.push('repousse la cible de '+s.push+' case');
+if(s.heal)a.push('soigne '+s.heal+' PV');if(s.tp)a.push('te téléporte sur une case libre');if(s.push)a.push('repousse la cible de '+s.push+' case(s)');
+if(s.charge)a.push('se jette sur la cible');if(s.recul)a.push('recule d\'une case après le tir');if(s.garde)a.push('dégâts réduits de moitié pendant '+s.garde+' tour(s), sans bloquer le déplacement');
 if(s.rage)a.push('ta prochaine attaque inflige le double, mais -1 PM au tour suivant');
 if(s.mur)a.push('dégâts subis réduits de moitié pendant 2 tours, mais tu ne peux pas bouger');
 if(s.sleep)a.push('endort la cible 1 tour (réveil si elle subit des dégâts), sans effet sur les boss');
-if(s.swap)a.push('échange ta place avec la cible');if(s.cd)a.push('recharge '+s.cd+' tours');return a.join(', ')+'.'}
+if(s.swap)a.push('échange ta place avec la cible');if(s.cd)a.push('recharge '+s.cd+' tours');if(s.rang)a.push('rang '+s.rang);return a.join(', ')+'.'}
 const descr=s=>s.n+' : '+descrBody(s);
 
 // ---------- talents : 1 point par niveau gagné ----------
