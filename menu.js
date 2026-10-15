@@ -87,8 +87,8 @@ if(sv.eq[slot])n.appendChild(row('<span class="em">✖️</span><span class="tx"
 modal(n,[['Fermer']])}
 
 // ---------- onglet Lanterne ----------
-function whereLueur(k){const r=DATA.rencontres.find(e=>e.unlock==k);if(r)return 'Récompense : '+r.n;
-const q=Object.keys(DATA.quetes).find(id=>DATA.quetes[id].rew&&DATA.quetes[id].rew.lueur==k);return q?'Quête : '+DATA.quetes[q].n:'Introuvable pour l\'instant'}
+function whereLueur(k){const r=DATA.rencontres.find(e=>e.unlock===k);if(r)return 'Récompense : '+r.n;
+const q=Object.keys(DATA.quetes).find(id=>DATA.quetes[id].rew&&DATA.quetes[id].rew.lueur===k);return q?'Quête : '+DATA.quetes[q].n:'Débloquée au fil de l\'aventure'}
 function tabLanterne(B){const cap=capNow(),used=sum();
 let seg='';const cells=[];cfg.lueurs.forEach(k=>{for(let i=0;i<DATA.lueurs[k].t;i++)cells.push('f')});for(let i=0;i<cap;i++)seg+='<i class="'+(cells[i]||'')+'"></i>';
 const c=card('Lanterne','<div class="seg">'+seg+'</div><span class="sp"><b>'+used+'/'+cap+'</b> de capacité utilisée · <b>'+cfg.lueurs.length+'/4</b> Lueurs</span>');
