@@ -73,22 +73,25 @@ if(r.hit)r.hit.forEach(f=>pop(f,'-'+r.dmg,'#ff6b5e'));if(r.blocked)pop(C.foes.fi
 const P={rage:['RAGE','#ffb454'],mur:['MUR','#c9b8ff'],sommeil:['Zzz','#9ecbff'],fuite:['Fuite !','#ffe08a'],farce:['Hop !','#ffe08a']}[r.tag];
 if(r.resist)pop(C.foes.find(f=>f.boss&&f.hp>0),'Résiste','#c9b8ff');
 if(P&&!r.resist)pop(r.tag=='sommeil'?(C.foes.find(f=>f.sleep&&f.hp>0)||C.hero):C.hero,...P);
+(r.effects||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));
 const k=r.hit?r.hit.filter(f=>f.hp<=0).length:0;
 const ash=C.foes.some(f=>f.cendre&&f.hp>0);
-msg(r.resist?'Le boss est insensible au sommeil.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'');
+const mortText=(r.mortEvents||[]).map(e=>e.text).join(' ');
+msg(mortText||(r.resist?'Le boss est insensible au sommeil.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):''));
+if(C.result=='lose'){ui();draw();setTimeout(()=>endFight('lose'),500);return}
 if(C.result=='win'){const rw=reward();ui();draw();setTimeout(()=>endFight('win',rw),500);return}
 ui();draw()}
-async function endTurn(){if(busy||C.result)return;busy=true;mode='move';pend=null;ui();
-for(const f of C.foes){if(f.hp<=0)continue;await new Promise(r=>setTimeout(r,400));const d=C.foeTurn(f);
-if(d<0){msg(f.n+' dort et passe son tour.');pop(f,'Zzz','#9ecbff')}else if(d){msg(f.n+' te frappe : -'+d+' PV.');say('coup');pop(C.hero,'-'+d,'#ff6b5e')}draw();ui();
+async function endTurn(){if(busy||C.result)return;busy=true;mode='move';pend=null;ui();const reports=[];
+for(const f of C.foes){if(f.hp<=0)continue;await new Promise(r=>setTimeout(r,400));const action=C.foeTurn(f);
+if(action.text){msg(action.text);reports.push(action.text)}if(action.tag=='contact')say('coup');(action.effects||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));draw();ui();
 if(C.result=='lose'){busy=false;ui();draw();endFight('lose');return}}
-C.newTurn();busy=false;msg(C.pm==0?'À toi de jouer (tu ne peux pas te déplacer ce tour).':'À toi de jouer.');ui();draw()}
+C.newTurn();busy=false;msg((reports.length?reports.join(' ')+' ':'')+(C.pm==0?'À toi de jouer (tu ne peux pas te déplacer ce tour).':'À toi de jouer.'));ui();draw()}
 
 // ---------- boutons ----------
 function mk(t,sub,cls,fn,dis){const b=btn(t,sub,cls,fn,dis);$('bar').appendChild(b);return b}
 function pips(cls,n,max){let s='';for(let i=0;i<max;i++)s+='<i class="'+(i<n?'f':'')+'"></i>';return '<span class="pip '+cls+'">'+cls.toUpperCase()+' '+s+'</span>'}
 function foesUI(){const F=$('foes');if(!F)return;const live=C.foes.filter(f=>f.hp>0);F.replaceChildren();F.classList.toggle('hide',!live.length);
-for(const f of live){const item=document.createElement('div'),name=document.createElement('span'),hp=document.createElement('span');item.className='foe';name.className='name';name.textContent=f.n;hp.className='hp';hp.textContent=f.hp+'/'+f.max;item.textContent=f.e+' ';item.append(name,hp);F.appendChild(item)}}
+for(const f of live){const item=document.createElement('div'),name=document.createElement('span'),hp=document.createElement('span');item.className='foe';name.className='name';name.textContent=f.n+(f.sort&&f.sortCd>0?' ⏳'+f.sortCd:'');hp.className='hp';hp.textContent=f.hp+'/'+f.max;item.textContent=f.e+' ';item.append(name,hp);F.appendChild(item)}}
 function ui(){const h=C.hero;foesUI();
 $('hud').innerHTML='<div class="pv"><span><b style="color:var(--ink)">'+h.hp+'</b> / '+h.max+' PV · Niv '+sv.niv+'</span><div class="bar"><i style="width:'+Math.max(0,Math.round(100*h.hp/h.max))+'%"></i></div></div>'+pips('pa',C.pa,C.PA)+pips('pm',C.pm,C.PM)+'<span class="pip">Tour '+C.turn+'</span>'+(h.rage?'<span class="tag">RAGE</span>':'')+(h.mur?'<span class="tag">MUR</span>':'');
 $('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';

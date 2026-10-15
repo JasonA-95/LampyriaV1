@@ -1,5 +1,5 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.2.0';
+const VERSION='0.3.0';
 const $=i=>document.getElementById(i);
 let sv;try{sv=JSON.parse(localStorage.getItem('lampyria'))}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
