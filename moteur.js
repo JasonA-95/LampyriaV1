@@ -38,7 +38,7 @@ if(s.heal)h.hp=Math.min(h.max,h.hp+s.heal);
 if(s.tp){h.x=x;h.y=y}
 if(s.rage){h.rage=true;this.malus=1}
 if(s.mur){h.mur=2;this.noMove=1;this.pm=0}
-if(s.sleep)this.at(x,y).sleep=true;
+if(s.sleep){const t=this.at(x,y);if(t.boss)r.resist=1;else t.sleep=true}
 if(s.swap){const f=this.at(x,y);[f.x,h.x]=[h.x,f.x];[f.y,h.y]=[h.y,f.y]}
 if(inv0&&!this.foes.some(g=>g.form&&g.hp>0)){this.vuln=2;r.formDown=1}
 if(this.foes.filter(f=>!f.form).every(f=>f.hp<=0))this.result='win';return r}

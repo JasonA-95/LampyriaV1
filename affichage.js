@@ -71,10 +71,11 @@ if(!r.ok){msg(MSG[r.tag]);return}
 if(r.tag)say(r.tag);
 if(r.hit)r.hit.forEach(f=>pop(f,'-'+r.dmg,'#ff6b5e'));if(r.blocked)pop(C.foes.find(f=>f.boss&&f.hp>0),'Protégé','#c9b8ff');const dh=C.hero.hp-hp0;if(dh>0)pop(C.hero,'+'+dh,'#7fd18b');
 const P={rage:['RAGE','#ffb454'],mur:['MUR','#c9b8ff'],sommeil:['Zzz','#9ecbff'],fuite:['Fuite !','#ffe08a'],farce:['Hop !','#ffe08a']}[r.tag];
-if(P)pop(r.tag=='sommeil'?(C.foes.find(f=>f.sleep&&f.hp>0)||C.hero):C.hero,...P);
+if(r.resist)pop(C.foes.find(f=>f.boss&&f.hp>0),'Résiste','#c9b8ff');
+if(P&&!r.resist)pop(r.tag=='sommeil'?(C.foes.find(f=>f.sleep&&f.hp>0)||C.hero):C.hero,...P);
 const k=r.hit?r.hit.filter(f=>f.hp<=0).length:0;
 const ash=C.foes.some(f=>f.cendre&&f.hp>0);
-msg(r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'');
+msg(r.resist?'Le boss est insensible au sommeil.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'');
 if(C.result=='win'){const rw=reward();ui();draw();setTimeout(()=>endFight('win',rw),500);return}
 ui();draw()}
 async function endTurn(){if(busy||C.result)return;busy=true;mode='move';pend=null;ui();

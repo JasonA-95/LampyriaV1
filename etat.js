@@ -46,7 +46,7 @@ if(s.dmg)a.push('inflige '+s.dmg+' dégâts'+(s.aoe!=null?' en zone (rayon '+s.a
 if(s.heal)a.push('soigne '+s.heal+' PV');if(s.tp)a.push('te téléporte sur une case libre');if(s.push)a.push('repousse la cible de '+s.push+' case');
 if(s.rage)a.push('ta prochaine attaque inflige le double, mais -1 PM au tour suivant');
 if(s.mur)a.push('dégâts subis réduits de moitié pendant 2 tours, mais tu ne peux pas bouger');
-if(s.sleep)a.push('endort la cible 1 tour (réveil si elle subit des dégâts)');
+if(s.sleep)a.push('endort la cible 1 tour (réveil si elle subit des dégâts), sans effet sur les boss');
 if(s.swap)a.push('échange ta place avec la cible');if(s.cd)a.push('recharge '+s.cd+' tours');return a.join(', ')+'.'}
 const descr=s=>s.n+' : '+descrBody(s);
 
