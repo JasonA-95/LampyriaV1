@@ -10,6 +10,15 @@ function itemRow(id,extra){const o=DATA.objets[id];
 return '<span class="em">'+o.e+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
 function card(title,...kids){const c=el('div','card',title?'<h3>'+title+'</h3>':'');kids.forEach(k=>{if(k)c.appendChild(typeof k=='string'?el('p','',k):k)});return c}
 function row(html,fn,cls){const r=el(fn?'button':'div','row '+(cls||''),html);if(fn)r.onclick=fn;return r}
+function saveCode(){const bytes=new TextEncoder().encode(JSON.stringify(sv));let binary='';for(const b of bytes)binary+=String.fromCharCode(b);return 'LAMPYRIA1:'+btoa(binary)}
+function saveTextarea(value,readOnly){const t=el('textarea');t.value=value;t.readOnly=readOnly;t.setAttribute('aria-label',readOnly?'Code de sauvegarde':'Code de sauvegarde à importer');t.style.cssText='display:block;width:100%;height:9rem;max-height:45vh;resize:vertical;padding:10px;border:1px solid var(--line);border-radius:8px;background:#120d1a;color:var(--ink);font:12px/1.4 monospace';return t}
+function exportSave(){const code=saveCode(),body=el('div','pick','<h2>Exporter ma sauvegarde</h2><p>Conserve ce code pour restaurer ta progression.</p>'),text=saveTextarea(code,true);
+body.appendChild(text);body.appendChild(btn('Copier','','pri',async()=>{try{await navigator.clipboard.writeText(code);toast('Sauvegarde copiée')}catch(e){text.focus();text.select();toast('Copie impossible : code sélectionné')}}));modal(body,[['Fermer']])}
+function importSave(){const text=saveTextarea('',false),body=el('div','pick','<h2>Importer une sauvegarde</h2><p>Colle ici le code de sauvegarde.</p>');body.appendChild(text);
+modal(body,[['Annuler'],['Importer',()=>{let data;
+try{const code=text.value.trim(),prefix='LAMPYRIA1:';if(!code.startsWith(prefix))throw Error();const raw=atob(code.slice(prefix.length)),bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));data=JSON.parse(new TextDecoder().decode(bytes));if(!data||typeof data!='object'||Array.isArray(data)||typeof data.niv!='number'||!data.res||typeof data.res!='object'||Array.isArray(data.res)||!Array.isArray(data.inv))throw Error()}catch(e){toast('Code invalide');return}
+const confirm=el('div','','<h2>Remplacer ta sauvegarde actuelle ?</h2><p>Cette action est définitive.</p>');modal(confirm,[['Annuler'],['Importer',()=>{try{localStorage.setItem('lampyria',JSON.stringify(data))}catch(e){toast('Impossible d’enregistrer la sauvegarde');return}location.reload()},'danger']])
+}]])}
 
 // ---------- ouverture / fermeture ----------
 function openMenu(t){if(EX.on)resume='ex';else if(combatLive&&!$('game').classList.contains('hide'))resume='combat';else if(!combatLive)resume=null;
@@ -35,9 +44,11 @@ t.appendChild(row('<span class="em">⚔️</span><span class="tx"><span class="n
 B.appendChild(t);
 const o=card('Options');
 o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
+o.appendChild(row('<span class="em">📤</span><span class="tx"><span class="nm">Exporter ma sauvegarde</span><span class="mt">Créer un code de secours à conserver.</span></span>',exportSave));
+o.appendChild(row('<span class="em">📥</span><span class="tx"><span class="nm">Importer une sauvegarde</span><span class="mt">Restaurer une progression depuis un code.</span></span>',importSave));
 o.appendChild(row('<span class="em">🗑️</span><span class="tx"><span class="nm">Effacer la sauvegarde</span><span class="mt">Recommencer l\'aventure depuis le début.</span></span>',()=>{
 modal(el('div','','<h2>Tout effacer ?</h2><p>Niveau, objets, quêtes et ressources seront perdus. Cette action est définitive.</p>'),[['Annuler'],['Effacer',()=>{try{localStorage.removeItem('lampyria')}catch(e){}location.reload()},'danger']])}));
-B.appendChild(o)}
+B.appendChild(o);o.appendChild(el('p','sp','Version '+VERSION))}
 
 // ---------- onglet Héros ----------
 function tabHeros(B){const cl=el('div','grid');
