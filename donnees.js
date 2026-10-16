@@ -71,7 +71,7 @@ DATA.resE={braise:'🔥',champi:'🍄',laine:'🧶'};
 DATA.cartes={
 village:{n:'Village des Lanternes',need:0,start:[3,6],tint:'rgba(255,170,80,.08)',
 rocks:[[5,2],[5,3],[7,9],[8,9],[2,9],[10,3],[9,2],[6,10],[11,10]],
-npcs:[{x:6,y:4,e:'🧓',n:'Maître Lampiste',quests:['q1','q2','q3'],txt:"Ta lanterne réagit à cette Lueur… fascinant ! Rapporte-moi des ressources et je lui ferai de la place (menu, onglet Lanterne)."},
+npcs:[{x:6,y:4,e:'🧓',n:'Maître Lampiste',quests:['q1','q2','q3'],txt:"Ta lanterne réagit à cette Lueur… fascinant ! Rapporte-moi des ressources et je lui ferai de la place (menu, onglet Lanterne).",variantes:[{si:{quete:{id:'q1',etat:'finie'}},txt:'Trois lanternes retrouvées, et pas une seule cabossée ! Je vais finir par croire que tu sais livrer.'}]},
 {x:4,y:8,e:'🧔',n:'Le marchand',txt:"Je ne prends pas de braises en pièces, mais j'échange volontiers !",trade:[{give:{laine:2},get:{braise:1}},{give:{braise:2},get:{champi:1}},{give:{champi:2},get:{laine:1}},{give:{braise:1},get:{laine:1}}]}],
 picks:[{x:1,y:2,quest:'q1'},{x:9,y:10,quest:'q1'},{x:12,y:2,quest:'q1'}],
 groups:[{x:10,y:4,renc:0},{x:10,y:8,renc:0}],

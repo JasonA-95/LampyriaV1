@@ -1,10 +1,16 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.5.0';
+const VERSION='0.6.0';
 const $=i=>document.getElementById(i);
-let sv;try{sv=JSON.parse(localStorage.getItem('lampyria'))}catch(e){}
+let sv,savedData=false;try{const raw=localStorage.getItem('lampyria');savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,dmg:0,res:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{}};
+const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,dmg:0,res:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{},hist:{vus:[],flags:{}}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
+function normaliseStoryHistory(save,existed,hadHistory){if(!save.hist||typeof save.hist!='object'||Array.isArray(save.hist))save.hist={vus:[],flags:{}};
+if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save.hist.vus.filter(id=>typeof id=='string'))];
+if(!save.hist.flags||typeof save.hist.flags!='object'||Array.isArray(save.hist.flags))save.hist.flags={};
+if(!existed)save.hist.flags.nouvellePartie=true;else if(!hadHistory&&!save.hist.vus.includes('prologue'))save.hist.vus.push('prologue');return save}
+sv=normaliseStoryHistory(sv,savedData,hadStoryHistory);
 const ALL_SORT_IDS=new Set(Object.values(DATA.classes).flatMap(c=>c.sorts.map(s=>s.id)));
 if(!sv.sp||typeof sv.sp!='object'||Array.isArray(sv.sp))sv.sp={eq:[],rg:{},seen:[]};
 if(!Array.isArray(sv.sp.eq))sv.sp.eq=[];
@@ -17,6 +23,7 @@ for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 for(const k of ['pv','dmg','res'])if(typeof sv.tal[k]!='number')sv.tal[k]=0;
 if(!DATA.classes[sv.classe])sv.classe='porte';
 const store=()=>{try{localStorage.setItem('lampyria',JSON.stringify(sv))}catch(e){}};
+if(!savedData||!hadStoryHistory)store();
 const cfg={classe:sv.classe,renc:0,test:false,lueurs:sv.lueurs.filter(k=>DATA.lueurs[k])};
 const saveCfg=()=>{sv.classe=cfg.classe;sv.lueurs=[...cfg.lueurs];store()};
 const sum=()=>cfg.lueurs.reduce((a,k)=>a+DATA.lueurs[k].t,0);
@@ -42,7 +49,7 @@ let tto;function toast(t){const e=$('toast');e.textContent=t;e.classList.remove(
 const closeModal=()=>$('modal').classList.add('hide');
 function modal(node,btns){const c=$('mcard');c.innerHTML='';c.appendChild(node);const f=el('div','mbtns');
 (btns||[]).forEach(([t,fn,cls])=>f.appendChild(btn(t,'',cls||'',()=>{closeModal();if(fn)fn()})));c.appendChild(f);$('modal').classList.remove('hide')}
-const SPK={Gourmande:'#b8620a',Peureuse:'#a07800',Colérique:'#c93a2a',Rêveuse:'#2a6db0',Têtue:'#6a4fb0',Farceuse:'#1f8a64',Mélancolique:'#4a56b8'};
+const SPK={Gourmande:'#b8620a',Peureuse:'#a07800',Colérique:'#c93a2a',Rêveuse:'#2a6db0',Têtue:'#6a4fb0',Farceuse:'#1f8a64',Mélancolique:'#4a56b8','Maître Lampiste':'#c17b26','Chambellan Poussière':'#747080','Le Roi Éteint':'#5a647d','La Passeuse':'#268a84','Le marchand':'#628d54','Le héros':'#75633a'};
 let bub={at:null,t:null};
 function hideBubble(){clearTimeout(bub.t);bub.at=null;$('bubble').classList.add('hide')}
 // Bulle de dialogue au-dessus d'un personnage (o.at = case {x,y}, sinon le héros ; o.stay = reste jusqu'à fermeture)

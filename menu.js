@@ -45,6 +45,7 @@ t.appendChild(row('<span class="em">⚔️</span><span class="tx"><span class="n
 B.appendChild(t);
 const o=card('Options');
 o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
+if(cfg.test)o.appendChild(row('<span class="em">🎭</span><span class="tx"><span class="nm">Voir les scènes</span><span class="mt">Lancer une scène en exploration, sans sauvegarder ses effets.</span></span>',()=>{const list=el('div','pick','<h2>Scènes</h2>');Object.entries(DATA.scenes).forEach(([id,scene])=>list.appendChild(row('<span class="tx"><span class="nm">'+id+'</span><span class="mt">'+scene.declencheur.quand+'</span></span>',()=>{if(combatLive){toast('Quitte le combat en cours avant de lancer une scène.');return}EX.start({storyId:id})})));modal(list,[['Fermer']])}));
 o.appendChild(row('<span class="em">📤</span><span class="tx"><span class="nm">Exporter ma sauvegarde</span><span class="mt">Créer un code de secours à conserver.</span></span>',exportSave));
 o.appendChild(row('<span class="em">📥</span><span class="tx"><span class="nm">Importer une sauvegarde</span><span class="mt">Restaurer une progression depuis un code.</span></span>',importSave));
 o.appendChild(row('<span class="em">🗑️</span><span class="tx"><span class="nm">Effacer la sauvegarde</span><span class="mt">Recommencer l\'aventure depuis le début.</span></span>',()=>{
