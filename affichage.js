@@ -69,34 +69,39 @@ if(!pend||pend.x!=x||pend.y!=y){pend={x,y};msg(mode=='move'?'Déplacement : '+C.
 pend=null;const hp0=C.hero.hp;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
 if(!r.ok){msg(MSG[r.tag]);return}
 if(r.tag)say(r.tag);
-if(r.hit)r.hit.forEach(f=>pop(f,'-'+r.dmg,'#ff6b5e'));if(r.blocked)pop(C.foes.find(f=>f.boss&&f.hp>0),'Protégé','#c9b8ff');const dh=C.hero.hp-hp0;if(dh>0)pop(C.hero,'+'+dh,'#7fd18b');
+if(r.blocked)pop(C.foes.find(f=>f.boss&&f.hp>0),'Protégé','#c9b8ff');const dh=C.hero.hp-hp0;if(dh>0)pop(C.hero,'+'+dh,'#7fd18b');
 const P={rage:['RAGE','#ffb454'],mur:['MUR','#c9b8ff'],sommeil:['Zzz','#9ecbff'],fuite:['Fuite !','#ffe08a'],farce:['Hop !','#ffe08a']}[r.tag];
 if(r.resist)pop(C.foes.find(f=>f.boss&&f.hp>0),'Résiste','#c9b8ff');
 if(P&&!r.resist)pop(r.tag=='sommeil'?(C.foes.find(f=>f.sleep&&f.hp>0)||C.hero):C.hero,...P);
 if(r.charge)pop(C.hero,'Charge !','#ffb454');if(r.recul)pop(C.hero,'Recul','#ffe08a');if(r.garde)pop(C.hero,'Garde','#9ecbff');
 (r.effects||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));
+(r.events||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));
 const k=r.hit?r.hit.filter(f=>f.hp<=0).length:0;
 const ash=C.foes.some(f=>f.cendre&&f.hp>0);
 const mortText=(r.mortEvents||[]).map(e=>e.text).join(' ');
-const effectText=[r.charge?'Charge !':'',r.recul?'Recul':'',r.garde?'Garde':''].filter(Boolean).join(' ');
-const combatText=r.resist?'Le boss est insensible au sommeil.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'';
-msg(mortText||[effectText,combatText].filter(Boolean).join(' '));
+const effectText=[r.charge?'Charge !':'',r.recul?'Recul':'',r.garde?'Garde':''].filter(Boolean).join(' '),stateText=(r.events||[]).map(e=>e.text).filter(Boolean).join(' ');
+const combatText=r.resist?'Le boss résiste à l’effet.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?'Le formulaire est projeté hors du terrain !':'Formulaire détruit !')+' Le Chambellan est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?'Le Chambellan est invulnérable tant que le formulaire flotte sur lui !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'';
+msg(mortText||[effectText,combatText,stateText].filter(Boolean).join(' '));
 if(C.result=='lose'){ui();draw();setTimeout(()=>endFight('lose'),500);return}
 if(C.result=='win'){const rw=reward();ui();draw();setTimeout(()=>endFight('win',rw),500);return}
 ui();draw()}
 async function endTurn(){if(busy||C.result)return;busy=true;mode='move';pend=null;ui();const reports=[];
 for(const f of C.foes){if(f.hp<=0)continue;await new Promise(r=>setTimeout(r,400));const action=C.foeTurn(f);
 if(action.text){msg(action.text);reports.push(action.text)}if(action.tag=='contact')say('coup');(action.effects||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));draw();ui();
-if(C.result=='lose'){busy=false;ui();draw();endFight('lose');return}}
-C.newTurn();busy=false;msg((reports.length?reports.join(' ')+' ':'')+(C.pm==0?'À toi de jouer (tu ne peux pas te déplacer ce tour).':'À toi de jouer.'));ui();draw()}
+if(C.result){busy=false;ui();draw();if(C.result=='lose')endFight('lose');else endFight('win',reward());return}}
+const tick=C.newTurn();busy=false;if(C.result){msg(tick.events.map(e=>e.text).filter(Boolean).join(' '));ui();draw();endFight('lose');return}
+const tickText=tick.events.map(e=>e.text).filter(Boolean).join(' ');msg([reports.join(' '),tickText,tick.blocked?'Étourdi ! Ton tour est passé automatiquement.':C.pm==0?'À toi de jouer (tu ne peux pas te déplacer ce tour).':'À toi de jouer.'].filter(Boolean).join(' '));ui();draw();
+if(tick.blocked){busy=true;ui();setTimeout(()=>{busy=false;endTurn()},700)}}
 
 // ---------- boutons ----------
 function mk(t,sub,cls,fn,dis){const b=btn(t,sub,cls,fn,dis);$('bar').appendChild(b);return b}
 function pips(cls,n,max){let s='';for(let i=0;i<max;i++)s+='<i class="'+(i<n?'f':'')+'"></i>';return '<span class="pip '+cls+'">'+cls.toUpperCase()+' '+s+'</span>'}
 function foesUI(){const F=$('foes');if(!F)return;const live=C.foes.filter(f=>f.hp>0);F.replaceChildren();F.classList.toggle('hide',!live.length);
-for(const f of live){const item=document.createElement('div'),name=document.createElement('span'),hp=document.createElement('span');item.className='foe';name.className='name';name.textContent=f.n+(f.sort&&f.sortCd>0?' ⏳'+f.sortCd:'');hp.className='hp';hp.textContent=f.hp+'/'+f.max;item.textContent=f.e+' ';item.append(name,hp);F.appendChild(item)}}
-function ui(){const h=C.hero;foesUI();
-$('hud').innerHTML='<div class="pv"><span><b style="color:var(--ink)">'+h.hp+'</b> / '+h.max+' PV · Niv '+sv.niv+'</span><div class="bar"><i style="width:'+Math.max(0,Math.round(100*h.hp/h.max))+'%"></i></div></div>'+pips('pa',C.pa,C.PA)+pips('pm',C.pm,C.PM)+'<span class="pip">Tour '+C.turn+'</span>'+(h.rage?'<span class="tag">RAGE</span>':'')+(h.mur?'<span class="tag">MUR</span>':'');
+for(const f of live){const item=document.createElement('button'),name=document.createElement('span'),states=document.createElement('span'),hp=document.createElement('span');item.type='button';item.className='foe';name.className='name';name.textContent=f.e+' '+f.n+(f.sort&&f.sortCd>0?' ⏳'+f.sortCd:'');
+const active=f.etats.filter(e=>e.t>0);states.className='states';states.textContent=active.map(e=>DATA.etats[e.id].e+e.t+(e.id=='bouclier'?'·'+e.v:'')).concat(f.sleep?['💤 Sommeil 1']:[]).join(' ');hp.className='hp';hp.textContent=f.hp+'/'+f.max;item.append(name,states,hp);
+item.onclick=()=>{$('tip').textContent=[...active.map(e=>{const d=DATA.etats[e.id];return d.n+' : '+d.d+' Durée : '+e.t+' tour(s)'+(e.id=='bouclier'?' · '+e.v+' points restants':'')+'.'}),...(f.sleep?['Sommeil : passe son prochain tour.']:[])].join(' ');if(!$('tip').textContent)$('tip').textContent='Aucun état actif.'};F.appendChild(item)}}
+function ui(){const h=C.hero;foesUI();const states=h.etats.filter(e=>e.t>0).map(e=>{const d=DATA.etats[e.id];return'<span class="tag state">'+d.e+' '+d.n+' '+e.t+(e.id=='bouclier'?' · '+e.v:'')+'</span>'}).join('');
+$('hud').innerHTML='<div class="pv"><span><b style="color:var(--ink)">'+h.hp+'</b> / '+h.max+' PV · Niv '+sv.niv+'</span><div class="bar"><i style="width:'+Math.max(0,Math.round(100*h.hp/h.max))+'%"></i></div></div>'+pips('pa',C.pa,C.PA)+pips('pm',C.pm,C.PM)+'<span class="pip">Tour '+C.turn+'</span>'+(h.rage?'<span class="tag">RAGE</span>':'')+(h.mur?'<span class="tag">MUR</span>':'')+(h.garde?'<span class="tag state">🛡️ Garde '+h.garde+'</span>':'')+states;
 $('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';
 if(C.result){F.appendChild(btn('Menu','','',()=>after&&after()));F.appendChild(btn('Continuer','','pri',()=>after&&after()));return}
 const off=busy;
@@ -121,7 +126,10 @@ const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-h.x,y-h.y)/6
 dia(cx,cy,col(l));if(C.ash.has(k))dia(cx,cy,'rgba(190,180,185,.5)');if(rc[k]>0)dia(cx,cy,'rgba(255,180,84,.32)');if(rz.has(k))dia(cx,cy,'rgba(106,169,255,.2)');if(rs.has(k))dia(cx,cy,'rgba(106,169,255,.45)');if(pp[k])dia(cx,cy,'rgba(255,240,170,.6)');if(zone.has(k))dia(cx,cy,'rgba(229,86,74,.6)');
 if(C.rocks.has(k)){g.fillStyle='#fff';g.fillText('🪨',cx,cy-th*.15);continue}
 const u=C.at(x,y);if(u){g.fillStyle='#fff';g.fillText(u.sleep?'💤':u.e,cx,cy-th*.3);if(u.boss&&C.bossInv())g.fillText('🛡️',cx+tw*.32,cy-th*.75);
-g.fillStyle='#000a';g.fillRect(cx-tw*.25,cy-th*.95,tw*.5,4);g.fillStyle=u===h?'#7fd18b':'#e5564a';g.fillRect(cx-tw*.25,cy-th*.95,tw*.5*Math.max(0,u.hp)/u.max,4)}}
+g.fillStyle='#000a';g.fillRect(cx-tw*.25,cy-th*.95,tw*.5,4);g.fillStyle=u===h?'#7fd18b':'#e5564a';g.fillRect(cx-tw*.25,cy-th*.95,tw*.5*Math.max(0,u.hp)/u.max,4);
+const states=(u.etats||[]).filter(e=>e.t>0),shown=states.slice(0,3),badgeW=Math.max(11,tw*.5),badgeH=Math.max(10,th*.48),count=Math.min(3,shown.length)+(states.length>3?1:0),start=cx-count*badgeW/2,by=cy-th*1.5;g.font='bold '+Math.max(8,Math.round(tw*.32))+'px sans-serif';
+shown.forEach((e,i)=>{const label=DATA.etats[e.id].e+e.t+(e.id=='bouclier'?'·'+e.v:'');g.fillStyle='#120d1add';g.fillRect(start+i*badgeW,by,badgeW,badgeH);g.fillStyle='#fff';g.fillText(label,start+i*badgeW+badgeW/2,by+badgeH/2)});
+if(states.length>3){g.fillStyle='#120d1add';g.fillRect(start+3*badgeW,by,badgeW,badgeH);g.fillStyle='#fff';g.fillText('+',start+3*badgeW+badgeW/2,by+badgeH/2)}}}
 const hx=(h.x-h.y)*tw/2+ox,hy=(h.x+h.y)*th/2+oy,gr=g.createRadialGradient(hx,hy,0,hx,hy,tw*3);
 gr.addColorStop(0,'rgba(255,180,84,.28)');gr.addColorStop(1,'rgba(255,180,84,0)');
 g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';drawFx();placeBubble()}

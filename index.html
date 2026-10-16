@@ -73,8 +73,11 @@ canvas{position:absolute;left:0;top:0;touch-action:none;display:block}
 #hud .pip{display:inline-flex;gap:3px;align-items:center;font-size:12px;color:var(--dim)}#hud .pip i{width:10px;height:10px;border-radius:50%;background:#00000060;border:1px solid var(--line)}#hud .pip.pa i.f{background:var(--ember)}#hud .pip.pm i.f{background:var(--blue)}
 #hud .tag{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--ember);color:#2a1a08;font-weight:700}
 #foes{display:flex;flex-wrap:wrap;gap:3px}
-.foe{display:flex;align-items:center;gap:4px;max-width:100%;padding:2px 6px;background:#00000030;border:1px solid var(--line);border-radius:6px;font-size:11px;line-height:1.2}
+.foe{display:flex;flex-direction:row;align-items:center;gap:4px;max-width:100%;min-height:28px;padding:3px 6px;background:#00000030;border:1px solid var(--line);border-radius:6px;font-size:11px;line-height:1.2}
 .foe .name{font-weight:600;overflow-wrap:anywhere}.foe .hp{color:var(--ok);white-space:nowrap;font-variant-numeric:tabular-nums}
+.foe .states{color:var(--ember);white-space:nowrap;padding:1px 4px;border:1px solid var(--line);border-radius:99px;background:#00000030}
+.foe .states:empty{display:none}
+#hud .tag.state{background:#00000060;border:1px solid var(--line);color:var(--ink);padding:2px 6px;font-size:11px;line-height:1.2}
 #msgEl{color:var(--ink);font-size:13px;text-align:center;line-height:1.3}
 #tip{font-size:12px;color:var(--dim);text-align:center;line-height:1.3}
 #msgEl:empty,#tip:empty,#bar:empty,#foot:empty{display:none}

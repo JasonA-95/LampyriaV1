@@ -1,5 +1,5 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.4.0';
+const VERSION='0.5.0';
 const $=i=>document.getElementById(i);
 let sv;try{sv=JSON.parse(localStorage.getItem('lampyria'))}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
@@ -63,6 +63,11 @@ const costChips=c=>'<span class="chips">'+Object.keys(c).map(k=>'<span class="ch
 const rg=r=>r[0]==r[1]?r[0]:r[0]+'-'+r[1];
 function descrBody(s){const a=[s.pa+' PA, '+(s.r[1]?'portée '+rg(s.r):'sur soi')+(s.los?', ligne de vue':'')];
 if(s.dmg)a.push('inflige '+s.dmg+' dégâts'+(s.aoe!=null?' en zone (rayon '+s.aoe+')':'')+(s.drain?' et te soigne (plus ta vie est basse, plus tu récupères)':''));
+const describeEtat=e=>{const n=DATA.etats[e.id]?.n||e.id,v=e.v,t=e.t;
+if(e.id=='brule')return'brûle '+v+' PV par tour pendant '+t+' tours';if(e.id=='poison')return'empoisonne : '+v+' PV par tour pendant '+t+' tours, soins reçus réduits de moitié';
+if(e.id=='etourdi')return'étourdit '+t+' tour(s) (sans effet sur les boss)';if(e.id=='bouclier')return'donne un bouclier de '+v+' points pendant '+t+' tours';
+if(e.id=='ralenti')return'ralentit : -'+v+' PM pendant '+t+' tour(s)';if(e.id=='affaibli')return'affaiblit : dégâts infligés réduits de '+v+' % pendant '+t+' tours';return n+' pendant '+t+' tours'};
+if(s.etats&&s.etats.length)a.push(...s.etats.map(describeEtat));if(s.etatsSoi&&s.etatsSoi.length)a.push(...s.etatsSoi.map(e=>'sur toi : '+describeEtat(e)));
 if(s.heal)a.push('soigne '+s.heal+' PV');if(s.tp)a.push('te téléporte sur une case libre');if(s.push)a.push('repousse la cible de '+s.push+' case(s)');
 if(s.charge)a.push('se jette sur la cible');if(s.recul)a.push('recule d\'une case après le tir');if(s.garde)a.push('dégâts réduits de moitié pendant '+s.garde+' tour(s), sans bloquer le déplacement');
 if(s.rage)a.push('ta prochaine attaque inflige le double, mais -1 PM au tour suivant');

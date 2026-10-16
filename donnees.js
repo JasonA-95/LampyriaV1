@@ -1,6 +1,13 @@
 // DONNEES : classes, Lueurs, monstres, textes. On modifie ici sans toucher aux règles.
 const DATA={
 taille:13,
+etats:{
+brule:{n:'Brûlure',e:'🔥',d:'Inflige des dégâts au début du tour.',couleur:'#ff9a45'},
+poison:{n:'Poison',e:'🧪',d:'Inflige des dégâts et réduit les soins reçus de moitié.',couleur:'#477d45'},
+etourdi:{n:'Étourdissement',e:'💫',d:'Fait passer le prochain tour. Sans effet sur les boss.'},
+bouclier:{n:'Bouclier',e:'🔰',d:'Absorbe les dégâts jusqu’à épuisement ou expiration.'},
+ralenti:{n:'Ralenti',e:'🐌',d:'Réduit les PM disponibles au prochain tour.'},
+affaibli:{n:'Affaibli',e:'🥀',d:'Réduit les dégâts infligés.'}},
 rochers:[[5,4],[5,5],[6,8],[7,3],[8,6],[3,9],[9,7],[4,7],[10,5]],
 heros:{x:1,y:6,pa:6,pm:3},
 monstres:[
@@ -14,25 +21,25 @@ porte:{n:'Porte-Lanterne',e:'🏮',hp:70,info:'mêlée, résistant',sorts:[
 {id:'charge',n:'Charge',niv:3,pa:3,r:[2,4],los:1,dmg:12,charge:1,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'garde',n:'Garde de lanterne',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
 {id:'boutoir',n:'Coup de boutoir',niv:10,pa:3,r:[1,1],dmg:18,push:2,cd:2,rg:[{dmg:4},{cd:-1}]},
-{id:'ardente',n:'Lanterne ardente',niv:14,pa:5,r:[0,0],aoe:2,dmg:14,cd:3,rg:[{dmg:4},{cd:-1}]}]},
+{id:'ardente',n:'Lanterne ardente',niv:14,pa:5,r:[0,0],aoe:2,dmg:14,etats:[{id:'brule',v:3,t:3}],cd:3,rg:[{dmg:4},{cd:-1}]}]},
 archer:{n:'Archer Farceur',e:'🏹',hp:45,info:'distance, fragile',sorts:[
 {id:'tir',n:'Tir précis',niv:1,pa:2,r:[2,6],los:1,dmg:11,rg:[{dmg:3},{dmg:3}]},
 {id:'tir2',n:'Tir double',niv:1,pa:4,r:[2,5],los:1,dmg:24,rg:[{dmg:4},{rmax:1}]},
-{id:'retrait',n:'Tir en retrait',niv:3,pa:2,r:[2,5],los:1,dmg:8,recul:1,cd:2,rg:[{dmg:3},{cd:-1}]},
+{id:'retrait',n:'Tir en retrait',niv:3,pa:2,r:[2,5],los:1,dmg:8,recul:1,etats:[{id:'poison',v:3,t:3}],cd:2,rg:[{dmg:3},{cd:-1}]},
 {id:'repoussant',n:'Tir repoussant',niv:6,pa:3,r:[2,5],los:1,dmg:10,push:2,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'perforant',n:'Tir perforant',niv:10,pa:4,r:[3,7],los:1,dmg:30,cd:2,rg:[{dmg:4},{cd:-1}]},
 {id:'pluie',n:'Pluie de flèches',niv:14,pa:5,r:[3,6],aoe:2,dmg:14,cd:3,rg:[{dmg:4},{cd:-1}]}]},
 mage:{n:'Mage Distrait',e:'🧙',hp:38,info:'zone, peu de vie',sorts:[
 {id:'eclair',n:'Éclair',niv:1,pa:2,r:[2,6],los:1,dmg:9,rg:[{dmg:3},{dmg:3}]},
 {id:'cendres',n:'Cendres',niv:1,pa:4,r:[2,5],dmg:12,aoe:1,rg:[{dmg:3},{pa:-1}]},
-{id:'flaque',n:'Flaque enflammée',niv:3,pa:3,r:[2,5],aoe:1,dmg:15,cd:2,rg:[{dmg:3},{cd:-1}]},
+{id:'flaque',n:'Flaque enflammée',niv:3,pa:3,r:[2,5],aoe:1,dmg:15,etats:[{id:'brule',v:3,t:3}],cd:2,rg:[{dmg:3},{cd:-1}]},
 {id:'fumee',n:'Bouclier de fumée',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
 {id:'rafale',n:'Rafale',niv:10,pa:3,r:[1,4],los:1,dmg:10,push:3,cd:2,rg:[{dmg:3},{rmax:1}]},
-{id:'tempete',n:'Tempête de cendres',niv:14,pa:6,r:[2,5],aoe:2,dmg:26,cd:4,rg:[{dmg:5},{cd:-1}]}]}},
+{id:'tempete',n:'Tempête de cendres',niv:14,pa:6,r:[2,5],aoe:2,dmg:26,etats:[{id:'etourdi',t:1}],cd:4,rg:[{dmg:5},{cd:-1}]}]}},
 lueurs:{
 colerique:{n:'Colérique',t:5,sort:{n:'Accès de rage',pa:1,r:[0,0],rage:1,cd:3,say:'rage'}},
 peureuse:{n:'Peureuse',t:2,sort:{n:'Sauve-qui-peut',pa:2,r:[1,5],tp:1,cd:3,say:'fuite'}},
-gourmande:{n:'Gourmande',t:3,sort:{n:'Festin',pa:4,r:[0,0],heal:20,cd:3,say:'soin'}},
+gourmande:{n:'Gourmande',t:3,sort:{n:'Festin',pa:4,r:[0,0],heal:20,etatsSoi:[{id:'bouclier',v:6,t:2}],cd:3,say:'soin'}},
 reveuse:{n:'Rêveuse',t:3,sort:{n:'Somnolence',pa:3,r:[1,4],los:1,sleep:1,cd:2,say:'sommeil'}},
 tetue:{n:'Têtue',t:4,sort:{n:"Mur d'entêtement",pa:2,r:[0,0],mur:1,cd:4,say:'mur'}},
 farceuse:{n:'Farceuse',t:3,sort:{n:'Tour pendable',pa:3,r:[1,5],los:1,swap:1,cd:3,say:'farce'}},
@@ -51,14 +58,14 @@ victoire:['Gourmande','Victoire ! On mange quoi ?'],
 defaite:['Peureuse','On aurait dû faire demi-tour…'],
 formulaire:['Gourmande',"C'est quoi ce papier qui flotte ? Il faut le déchirer… ou le jeter dehors !"]}
 };
-const mou=(x,y)=>({x,y,hp:24,max:24,pm:3,d:8,e:'🪰',n:'La mouche à braise',ia:'dist',garde:[2,3],sort:{n:'Étincelle',r:[2,3],los:1,dmg:6,cd:0}}),cha=(x,y)=>({x,y,hp:30,max:30,pm:2,d:10,e:'🍄',n:'Le champignon bavard',sort:{n:'Spores collantes',r:[1,3],los:1,dmg:0,pm:1,cd:3}}),mot=(x,y)=>({x,y,hp:28,max:28,pm:3,d:9,e:'🐑',n:'Le mouton-fantôme',sort:{n:'Coup de tête',r:[1,1],push:1,cd:2}}),ber=(x,y)=>({x,y,hp:30,max:30,pm:2,d:6,e:'🐏',n:'Le berger-fantôme',ia:'soin',sort:{n:'Berceuse de laine',r:[1,3],heal:10,cd:3}});
+const mou=(x,y)=>({x,y,hp:24,max:24,pm:3,d:8,e:'🪰',n:'La mouche à braise',ia:'dist',garde:[2,3],sort:{n:'Étincelle',r:[2,3],los:1,dmg:6,cd:0}}),cha=(x,y)=>({x,y,hp:30,max:30,pm:2,d:10,e:'🍄',n:'Le champignon bavard',sort:{n:'Spores collantes',r:[1,3],los:1,dmg:0,etats:[{id:'ralenti',v:1,t:1}],cd:3}}),mot=(x,y)=>({x,y,hp:28,max:28,pm:3,d:9,e:'🐑',n:'Le mouton-fantôme',sort:{n:'Coup de tête',r:[1,1],push:1,cd:2}}),ber=(x,y)=>({x,y,hp:30,max:30,pm:2,d:6,e:'🐏',n:'Le berger-fantôme',ia:'soin',sort:{n:'Berceuse de laine',r:[1,3],heal:10,cd:3}});
 DATA.res={braise:'🔥 Braises',champi:'🍄 Champignons',laine:'🐑 Laine'};
 DATA.rencontres=[
 {n:'Village des Lanternes',xp:30,loot:{braise:4},m:[mou(10,3),mou(11,8)]},
 {n:'Forêt des Champignons Lumineux',xp:55,loot:{champi:4,laine:2},m:[cha(10,3),cha(11,8),mot(9,10)]},
 {n:'Collines aux Moutons-Fantômes',xp:90,loot:{laine:5,braise:3},m:[mot(10,3),mot(11,8),ber(9,10),cha(11,5)]}];
 DATA.lampiste=[{cap:5,cout:{braise:4}},{cap:8,cout:{champi:4,laine:4}},{cap:12,cout:{braise:8,champi:6,laine:8}}];
-const boss=(x,y)=>({x,y,hp:90,max:90,pm:2,d:12,e:'👻',n:'Chambellan Poussière',boss:1,sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:8,cd:2}}),frm=(x,y)=>({x,y,hp:15,max:15,pm:0,d:0,e:'📜',n:'Le formulaire',form:1});
+const boss=(x,y)=>({x,y,hp:90,max:90,pm:2,d:12,e:'👻',n:'Chambellan Poussière',boss:1,sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:8,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),frm=(x,y)=>({x,y,hp:15,max:15,pm:0,d:0,e:'📜',n:'Le formulaire',form:1});
 DATA.rencontres.push({n:'Manoir du Chambellan (boss)',xp:150,loot:{braise:8,laine:4,champi:4},say:'formulaire',m:[boss(11,7),frm(11,6),mou(9,3),mou(10,9)]});
 DATA.resE={braise:'🔥',champi:'🍄',laine:'🧶'};
 DATA.cartes={
@@ -124,7 +131,7 @@ DATA.rencontres[3].drops=[{id:'plume',p:35},{id:'bottes_cha',p:35},{id:'lanterne
 DATA.res.cendre='🌫️ Cendres';DATA.res.roseau='🌾 Roseaux';DATA.resE.cendre='🌫️';DATA.resE.roseau='🌾';
 DATA.repliques.cendres=['Gourmande',"Cette dame se tient toujours sur un tas de cendres… Et si on dispersait la cendre, ou si on la faisait changer de place ?"];
 DATA.repliques.duchesse_vic=['Têtue',"Elle ne voulait pas bouger non plus. On aurait pu s'entendre."];
-const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:5,pull:2,cd:3}}),gri=(x,y)=>({x,y,hp:34,max:34,pm:4,d:12,e:'🦗',n:'Le grillon de cendre',ia:'dist',garde:[3,4],sort:{n:'Stridulation',r:[2,5],los:1,dmg:9,cd:0}}),sac=(x,y)=>({x,y,hp:56,max:56,pm:2,d:15,e:'⚱️',n:'Le sac de cendres',mort:{n:'Éclatement',r:1,dmg:12}}),duch=(x,y)=>({x,y,hp:110,max:110,pm:2,d:14,e:'👸',n:'La Duchesse des Cendres',boss:1,cendre:1,sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:9,cd:2}});
+const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:5,pull:2,etats:[{id:'poison',v:3,t:2}],cd:3}}),gri=(x,y)=>({x,y,hp:34,max:34,pm:4,d:12,e:'🦗',n:'Le grillon de cendre',ia:'dist',garde:[3,4],sort:{n:'Stridulation',r:[2,5],los:1,dmg:9,cd:0}}),sac=(x,y)=>({x,y,hp:56,max:56,pm:2,d:15,e:'⚱️',n:'Le sac de cendres',mort:{n:'Éclatement',r:1,dmg:12}}),duch=(x,y)=>({x,y,hp:110,max:110,pm:2,d:14,e:'👸',n:'La Duchesse des Cendres',boss:1,cendre:1,sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:9,etats:[{id:'brule',v:3,t:2}],cd:2}});
 DATA.rencontres.push({n:'Marais de Cendres',xp:130,loot:{cendre:4,roseau:2},m:[cra(10,3),cra(11,8),gri(9,10)]});
 DATA.rencontres.push({n:'Roselière Fantôme',xp:190,loot:{roseau:5,cendre:3},m:[gri(10,3),gri(11,8),sac(9,10),cra(11,5)]});
 DATA.rencontres.push({n:'Serre de la Duchesse (boss)',xp:320,loot:{cendre:8,roseau:5,braise:6},say:'cendres',vic:'duchesse_vic',m:[duch(11,7),gri(9,3),gri(10,9)]});
