@@ -1,7 +1,11 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.7.2';
+const VERSION='0.8.0';
+// Emplacements de sauvegarde : 1 = clé historique 'lampyria', 2 et 3 = 'lampyria2', 'lampyria3'. L'emplacement actif est choisi sur l'écran titre.
+const slotKey=n=>n==1?'lampyria':'lampyria'+n;
+const SLOT=(()=>{try{const n=Math.floor(+localStorage.getItem('lampyria_slot'));return n>=1&&n<=3?n:1}catch(e){return 1}})();
+const escHtml=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=i=>document.getElementById(i);
-let sv,savedData=false;try{const raw=localStorage.getItem('lampyria');savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
+let sv,savedData=false;try{const raw=localStorage.getItem(slotKey(SLOT));savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
 const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
 const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,dmg:0,res:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{},hist:{vus:[],flags:{}}};
@@ -23,8 +27,9 @@ for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 for(const k of ['pv','dmg','res'])if(typeof sv.tal[k]!='number')sv.tal[k]=0;
 if(!DATA.classes[sv.classe])sv.classe='porte';
-const store=()=>{try{localStorage.setItem('lampyria',JSON.stringify(sv))}catch(e){}};
-if(!savedData||!hadStoryHistory)store();
+const store=()=>{try{sv.maj=Date.now();localStorage.setItem(slotKey(SLOT),JSON.stringify(sv))}catch(e){}};
+const heroEmoji=()=>(sv.hero&&sv.hero.asp)||DATA.classes[cfg.classe].e;
+if(savedData&&!hadStoryHistory)store();
 const cfg={classe:sv.classe,renc:0,test:false,lueurs:sv.lueurs.filter(k=>DATA.lueurs[k])};
 const saveCfg=()=>{sv.classe=cfg.classe;sv.lueurs=[...cfg.lueurs];store()};
 const sum=()=>cfg.lueurs.reduce((a,k)=>a+DATA.lueurs[k].t,0);

@@ -1,4 +1,4 @@
-﻿// AFFICHAGE : dessin de la grille, boutons de combat, clics. Les règles sont dans moteur.js, les menus dans menu.js.
+// AFFICHAGE : dessin de la grille, boutons de combat, clics. Les règles sont dans moteur.js, les menus dans menu.js.
 const cv=$('c'),g=cv.getContext('2d'),ambCv=$('amb'),ag=ambCv.getContext('2d');
 const MSG={loin:'Trop loin : déplacement limité par tes PM, sans traverser les obstacles.',cible:'Cible invalide (portée, ligne de vue ou case vide).',cout:'Pas assez de PA, ou sort en recharge.'};
 let C,tw,th,ox,oy,W,H,mode,busy,tt,pend=null,after=null;
@@ -79,7 +79,7 @@ function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('g
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
-function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes()});resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
+function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes()});C.hero.e=heroEmoji();resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
 hideBubble();say(DATA.rencontres[cfg.renc].say||'debut');$('tip').textContent='Maintiens un sort pour lire sa description.';
 msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw()}
 cv.onclick=e=>{if(moved){moved=false;return}if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);
@@ -178,4 +178,4 @@ drawDisplayTexts(g,tw,th,ox,oy);updateDisplayTransition();placeBubble();syncAmbi
 addEventListener('resize',()=>{if(!$('game').classList.contains('hide')){size();draw()}});
 document.addEventListener('visibilitychange',syncAmbience);
 if(motionQuery.addEventListener)motionQuery.addEventListener('change',syncAmbience);else if(motionQuery.addListener)motionQuery.addListener(syncAmbience);
-openMenu('jouer');
+if(typeof showTitle=='function')showTitle();else openMenu('jouer');

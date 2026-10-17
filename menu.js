@@ -18,7 +18,7 @@ body.appendChild(text);body.appendChild(btn('Copier','','pri',async()=>{try{awai
 function importSave(){const text=saveTextarea('',false),body=el('div','pick','<h2>Importer une sauvegarde</h2><p>Colle ici le code de sauvegarde.</p>');body.appendChild(text);
 modal(body,[['Annuler'],['Importer',()=>{let data;
 try{const code=text.value.trim(),prefix='LAMPYRIA1:';if(!code.startsWith(prefix))throw Error();const raw=atob(code.slice(prefix.length)),bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));data=JSON.parse(new TextDecoder().decode(bytes));if(!data||typeof data!='object'||Array.isArray(data)||typeof data.niv!='number'||!data.res||typeof data.res!='object'||Array.isArray(data.res)||!Array.isArray(data.inv))throw Error()}catch(e){toast('Code invalide');return}
-const confirm=el('div','','<h2>Remplacer ta sauvegarde actuelle ?</h2><p>Cette action est définitive.</p>');modal(confirm,[['Annuler'],['Importer',()=>{try{localStorage.setItem('lampyria',JSON.stringify(data))}catch(e){toast('Impossible d’enregistrer la sauvegarde');return}location.reload()},'danger']])
+const confirm=el('div','','<h2>Remplacer ta sauvegarde actuelle ?</h2><p>Cette action est définitive.</p>');modal(confirm,[['Annuler'],['Importer',()=>{try{localStorage.setItem(slotKey(SLOT),JSON.stringify(data))}catch(e){toast('Impossible d’enregistrer la sauvegarde');return}location.reload()},'danger']])
 }]])}
 
 // ---------- ouverture / fermeture ----------
@@ -27,7 +27,7 @@ EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t;normL();closeModal();hideBubble
 function hideMenu(){$('menu').classList.add('hide')}
 function showGame(){hideMenu();$('game').classList.remove('hide');size();if(EX.on)EX.draw();else if(C)draw()}
 function renderMenu(){const sc=$('mbody').scrollTop,need=XP.next(sv.niv);
-$('mhead').innerHTML='<div class="top"><h1>Lampyria</h1><span class="lv">Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' '+sv.res[k]+'</span>').join('')+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
+$('mhead').innerHTML='<div class="top"><h1>Lampyria</h1><span class="lv">'+(sv.hero&&sv.hero.nom?escHtml(sv.hero.nom)+' · ':'')+'Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' '+sv.res[k]+'</span>').join('')+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
 const T=$('tabs');T.innerHTML='';TABS.forEach(([id,n,ic])=>{const b=el('button',id==tab?'sel':'','<span class="ic">'+ic+'</span><span class="nm">'+n+'</span>');
 if((id=='heros'&&(talLeft()>0||spLeft()>0))||(id=='atelier'&&canCraftAny())||(id=='quetes'&&questReady()))b.appendChild(el('span','dot'));b.onclick=()=>{tab=id;renderMenu();$('mbody').scrollTop=0};T.appendChild(b)});
 const B=$('mbody');B.innerHTML='';({jouer:tabJouer,heros:tabHeros,lanterne:tabLanterne,atelier:tabAtelier,quetes:tabQuetes})[tab](B);B.scrollTop=sc;
@@ -50,10 +50,11 @@ const soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal';
 o.appendChild(row('<span class="em">🔊</span><span class="tx"><span class="nm">Son : '+soundLabel+'</span><span class="mt">Effets sonores générés, sans musique. Toucher pour changer.</span></span>',()=>{cycleSon();renderMenu()}));
 o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
 if(cfg.test)o.appendChild(row('<span class="em">🎭</span><span class="tx"><span class="nm">Voir les scènes</span><span class="mt">Lancer une scène en exploration, sans sauvegarder ses effets.</span></span>',()=>{const list=el('div','pick','<h2>Scènes</h2>');Object.entries(DATA.scenes).forEach(([id,scene])=>list.appendChild(row('<span class="tx"><span class="nm">'+id+'</span><span class="mt">'+scene.declencheur.quand+'</span></span>',()=>{if(combatLive){toast('Quitte le combat en cours avant de lancer une scène.');return}EX.start({storyId:id})})));modal(list,[['Fermer']])}));
+o.appendChild(row('<span class="em">🏠</span><span class="tx"><span class="nm">Écran titre</span><span class="mt">Changer d\'emplacement de sauvegarde ou de héros.</span></span>',()=>{store();location.reload()}));
 o.appendChild(row('<span class="em">📤</span><span class="tx"><span class="nm">Exporter ma sauvegarde</span><span class="mt">Créer un code de secours à conserver.</span></span>',exportSave));
 o.appendChild(row('<span class="em">📥</span><span class="tx"><span class="nm">Importer une sauvegarde</span><span class="mt">Restaurer une progression depuis un code.</span></span>',importSave));
 o.appendChild(row('<span class="em">🗑️</span><span class="tx"><span class="nm">Effacer la sauvegarde</span><span class="mt">Recommencer l\'aventure depuis le début.</span></span>',()=>{
-modal(el('div','','<h2>Tout effacer ?</h2><p>Niveau, objets, quêtes et ressources seront perdus. Cette action est définitive.</p>'),[['Annuler'],['Effacer',()=>{try{localStorage.removeItem('lampyria')}catch(e){}location.reload()},'danger']])}));
+modal(el('div','','<h2>Tout effacer ?</h2><p>Niveau, objets, quêtes et ressources seront perdus. Cette action est définitive.</p>'),[['Annuler'],['Effacer',()=>{try{localStorage.removeItem(slotKey(SLOT))}catch(e){}location.reload()},'danger']])}));
 B.appendChild(o);o.appendChild(el('p','sp','Version '+VERSION))}
 
 // ---------- onglet Héros ----------
