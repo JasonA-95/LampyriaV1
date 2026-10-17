@@ -1,5 +1,5 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.7.1';
+const VERSION='0.7.2';
 const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem('lampyria');savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
@@ -11,6 +11,7 @@ if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save
 if(!save.hist.flags||typeof save.hist.flags!='object'||Array.isArray(save.hist.flags))save.hist.flags={};
 if(!existed)save.hist.flags.nouvellePartie=true;else if(!hadHistory&&!save.hist.vus.includes('prologue'))save.hist.vus.push('prologue');return save}
 sv=normaliseStoryHistory(sv,savedData,hadStoryHistory);
+XP.migrer(sv);
 const ALL_SORT_IDS=new Set(Object.values(DATA.classes).flatMap(c=>c.sorts.map(s=>s.id)));
 if(!sv.sp||typeof sv.sp!='object'||Array.isArray(sv.sp))sv.sp={eq:[],rg:{},seen:[]};
 if(!Array.isArray(sv.sp.eq))sv.sp.eq=[];

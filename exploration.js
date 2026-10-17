@@ -19,32 +19,41 @@ if(nx<0||ny<0||nx>=N||ny>=N||d[k])continue;
 if(B.has(k)&&!(ent&&ent.t=='e'&&nx==tx&&ny==ty))continue;
 d[k]=1;p[k]=[x,y];if(goal(nx,ny)){end=[nx,ny];break}q.push([nx,ny])}}
 if(!end)return null;const r=[];let c=end;while(c&&!(c[0]==EX.x&&c[1]==EX.y)){r.unshift(c);c=p[exK(c[0],c[1])]}return r}
-EX.enter=(name,x,y,quiet=false)=>{const d=DATA.cartes[name],previous=EX.map,chg=previous!==name;if(chg)EX.avatar={};EX.map=name;sv.map=name;if(!quiet)store();if(chg&&previous)setTimeout(()=>{if(!EX.sceneActive)startScreenTransition(d.n)},0);
+// Masque les PNJ dont une condition de 'cache' est vraie (ex. le Général après sa défaite).
+function exPrune(){for(const m of Object.values(DATA.cartes)){if(!m._npcs)m._npcs=m.npcs.slice();m.npcs=m._npcs.filter(n=>!(n.cache||[]).some(c=>storyCondition(c,sv,sv.hist.flags)))}}
+EX.enter=(name,x,y,quiet=false)=>{exPrune();const d=DATA.cartes[name],previous=EX.map,chg=previous!==name;if(chg)EX.avatar={};EX.map=name;sv.map=name;if(!quiet)store();if(chg&&previous)setTimeout(()=>{if(!EX.sceneActive)startScreenTransition(d.n)},0);
 EX.x=x??d.start[0];EX.y=y??d.start[1];EX.groups=d.groups.map(q=>({...q}));EX.nodes=d.nodes.map(n=>({...n,until:0}));EX.pend=null;const Q=qs(),on=(p,i)=>{const s=Q[p.quest];return s&&s.s==1&&!(s.got||[]).includes(name+i)};
 (d.picks||[]).forEach((p,i)=>{if(on(p,i))EX.nodes.push({x:p.x,y:p.y,pick:1,quest:p.quest,id:name+i,until:0})});
-(d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})});if(chg&&W)resetView()}
+(d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})});(d.coffres||[]).forEach(c=>{if(sv.deb.includes('farceuse')&&!sv.hist.flags['coffre_'+name])EX.nodes.push({x:c.x,y:c.y,coffre:1,res:c.res,id:name,until:0})});if(chg&&W)resetView()}
 EX.start=options=>{options=options||{};const entering=EX.map!==(sv.map||'village');hideBubble();EX.on=true;EX.tok++;EX.walking=false;EX.group=null;hideMenu();closeModal();$('game').classList.remove('hide');size();
 if(entering)EX.enter(sv.map||'village',undefined,undefined,!!(options.storyId&&cfg.test));resetView();
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
 msg('Tu es : '+DATA.cartes[EX.map].n+'.');EX.ui();EX.draw();if(options.storyId)EX.storyPlay(options.storyId);else if(!EX.storyResume()&&entering)EX.storyTrigger({quand:'entree',carte:EX.map})};
 EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span><span class="chip">Niv '+sv.niv+'</span>'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')};
-EX.ui=()=>{const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';F.appendChild(btn('☰ Menu','','pri',()=>openMenu()));F.appendChild(btn('📜 Quêtes','','',()=>openMenu('quetes')))};
-EX.gain=r=>{let t='';if(r.xp){sv.xp+=r.xp;t+=' +'+r.xp+' XP';while(sv.xp>=40*sv.niv){sv.xp-=40*sv.niv;sv.niv++;t+=' Niveau '+sv.niv+' !'}}
+EX.ui=()=>{exPrune();const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';F.appendChild(btn('☰ Menu','','pri',()=>openMenu()));F.appendChild(btn('📜 Quêtes','','',()=>openMenu('quetes')))};
+EX.gain=r=>{let t='';const xp=r.xpq?XP.quete(r.xpq[0],XP.k[r.xpq[1]]||XP.k.normale):r.xp;if(xp){const lv=XP.add(sv,xp);t+=' +'+xp+' XP';if(lv){t+=' Niveau '+sv.niv+' !';if(typeof playSound=='function')playSound('level')}}
 for(const k in (r.res||{})){sv.res[k]+=r.res[k];t+=' +'+r.res[k]+' '+DATA.res[k].split(' ')[0]}
+if(r.item&&!sv.inv.includes(r.item)){sv.inv.push(r.item);autoEquip(r.item);t+=' '+DATA.objets[r.item].n+' !'}
+for(const k in (r.set||{}))sv.hist.flags[k]=r.set[k];
 if(r.lueur&&!sv.deb.includes(r.lueur)){sv.deb.push(r.lueur);t+=' Nouvelle Lueur : '+DATA.lueurs[r.lueur].n+' !'}store();return t};
 EX.prog=(id,cell)=>{const s=qs()[id],q=DATA.quetes[id];if(!s||s.s!=1||(s.n||0)>=q.need)return;s.got=s.got||[];if(cell)s.got.push(cell);s.n=(s.n||0)+1;store();
-const t='Quête « '+q.n+' » : '+s.n+'/'+q.need+(s.n>=q.need?'. Retourne voir le Maître Lampiste.':'.');msg(t);toast(t)};
+const t='Quête « '+q.n+' » : '+s.n+'/'+q.need+(s.n>=q.need?'. Retourne voir '+(q.donneur||'le Maître Lampiste')+'.':'.');msg(t);toast(t)};
 EX.talkNormal=p=>{const Q=qs(),B=[],variant=(p.variantes||[]).find(v=>storyCondition(v.si,sv,sv.hist.flags));let t=variant?variant.txt:p.txt;
 (p.quests||[]).forEach(id=>{const q=DATA.quetes[id],s=Q[id];
-if(!s){if((q.req||0)<=sv.renc)B.push(['Accepter : '+q.n,q.desc,false,()=>{Q[id]={s:1,n:0,got:[]};store();EX.enter(EX.map,EX.x,EX.y);exStory({quand:'quete',id,etat:'acceptee'},()=>{speak(p.n,q.say,{at:{x:p.x,y:p.y}});EX.ui();EX.draw();toast('Quête acceptée : '+q.n)})},''])}
+if(!s){if((q.req||0)<=sv.renc&&(!q.apres||(Q[q.apres]||{}).s==2))B.push(['Accepter : '+q.n,q.desc,false,()=>{Q[id]={s:1,n:0,got:[]};store();EX.enter(EX.map,EX.x,EX.y);exStory({quand:'quete',id,etat:'acceptee'},()=>{speak(p.n,q.say,{at:{x:p.x,y:p.y}});EX.ui();EX.draw();toast('Quête acceptée : '+q.n)})},''])}
 else if(s.s==1){const ok=s.n>=q.need,afford=!q.cost||Object.keys(q.cost).every(k=>sv.res[k]>=q.cost[k]);
 if(ok)B.push(['Terminer : '+q.n,q.cost?'coût : '+rl(q.cost):'récompense','pri',()=>{
 if(q.cost)Object.keys(q.cost).forEach(k=>sv.res[k]-=q.cost[k]);s.s=2;const g=EX.gain(q.rew);EX.enter(EX.map,EX.x,EX.y);exStory({quand:'quete',id,etat:'terminee'},()=>{speak(p.n,q.fin,{at:{x:p.x,y:p.y}});msg('Quête terminée !'+g);toast('Quête terminée !'+g);EX.ui();EX.draw()})},!afford])
 else t+=' ('+q.n+' : '+s.n+'/'+q.need+')'}});
+(p.actions||[]).forEach(a=>{if(a.si&&!storyCondition(a.si,sv,sv.hist.flags))return;const ok=!a.ok||storyCondition(a.ok,sv,sv.hist.flags);
+B.push([a.t,ok?a.sub:a.why,a.cls||'',()=>{if(a.fight!=null){EX.fightNpc(a.fight,p);return}const g=a.rew?EX.gain(a.rew):'';EX.storyTrigger({quand:'action',id:a.id},()=>{EX.ui();EX.draw();if(g){msg(g.trim());toast(g.trim())}})},!ok])});
 (p.trade||[]).forEach(tr=>{const lab=o=>Object.keys(o).map(k=>o[k]+' '+DATA.res[k].split(' ')[0]).join(' '),ok=Object.keys(tr.give).every(k=>sv.res[k]>=tr.give[k]);
 B.push(['Échanger '+lab(tr.give),'contre '+lab(tr.get),'',()=>{Object.keys(tr.give).forEach(k=>sv.res[k]-=tr.give[k]);Object.keys(tr.get).forEach(k=>sv.res[k]+=tr.get[k]);store();EX.talk(p)},!ok])});
 speak(p.n,t,{at:{x:p.x,y:p.y},stay:true});EX.hud();$('bar').innerHTML='';$('bar').className='talk';B.forEach(b=>mk(b[0],b[1],b[2],b[3],b[4]));const F=$('foot');F.innerHTML='';F.appendChild(btn('Fermer','','pri',()=>{hideBubble();EX.ui();EX.draw()}));msg('')};
-EX.talk=p=>exStory({quand:'parle',pnj:p.n},()=>EX.talkNormal(p));
+// Livraison : parler au destinataire d'une quête 'livre' active valide l'objectif.
+EX.deliver=p=>{const id=Object.keys(DATA.quetes).find(k=>{const q=DATA.quetes[k],s=qs()[k];return q.kind=='livre'&&[].concat(q.to).includes(p.n)&&s&&s.s==1&&!(s.got||[]).includes(p.n)&&(s.n||0)<q.need});if(!id)return false;
+const q=DATA.quetes[id],line=typeof q.recu=='object'?q.recu[p.n]:q.recu;EX.prog(id,p.n);const played=EX.storyTrigger({quand:'livraison',id},()=>{EX.ui();EX.draw()});if(!played){speak(p.n,line,{at:{x:p.x,y:p.y}});EX.ui();EX.draw()}return true};
+EX.talk=p=>exStory({quand:'parle',pnj:p.n},()=>{if(!EX.deliver(p))EX.talkNormal(p)});
 EX.click=e=>{if(EX.walking)return;const rc=cv.getBoundingClientRect(),a=(e.clientX-rc.left-ox)/(tw/2),b=(e.clientY-rc.top-oy)/(th/2),
 x=Math.round((a+b)/2),y=Math.round((b-a)/2),N=DATA.taille,d=DATA.cartes[EX.map];
 if(EX.sceneActive){EX.storyNext();return}if(x<0||y<0||x>=N||y>=N||(x==EX.x&&y==EX.y))return;
@@ -57,15 +66,17 @@ msg(!ent?'Touche encore la case pour t\'y rendre ('+path.length+' cases).':ent.t
 EX.pend=null;EX.go(path,ent)};
 EX.go=async(path,ent)=>{const t=++EX.tok;EX.walking=true;
 for(const [px,py] of path){await new Promise(r=>setTimeout(r,130));if(t!=EX.tok)return;
-const from={x:EX.x,y:EX.y};EX.x=px;EX.y=py;EX.steps++;animateUnitMove(EX.avatar,from,{x:px,y:py},new Set(DATA.cartes[EX.map].rocks.map(r=>exK(r[0],r[1]))));EX.draw()}
+const from={x:EX.x,y:EX.y};EX.x=px;EX.y=py;EX.steps++;if(typeof playSound=='function')playSound('step');animateUnitMove(EX.avatar,from,{x:px,y:py},new Set(DATA.cartes[EX.map].rocks.map(r=>exK(r[0],r[1]))));EX.draw()}
 EX.walking=false;if(!ent){msg('');return}
 if(ent.t=='n')EX.harvest(ent.o);else if(ent.t=='p')EX.talk(ent.o)
 else if(ent.t=='e'){const e=ent.o;EX.enter(e.to,e.tx,e.ty);msg('Tu entres : '+DATA.cartes[e.to].n+'.');EX.ui();EX.draw();EX.storyTrigger({quand:'entree',carte:EX.map})}
 else EX.fight(ent.o)};
-EX.harvest=n=>{if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');EX.draw();return}
+EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
+if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');if(typeof playSound=='function')playSound('harvest');EX.draw();return}
 if(n.until>EX.steps){msg('Déjà cueilli : ça repoussera bientôt.');return}
-const k=n.res;sv.res[k]+=2;n.until=EX.steps+30;store();pop(n,'+2 '+DATA.res[k].split(' ')[0],'#7fd18b');msg('Récolte : +2 '+DATA.res[k]);EX.ui();EX.draw()};
+const k=n.res;sv.res[k]+=2;n.until=EX.steps+30;store();pop(n,'+2 '+DATA.res[k].split(' ')[0],'#7fd18b');if(typeof playSound=='function')playSound('harvest');msg('Récolte : +2 '+DATA.res[k]);EX.ui();EX.draw()};
 EX.fight=q=>{const begin=()=>{EX.walking=false;EX.on=false;EX.pend=null;EX.group=q;cfg.renc=q.renc;hideMenu();$('game').classList.remove('hide');startScreenTransition();init()};EX.storyGroup=q;EX.storyTrigger({quand:'avantCombat',renc:q.renc},begin,{kind:'fight',x:q.x,y:q.y,renc:q.renc})};
+EX.fightNpc=(i,p)=>EX.fight({x:p.x,y:p.y,renc:i,npc:1});
 EX.storyResumeAction=action=>{if(action.kind!='fight')return;const q=EX.groups.find(g=>!g.dead&&g.x==action.x&&g.y==action.y&&g.renc==action.renc);if(q)EX.fight(q)};
 EX.back=res=>{const g0=EX.group;if(res=='win'&&g0)g0.dead=true;if(res=='lose'){sv.map='village';store();EX.map=null}
 EX.start();
@@ -78,7 +89,7 @@ const pp={},ex={},E={};
 if(EX.pend&&EX.pend.path)EX.pend.path.forEach(t=>pp[exK(t[0],t[1])]=1);
 d.exits.forEach(e=>ex[exK(e.x,e.y)]=e);
 EX.groups.forEach(q=>{if(!q.dead)E[exK(q.x,q.y)]=q.hide?{e:'🌿',b:'?',visual:q}:{e:DATA.rencontres[q.renc].m[0].e,b:'×'+DATA.rencontres[q.renc].m.length,visual:q}});
-EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?'🏮':DATA.resE[n.res],a:n.until>EX.steps?.25:1,visual:n});
+EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?'🏮':n.coffre?'🎁':DATA.resE[n.res],a:n.until>EX.steps?.25:1,visual:n});
 d.npcs.forEach(n=>E[exK(n.x,n.y)]={e:n.e,visual:n});
 EX.storyActors.forEach(a=>E[exK(a.x,a.y)]={e:a.e,visual:a});
 E[exK(EX.x,EX.y)]={e:DATA.classes[cfg.classe].e,visual:EX.avatar};

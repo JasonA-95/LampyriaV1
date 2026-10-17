@@ -26,8 +26,8 @@ function openMenu(t){if(EX.on)resume='ex';else if(combatLive&&!$('game').classLi
 EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t;normL();closeModal();hideBubble();$('game').classList.add('hide');stopAmbience();$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0}
 function hideMenu(){$('menu').classList.add('hide')}
 function showGame(){hideMenu();$('game').classList.remove('hide');size();if(EX.on)EX.draw();else if(C)draw()}
-function renderMenu(){const sc=$('mbody').scrollTop,need=40*sv.niv;
-$('mhead').innerHTML='<div class="top"><h1>Lampyria</h1><span class="lv">Niveau <b>'+sv.niv+'</b> · '+sv.xp+'/'+need+' XP</span></div><div class="bar"><i style="width:'+Math.round(100*sv.xp/need)+'%"></i></div><div class="chips">'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' '+sv.res[k]+'</span>').join('')+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
+function renderMenu(){const sc=$('mbody').scrollTop,need=XP.next(sv.niv);
+$('mhead').innerHTML='<div class="top"><h1>Lampyria</h1><span class="lv">Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' '+sv.res[k]+'</span>').join('')+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
 const T=$('tabs');T.innerHTML='';TABS.forEach(([id,n,ic])=>{const b=el('button',id==tab?'sel':'','<span class="ic">'+ic+'</span><span class="nm">'+n+'</span>');
 if((id=='heros'&&(talLeft()>0||spLeft()>0))||(id=='atelier'&&canCraftAny())||(id=='quetes'&&questReady()))b.appendChild(el('span','dot'));b.onclick=()=>{tab=id;renderMenu();$('mbody').scrollTop=0};T.appendChild(b)});
 const B=$('mbody');B.innerHTML='';({jouer:tabJouer,heros:tabHeros,lanterne:tabLanterne,atelier:tabAtelier,quetes:tabQuetes})[tab](B);B.scrollTop=sc;
@@ -41,7 +41,7 @@ questReady()?el('div','chips','<span class="chip ok">Une quête est prête à ê
 if(combatLive)B.appendChild(card('Combat en cours','Un combat est en pause. Tu peux le reprendre avec le bouton en bas, ou y renoncer.',btn('Abandonner le combat','','danger',leaveFight)));
 const t=card('Combat d\'entraînement','Rejoue un combat déjà débloqué pour gagner de l\'XP, des ressources et du butin.');
 DATA.rencontres.forEach((e,i)=>{if(i>sv.renc)return;const d=(e.drops||[]).filter(x=>!sv.inv.includes(x.id)).length;
-t.appendChild(row('<span class="em">⚔️</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+e.xp+' XP · '+(d?d+' objet(s) à obtenir':'tout obtenu')+'</span></span>',()=>startTraining(i),combatLive?'lock':''))});
+t.appendChild(row('<span class="em">⚔️</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+XP.rencontre({niv:e.niv||1+i*3,m:XP.m[e.type||(e.m.some(z=>z.boss)?'boss':'normal')]||1},sv.niv,true)+' XP · '+(d?d+' objet(s) à obtenir':'tout obtenu')+'</span></span>',()=>startTraining(i),combatLive?'lock':''))});
 B.appendChild(t);
 const o=card('Options');
 const fxNames={eleve:'élevé',reduit:'réduit',off:'désactivé'},fxDescriptions={eleve:'Textures détaillées avec de légères variations.',reduit:'Textures atténuées, avec des détails plus discrets.',off:'Cases en couleurs plates, rendu classique.'};
@@ -83,7 +83,7 @@ const eq=card('Équipement');
 SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,have=sv.inv.filter(i=>DATA.objets[i].slot==slotType(s)).length;
 eq.appendChild(id?row(itemRow(id)+'<span class="mt">'+n+'</span>',()=>pickGear(s)):row('<span class="em">'+ic+'</span><span class="tx"><span class="nm">'+n+'</span><span class="mt">'+(have?'Vide : touche pour équiper ('+have+' disponible'+(have>1?'s':'')+')':'Vide : fabrique ou trouve un objet')+'</span></span>',()=>pickGear(s),'empty'))});
 const gc=gear().cnt;for(const k in DATA.sets){const S=DATA.sets[k],n=gc[k]||0,l=Object.keys(S.bonus).map(p=>'<span style="color:'+(n>=+p?'var(--ok)':'var(--dim)')+'">'+p+' pièces : '+fmtSt(S.bonus[p])+'</span>').join('<br>');
-eq.appendChild(el('div','set','<b>'+S.n+' ('+n+'/3)</b><br>'+l))}
+eq.appendChild(el('div','set','<b>'+S.n+' ('+n+'/'+Math.max(...Object.keys(S.bonus).map(Number))+')</b><br>'+l))}
 B.appendChild(eq)}
 function pickGear(slot){const t=slotType(slot),own=sv.inv.filter(i=>DATA.objets[i].slot==t),n=el('div','pick','<h2>'+SLOTS.find(s=>s[0]==slot)[1]+'</h2>');
 if(!own.length)n.appendChild(el('p','','Aucun objet de ce type pour l\'instant. L\'atelier et les combats en fournissent.'));
@@ -122,17 +122,17 @@ L.forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout);c.appendChild(row(itemR
 B.appendChild(c);
 const D=Object.keys(DATA.objets).filter(id=>!DATA.objets[id].cout),d=card('À trouver en combat','Ces objets ne se fabriquent pas : ils tombent sur les monstres (une garantie évite la malchance trop longue).');
 D.forEach(id=>{const own=sv.inv.includes(id),src=DATA.rencontres.find(e=>(e.drops||[]).some(x=>x.id==id));
-d.appendChild(row(itemRow(id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Butin : '+(src?src.n:'?'))+'</span>'),null,own?'':'lock'))});
+d.appendChild(row(itemRow(id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Butin : '+(src?src.n:'récompense spéciale'))+'</span>'),null,own?'':'lock'))});
 B.appendChild(d)}
 
 // ---------- onglet Quêtes ----------
 function tabQuetes(B){const Q=sv.q||{};let any=false;
 for(const id in DATA.quetes){const q=DATA.quetes[id],s=Q[id];
-if(!s&&(q.req||0)>sv.renc)continue;any=true;
+if(!s&&((q.req||0)>sv.renc||(q.apres&&((sv.q||{})[q.apres]||{}).s!=2)))continue;any=true;
 const n=s?Math.min(s.n||0,q.need):0,done=s&&s.s==2,ready=s&&s.s==1&&n>=q.need;
 const c=card(done?'Terminée':s?(ready?'À rendre':'En cours'):'Disponible','<b style="color:var(--ink);font-size:15px">'+q.n+'</b>');
 c.appendChild(el('p','',q.desc));
-if(s)c.appendChild(el('div','bar','<i style="width:'+Math.round(100*(done?1:n/q.need))+'%"></i>'));
-c.appendChild(el('p','',done?'Récompense reçue.':ready?'Retourne voir le Maître Lampiste au village.':s?'Progression : '+n+'/'+q.need:'Parle au Maître Lampiste, au village.'));
+if(s)c.appendChild(el('div','bar','<i style="width:'+Math.round(100*(done?1:q.need?n/q.need:1))+'%"></i>'));
+c.appendChild(el('p','',done?'Récompense reçue.':ready?'Retourne voir '+(q.donneur||'le Maître Lampiste')+' au village.':s?'Progression : '+n+'/'+q.need:(q.donneur?'Parle à '+q.donneur:'Parle au Maître Lampiste')+', au village.'));
 B.appendChild(c)}
 if(!any)B.appendChild(card('Quêtes','Aucune quête pour l\'instant.'))}
