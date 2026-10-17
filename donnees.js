@@ -61,15 +61,15 @@ formulaire:['Gourmande',"C'est quoi ce papier qui flotte ? Il faut le déchirer�
 const mou=(x,y)=>({x,y,hp:24,max:24,pm:3,d:8,e:'🪰',n:'La mouche à braise',ia:'dist',garde:[2,3],sort:{n:'Étincelle',r:[2,3],los:1,dmg:6,cd:0}}),cha=(x,y)=>({x,y,hp:30,max:30,pm:2,d:10,e:'🍄',n:'Le champignon bavard',sort:{n:'Spores collantes',r:[1,3],los:1,dmg:0,etats:[{id:'ralenti',v:1,t:1}],cd:3}}),mot=(x,y)=>({x,y,hp:28,max:28,pm:3,d:9,e:'🐑',n:'Le mouton-fantôme',sort:{n:'Coup de tête',r:[1,1],push:1,cd:2}}),ber=(x,y)=>({x,y,hp:30,max:30,pm:2,d:6,e:'🐏',n:'Le berger-fantôme',ia:'soin',sort:{n:'Berceuse de laine',r:[1,3],heal:10,cd:3}});
 DATA.res={braise:'🔥 Braises',champi:'🍄 Champignons',laine:'🐑 Laine'};
 DATA.rencontres=[
-{n:'Village des Lanternes',xp:30,loot:{braise:4},m:[mou(10,3),mou(11,8)]},
-{n:'Forêt des Champignons Lumineux',xp:55,loot:{champi:4,laine:2},m:[cha(10,3),cha(11,8),mot(9,10)]},
-{n:'Collines aux Moutons-Fantômes',xp:90,loot:{laine:5,braise:3},m:[mot(10,3),mot(11,8),ber(9,10),cha(11,5)]}];
+{n:'Village des Lanternes',biome:'village',xp:30,loot:{braise:4},m:[mou(10,3),mou(11,8)]},
+{n:'Forêt des Champignons Lumineux',biome:'foret',xp:55,loot:{champi:4,laine:2},m:[cha(10,3),cha(11,8),mot(9,10)]},
+{n:'Collines aux Moutons-Fantômes',biome:'collines',xp:90,loot:{laine:5,braise:3},m:[mot(10,3),mot(11,8),ber(9,10),cha(11,5)]}];
 DATA.lampiste=[{cap:5,cout:{braise:4}},{cap:8,cout:{champi:4,laine:4}},{cap:12,cout:{braise:8,champi:6,laine:8}}];
 const boss=(x,y)=>({x,y,hp:90,max:90,pm:2,d:12,e:'👻',n:'Chambellan Poussière',boss:1,sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:8,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),frm=(x,y)=>({x,y,hp:15,max:15,pm:0,d:0,e:'📜',n:'Le formulaire',form:1});
-DATA.rencontres.push({n:'Manoir du Chambellan (boss)',xp:150,loot:{braise:8,laine:4,champi:4},say:'formulaire',m:[boss(11,7),frm(11,6),mou(9,3),mou(10,9)]});
+DATA.rencontres.push({n:'Manoir du Chambellan (boss)',biome:'manoir',xp:150,loot:{braise:8,laine:4,champi:4},say:'formulaire',m:[boss(11,7),frm(11,6),mou(9,3),mou(10,9)]});
 DATA.resE={braise:'🔥',champi:'🍄',laine:'🧶'};
 DATA.cartes={
-village:{n:'Village des Lanternes',need:0,start:[3,6],tint:'rgba(255,170,80,.08)',
+village:{n:'Village des Lanternes',biome:'village',need:0,start:[3,6],tint:'rgba(255,170,80,.08)',
 rocks:[[5,2],[5,3],[7,9],[8,9],[2,9],[10,3],[9,2],[6,10],[11,10]],
 npcs:[{x:6,y:4,e:'🧓',n:'Maître Lampiste',quests:['q1','q2','q3'],txt:"Ta lanterne réagit à cette Lueur… fascinant ! Rapporte-moi des ressources et je lui ferai de la place (menu, onglet Lanterne).",variantes:[{si:{quete:{id:'q1',etat:'finie'}},txt:'Trois lanternes retrouvées, et pas une seule cabossée ! Je vais finir par croire que tu sais livrer.'}]},
 {x:4,y:8,e:'🧔',n:'Le marchand',txt:"Je ne prends pas de braises en pièces, mais j'échange volontiers !",trade:[{give:{laine:2},get:{braise:1}},{give:{braise:2},get:{champi:1}},{give:{champi:2},get:{laine:1}},{give:{braise:1},get:{laine:1}}]}],
@@ -77,18 +77,18 @@ picks:[{x:1,y:2,quest:'q1'},{x:9,y:10,quest:'q1'},{x:12,y:2,quest:'q1'}],
 groups:[{x:10,y:4,renc:0},{x:10,y:8,renc:0}],
 nodes:[{x:7,y:2,res:'braise'},{x:3,y:10,res:'braise'}],
 exits:[{x:12,y:6,to:'foret',tx:1,ty:6}]},
-foret:{n:'Forêt des Champignons Lumineux',need:1,start:[1,6],tint:'rgba(60,150,90,.16)',
+foret:{n:'Forêt des Champignons Lumineux',biome:'foret',need:1,start:[1,6],tint:'rgba(60,150,90,.16)',
 rocks:[[4,3],[4,4],[7,8],[8,8],[6,2],[9,3],[3,9],[10,10]],npcs:[],
 hides:[{x:3,y:7,renc:1,quest:'q3'},{x:8,y:3,renc:1,quest:'q3'},{x:11,y:8,renc:1,quest:'q3'}],
 groups:[{x:9,y:5,renc:1},{x:9,y:10,renc:1}],
 nodes:[{x:2,y:3,res:'champi'},{x:5,y:10,res:'champi'},{x:10,y:2,res:'laine'}],
 exits:[{x:0,y:6,to:'village',tx:11,ty:6},{x:12,y:6,to:'collines',tx:1,ty:6}]},
-collines:{n:'Collines aux Moutons-Fantômes',need:2,start:[1,6],tint:'rgba(130,160,210,.14)',
+collines:{n:'Collines aux Moutons-Fantômes',biome:'collines',need:2,start:[1,6],tint:'rgba(130,160,210,.14)',
 rocks:[[3,3],[4,3],[6,8],[7,8],[9,5],[10,5],[2,9]],npcs:[],
 groups:[{x:8,y:3,renc:2},{x:9,y:9,renc:2}],
 nodes:[{x:2,y:2,res:'laine'},{x:5,y:10,res:'laine'},{x:11,y:10,res:'braise'}],
 exits:[{x:0,y:6,to:'foret',tx:11,ty:6},{x:12,y:6,to:'manoir',tx:1,ty:6}]},
-manoir:{n:'Manoir du Chambellan',need:3,start:[1,6],tint:'rgba(130,70,170,.2)',
+manoir:{n:'Manoir du Chambellan',biome:'manoir',need:3,start:[1,6],tint:'rgba(130,70,170,.2)',
 rocks:[[4,2],[4,10],[8,2],[8,10],[6,4],[6,8]],npcs:[],
 groups:[{x:10,y:6,renc:3}],
 nodes:[{x:2,y:2,res:'braise'},{x:2,y:10,res:'champi'}],
@@ -132,12 +132,12 @@ DATA.res.cendre='🌫️ Cendres';DATA.res.roseau='🌾 Roseaux';DATA.resE.cendr
 DATA.repliques.cendres=['Gourmande',"Cette dame se tient toujours sur un tas de cendres… Et si on dispersait la cendre, ou si on la faisait changer de place ?"];
 DATA.repliques.duchesse_vic=['Têtue',"Elle ne voulait pas bouger non plus. On aurait pu s'entendre."];
 const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:5,pull:2,etats:[{id:'poison',v:3,t:2}],cd:3}}),gri=(x,y)=>({x,y,hp:34,max:34,pm:4,d:12,e:'🦗',n:'Le grillon de cendre',ia:'dist',garde:[3,4],sort:{n:'Stridulation',r:[2,5],los:1,dmg:9,cd:0}}),sac=(x,y)=>({x,y,hp:56,max:56,pm:2,d:15,e:'⚱️',n:'Le sac de cendres',mort:{n:'Éclatement',r:1,dmg:12}}),duch=(x,y)=>({x,y,hp:110,max:110,pm:2,d:14,e:'👸',n:'La Duchesse des Cendres',boss:1,cendre:1,sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:9,etats:[{id:'brule',v:3,t:2}],cd:2}});
-DATA.rencontres.push({n:'Marais de Cendres',xp:130,loot:{cendre:4,roseau:2},m:[cra(10,3),cra(11,8),gri(9,10)]});
-DATA.rencontres.push({n:'Roselière Fantôme',xp:190,loot:{roseau:5,cendre:3},m:[gri(10,3),gri(11,8),sac(9,10),cra(11,5)]});
-DATA.rencontres.push({n:'Serre de la Duchesse (boss)',xp:320,loot:{cendre:8,roseau:5,braise:6},say:'cendres',vic:'duchesse_vic',m:[duch(11,7),gri(9,3),gri(10,9)]});
+DATA.rencontres.push({n:'Marais de Cendres',biome:'marais',xp:130,loot:{cendre:4,roseau:2},m:[cra(10,3),cra(11,8),gri(9,10)]});
+DATA.rencontres.push({n:'Roselière Fantôme',biome:'roseliere',xp:190,loot:{roseau:5,cendre:3},m:[gri(10,3),gri(11,8),sac(9,10),cra(11,5)]});
+DATA.rencontres.push({n:'Serre de la Duchesse (boss)',biome:'serre',xp:320,loot:{cendre:8,roseau:5,braise:6},say:'cendres',vic:'duchesse_vic',m:[duch(11,7),gri(9,3),gri(10,9)]});
 DATA.lampiste.push({cap:15,cout:{cendre:8,roseau:8,braise:8}});
 DATA.cartes.manoir.exits.push({x:12,y:6,to:'marais',tx:1,ty:6});
-DATA.cartes.marais={n:'Marais de Cendres',need:4,start:[1,6],tint:'rgba(120,125,115,.22)',
+DATA.cartes.marais={n:'Marais de Cendres',biome:'marais',need:4,start:[1,6],tint:'rgba(120,125,115,.22)',
 rocks:[[3,3],[3,4],[6,2],[6,9],[7,9],[9,4],[10,4],[4,10],[11,10],[8,7]],
 npcs:[{x:2,y:8,e:'🧙',n:'La Passeuse',quests:['q4','q5'],txt:"Le marais n'a pas de chemin, seulement des habitudes. Je connais les habitudes. J'échange aussi des ressources, si tu veux.",
 trade:[{give:{braise:2},get:{cendre:1}},{give:{laine:2},get:{roseau:1}},{give:{cendre:1},get:{braise:2}},{give:{roseau:1},get:{champi:2}}]}],
@@ -145,13 +145,13 @@ picks:[{x:1,y:2,quest:'q4'},{x:10,y:11,quest:'q4'},{x:11,y:2,quest:'q4'}],
 groups:[{x:9,y:6,renc:4},{x:10,y:9,renc:4}],
 nodes:[{x:2,y:3,res:'cendre'},{x:5,y:11,res:'roseau'},{x:11,y:5,res:'cendre'}],
 exits:[{x:0,y:6,to:'manoir',tx:11,ty:6},{x:12,y:6,to:'roseliere',tx:1,ty:6}]};
-DATA.cartes.roseliere={n:'Roselière Fantôme',need:5,start:[1,6],tint:'rgba(90,150,140,.22)',
+DATA.cartes.roseliere={n:'Roselière Fantôme',biome:'roseliere',need:5,start:[1,6],tint:'rgba(90,150,140,.22)',
 rocks:[[3,2],[4,2],[6,5],[6,6],[8,10],[9,10],[10,3],[2,9],[5,8]],npcs:[],
 hides:[{x:2,y:4,renc:5,quest:'q5'},{x:7,y:11,renc:5,quest:'q5'},{x:11,y:8,renc:5,quest:'q5'}],
 groups:[{x:9,y:6,renc:5},{x:9,y:9,renc:5}],
 nodes:[{x:2,y:2,res:'roseau'},{x:4,y:11,res:'roseau'},{x:11,y:11,res:'cendre'}],
 exits:[{x:0,y:6,to:'marais',tx:11,ty:6},{x:12,y:6,to:'serre',tx:1,ty:6}]};
-DATA.cartes.serre={n:'Serre de la Duchesse',need:6,start:[1,6],tint:'rgba(150,140,165,.26)',
+DATA.cartes.serre={n:'Serre de la Duchesse',biome:'serre',need:6,start:[1,6],tint:'rgba(150,140,165,.26)',
 rocks:[[4,3],[4,9],[8,3],[8,9],[6,6]],npcs:[],
 groups:[{x:10,y:6,renc:6}],
 nodes:[{x:2,y:2,res:'cendre'},{x:2,y:10,res:'roseau'}],
@@ -179,3 +179,5 @@ DATA.objets.eventail_cendre={n:'Éventail de cendre',e:'🪭',slot:'acc',r:3,st:
 DATA.rencontres[4].drops=[{id:'voile_brume',p:25},{id:'perle_marais',p:12},{id:'bottes_vase',p:15}];
 DATA.rencontres[5].drops=[{id:'lance_libellule',p:12},{id:'manteau_brume',p:14}];
 DATA.rencontres[6].drops=[{id:'baguette_duchesse',p:35},{id:'couronne_cendre',p:35},{id:'robe_duchesse',p:35},{id:'eventail_cendre',p:35}];
+DATA.ambiance={village:{type:'lucioles'},foret:{type:'spores'},collines:{type:'brume'},manoir:{type:'poussiere'},marais:{type:'cendres'},roseliere:{type:'cendres'},serre:{type:'cendres'},desert:{type:'sable'}};
+DATA.decor={village:.14,foret:.19,collines:.13,manoir:.1,marais:.16,roseliere:.2,serre:.12,desert:.1};

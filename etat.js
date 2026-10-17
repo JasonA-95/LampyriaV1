@@ -1,5 +1,5 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.6.0';
+const VERSION='0.7.1';
 const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem('lampyria');savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
@@ -44,7 +44,7 @@ function normL(){const av=avail(),cap=capNow();cfg.lueurs=cfg.lueurs.filter(k=>a
 
 // ---------- petits outils d'interface ----------
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.innerHTML=x;return e};
-function btn(t,sub,cls,fn,dis){const b=el('button',cls||'','<span class="nm">'+t+'</span>'+(sub?'<span class="mt">'+sub+'</span>':''));b.disabled=!!dis;if(fn)b.onclick=fn;return b}
+function btn(t,sub,cls,fn,dis){const b=el('button',cls||'','<span class="nm">'+t+'</span>'+(sub?'<span class="mt">'+sub+'</span>':''));b.disabled=!!dis;if(fn)b.onclick=e=>{if(typeof playSound=='function')playSound('click');fn(e)};return b}
 let tto;function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(tto);tto=setTimeout(()=>e.classList.add('hide'),2600)}
 const closeModal=()=>$('modal').classList.add('hide');
 function modal(node,btns){const c=$('mcard');c.innerHTML='';c.appendChild(node);const f=el('div','mbtns');
@@ -54,7 +54,7 @@ let bub={at:null,t:null};
 function hideBubble(){clearTimeout(bub.t);bub.at=null;$('bubble').classList.add('hide')}
 // Bulle de dialogue au-dessus d'un personnage (o.at = case {x,y}, sinon le héros ; o.stay = reste jusqu'à fermeture)
 function speak(who,txt,o){o=o||{};const c=SPK[who]||'#8a5a1a',B=$('bubble');B.style.setProperty('--c',c);
-B.innerHTML='<span class="who" style="color:'+c+'">'+who+'</span><span class="tx">'+txt+'</span><i class="tail"></i>';B.classList.remove('hide');
+B.innerHTML='<span class="who" style="color:'+c+'">'+who+'</span><span class="tx">'+txt+'</span><i class="tail"></i>';B.classList.remove('hide');if(typeof playSound=='function')playSound('dialogue');
 clearTimeout(bub.t);bub.at=o.at||'hero';if(!o.stay)bub.t=setTimeout(hideBubble,6000);if(typeof placeBubble=='function')placeBubble()}
 const say=k=>speak(...DATA.repliques[k]);
 const msg=t=>$('msgEl').textContent=t;

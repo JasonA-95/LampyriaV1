@@ -23,7 +23,7 @@ const confirm=el('div','','<h2>Remplacer ta sauvegarde actuelle ?</h2><p>Cette a
 
 // ---------- ouverture / fermeture ----------
 function openMenu(t){if(EX.on)resume='ex';else if(combatLive&&!$('game').classList.contains('hide'))resume='combat';else if(!combatLive)resume=null;
-EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t;normL();closeModal();hideBubble();$('game').classList.add('hide');$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0}
+EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t;normL();closeModal();hideBubble();$('game').classList.add('hide');stopAmbience();$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0}
 function hideMenu(){$('menu').classList.add('hide')}
 function showGame(){hideMenu();$('game').classList.remove('hide');size();if(EX.on)EX.draw();else if(C)draw()}
 function renderMenu(){const sc=$('mbody').scrollTop,need=40*sv.niv;
@@ -44,6 +44,10 @@ DATA.rencontres.forEach((e,i)=>{if(i>sv.renc)return;const d=(e.drops||[]).filter
 t.appendChild(row('<span class="em">⚔️</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+e.xp+' XP · '+(d?d+' objet(s) à obtenir':'tout obtenu')+'</span></span>',()=>startTraining(i),combatLive?'lock':''))});
 B.appendChild(t);
 const o=card('Options');
+const fxNames={eleve:'élevé',reduit:'réduit',off:'désactivé'},fxDescriptions={eleve:'Textures détaillées avec de légères variations.',reduit:'Textures atténuées, avec des détails plus discrets.',off:'Cases en couleurs plates, rendu classique.'};
+o.appendChild(row('<span class="em">🎨</span><span class="tx"><span class="nm">Effets visuels : '+fxNames[OPT.fx]+'</span><span class="mt">'+fxDescriptions[OPT.fx]+' Toucher pour changer.</span></span>',()=>{cycleFx();renderMenu()}));
+const soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal';
+o.appendChild(row('<span class="em">🔊</span><span class="tx"><span class="nm">Son : '+soundLabel+'</span><span class="mt">Effets sonores générés, sans musique. Toucher pour changer.</span></span>',()=>{cycleSon();renderMenu()}));
 o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
 if(cfg.test)o.appendChild(row('<span class="em">🎭</span><span class="tx"><span class="nm">Voir les scènes</span><span class="mt">Lancer une scène en exploration, sans sauvegarder ses effets.</span></span>',()=>{const list=el('div','pick','<h2>Scènes</h2>');Object.entries(DATA.scenes).forEach(([id,scene])=>list.appendChild(row('<span class="tx"><span class="nm">'+id+'</span><span class="mt">'+scene.declencheur.quand+'</span></span>',()=>{if(combatLive){toast('Quitte le combat en cours avant de lancer une scène.');return}EX.start({storyId:id})})));modal(list,[['Fermer']])}));
 o.appendChild(row('<span class="em">📤</span><span class="tx"><span class="nm">Exporter ma sauvegarde</span><span class="mt">Créer un code de secours à conserver.</span></span>',exportSave));
