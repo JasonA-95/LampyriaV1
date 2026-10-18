@@ -52,7 +52,7 @@ this.pa-=s.pa;this.cd[i]=s.cd||0;const target=this.at(x,y),r={ok:true,tag:s.say|
 if(s.charge){const cells=DIRS.map(([dx,dy])=>({x:target.x+dx,y:target.y+dy})).filter(p=>this.free(p.x,p.y));cells.sort((a,b)=>this.dist(h,a)-this.dist(h,b));if(!cells.length)return{ok:false,tag:'cible'};h.x=cells[0].x;h.y=cells[0].y;r.charge=1}
 if(s.dmg){const m=h.rage?2:1;h.rage=false;
 const T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[this.at(x,y)];
-const dm=this.damageFrom(h,(s.dmg+this.bonus)*m),alive=new Set(T.filter(f=>f.hp>0));for(const f of T){if(sh.has(f)){r.blocked=1;this.applyEtats(f,(s.etats||[]).filter(e=>e.id=='etourdi'),r.events);continue}const hit=this.applyDamage(f,dm,false);f.sleep=false;r.hit.push(f);r.dmg+=hit.damage;if(hit.damage)r.effects.push({cible:f,texte:'-'+hit.damage,couleur:'#ff6b5e'});if(hit.absorbed)this.event(r.events,f,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
+const dm=this.damageFrom(h,(s.dmg+this.bonus)*m),alive=new Set(T.filter(f=>f.hp>0));for(const f of T){if(sh.has(f)){r.blocked=1;this.applyEtats(f,(s.etats||[]).filter(e=>e.id=='etourdi'),r.events);continue}const hit=this.applyDamage(f,f.boss&&this.vuln>0?Math.round(dm*1.5):dm,false);f.sleep=false;r.hit.push(f);r.dmg+=hit.damage;if(hit.damage)r.effects.push({cible:f,texte:'-'+hit.damage,couleur:'#ff6b5e'});if(hit.absorbed)this.event(r.events,f,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
 for(const f of r.hit)if(f.hp>0)this.applyEtats(f,s.etats,r.events);for(const k of [...this.ash]){const [ax,ay]=k.split(',').map(Number);if(this.dist({x:ax,y:ay},{x,y})<=(s.aoe??0)){this.ash.delete(k);r.ashCleared=1}}
 for(const f of T)if(alive.has(f)&&f.hp<=0&&f.mort&&this.dist(f,h)<=f.mort.r){const hit=this.applyDamage(h,f.mort.dmg,false),amount=hit.damage;r.mortEvents=r.mortEvents||[];r.mortEvents.push({text:f.n+' explose : -'+amount+' PV.',dmg:amount});if(amount)r.effects.push({cible:h,texte:'-'+amount,couleur:'#e5564a'});if(hit.absorbed)this.event(r.events,h,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
 if(s.push)for(const f of T){if(f.boss||f.hp<=0)continue;const ax=f.x-h.x,ay=f.y-h.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay);
@@ -67,7 +67,7 @@ if(s.rage){h.rage=true;this.malus=Math.min(2,this.malus+1)}
 if(s.mur){h.mur=2;this.noMove=1;this.pm=0}
 if(s.sleep){const t=this.at(x,y);if(t.boss)r.resist=1;else t.sleep=true}
 if(s.swap){const f=this.at(x,y);[f.x,h.x]=[h.x,f.x];[f.y,h.y]=[h.y,f.y]}
-if(inv0&&!this.foes.some(g=>g.form&&g.hp>0)){this.vuln=2;r.formDown=1}
+if(inv0&&!this.foes.some(g=>g.form&&g.hp>0)){this.vuln=this.p2?2:3;r.formDown=1}
 this.applyEtats(h,s.etatsSoi,r.events);if(h.hp>0)this.checkWin();return r}
 path(x,y){const h=this.hero,p={},d={[h.x+','+h.y]:0},q=[[h.x,h.y]];
 while(q.length){const [a,b]=q.shift();if(a==x&&b==y)break;const k=d[a+','+b];if(k>=this.pm)continue;
@@ -108,7 +108,8 @@ if(!action&&this.dist(f,h)==1){const hit=this.applyDamage(h,this.damageFrom(f,f.
 if(action){events.push(...(action.events||[]));action.events=events;action.effects=[...events,...(action.effects||[]).filter(e=>!events.includes(e))];const tickText=events.map(e=>e.text).filter(Boolean).join(' ');if(tickText)action.text=(action.text?action.text+' ':'')+tickText;delete f.pmActif;this.checkWin();return action}
 delete f.pmActif;this.checkWin();return{skip:true,text:events.map(e=>e.text).filter(Boolean).join(' '),effects:events,events}}
 newTurn(){const h=this.hero;this.turn++;const tick=this.tickEtats(h);if(h.hp<=0)return tick;this.pa=this.PA;this.pm=this.noMove>0?0:Math.max(1,this.PM-this.malus-tick.slow);this.malus=0;h.garde=Math.max(0,(h.garde||0)-1);
+{const bb=this.foes.find(f=>f.boss&&f.hp>0),f2=this.foes.find(f=>f.form&&f.hp>0);if(bb&&f2&&!this.p2&&bb.hp<=bb.max/2){this.p2=true;this.notice=bb.n+' s’énerve : sa protection se reforme plus vite !'}if(f2&&f2.regen&&f2.hp<f2.max&&!(this.vuln>0))f2.hp=Math.min(f2.max,f2.hp+Math.ceil(f2.max*f2.regen*(this.p2?2:1)))}
 if(this.vuln>0&&--this.vuln==0){const b=this.foes.find(f=>f.boss&&f.hp>0),fm=this.foes.find(f=>f.form);
-if(b&&fm)for(const [a,c] of DIRS)if(this.free(b.x+a,b.y+c)){fm.x=b.x+a;fm.y=b.y+c;fm.hp=fm.max;break}}
+if(b&&fm)for(const [a,c] of DIRS)if(this.free(b.x+a,b.y+c)){fm.x=b.x+a;fm.y=b.y+c;fm.hp=Math.ceil(fm.max*(this.p2?.8:.6));break}}
 if(this.noMove>0)this.noMove--;h.mur=Math.max(0,h.mur-1);this.cd=this.cd.map(c=>Math.max(0,c-1));if(tick.blocked){this.pa=0;this.pm=0}return tick}
 }
