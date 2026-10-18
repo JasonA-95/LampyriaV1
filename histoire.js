@@ -109,3 +109,78 @@ const BOUFFON=[
 DATA.scenes.general_convaincu.etapes.pop();DATA.scenes.general_convaincu.etapes.push(...BOUFFON);
 DATA.scenes.general_battu.etapes.pop();DATA.scenes.general_battu.etapes.push(...BOUFFON,{set:{general_battu:true}});
 DATA.scenes.general_convaincu.etapes.push({set:{general_convaincu:true}});
+// ---- Acte 3 : Chemin du Soleil, Temple, Citadelle, Roi Éteint ----
+Object.assign(DATA.scenes,{
+chemin_entree:{once:true,declencheur:{quand:'entree',carte:'chemin'},etapes:[
+{qui:'Gourmande',at:'hero',txt:'Un chemin qui monte tout droit vers le dernier coucher de soleil. Je n’ai pas faim. C’est inquiétant.'},
+{qui:'Peureuse',at:'hero',txt:'Les statues nous regardent. Je précise que j’ai déjà regardé ailleurs.'}]},
+parvis_entree:{once:true,declencheur:{quand:'entree',carte:'parvis'},etapes:[
+{qui:'Rêveuse',at:'hero',si:{flag:'reve_gardien'},txt:'Je connais cet escalier. Dans mon rêve, un homme en armure le montait chaque soir pour regarder le soleil.'}]},
+temple_entree:{once:true,declencheur:{quand:'entree',carte:'temple'},etapes:[
+{qui:'Têtue',at:'hero',txt:'Je ne bouge pas. Ce temple est trop beau pour qu’on le traverse en courant.'},
+{qui:'Mélancolique',at:'hero',txt:'…Vous êtes venus. Je l’avais senti. Il y a quelqu’un dans une lanterne, au fond. Quelqu’un qui connaît bien le Roi.'},
+{qui:'Gourmande',at:'hero',txt:'Elle parle comme une chanson triste. Je l’aime déjà.'}]},
+eclipse_avant:{once:true,declencheur:{quand:'avantCombat',renc:13},etapes:[
+{qui:'Éclipse',at:'groupe',txt:'Le soleil ne reviendra pas. Je suis son ombre : je reste pour le prouver.'},
+{qui:'Peureuse',at:'hero',txt:'Il y a un voile noir autour d’elle. Quelque chose le tient ensemble.'},
+{hero:'🤔',act:'Tu observes le voile. Un coup bien placé, ou une bonne poussée, devrait suffire.'}]},
+eclipse_apres:{once:true,declencheur:{quand:'apresCombat',renc:13,issue:'win'},etapes:[
+{qui:'Éclipse',at:'hero',txt:'Je me souviens… il venait ici chaque soir. Il regardait. Il disait : « Si je cligne des yeux, il tombe. »'},
+{qui:'Gourmande',at:'hero',txt:'Il ne devait pas dormir beaucoup. Ça explique l’humeur.'},
+{set:{eclipse_battue:true}}]},
+melancolique_libre:{once:true,declencheur:{quand:'action',id:'melancolique'},etapes:[
+{qui:'Mélancolique',at:'pnj:La lanterne d’ombre',txt:'Merci. Je suis la plus vieille d’entre nous, et la plus triste. J’ai connu le Gardien quand il n’était pas encore un roi.'},
+{qui:'Mélancolique',at:'hero',txt:'Il tenait le soleil à bout de bras. Quand il est tombé, il a lâché prise pour nous sauver. Il est mort de ne pas avoir pu tenir.'},
+{qui:'Mélancolique',at:'hero',txt:'Il est revenu mort-vivant parce qu’il s’est promis de le rallumer lui-même. Il n’a jamais accepté d’avoir échoué.'},
+{qui:'Colérique',at:'hero',si:{flag:'colerique_libre'},txt:'Un crétin têtu et triste. On va lui parler. Avec le poing.'},
+{qui:'Gourmande',at:'hero',txt:'Ou avec une tarte. Choix à discuter.'},
+{set:{melancolique_libre:true}}]},
+cour_entree:{once:true,declencheur:{quand:'entree',carte:'cour'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'La Citadelle Brisée. Elle est brisée, d’accord, mais pas de façon rassurante.'},
+{qui:'Gourmande',at:'hero',txt:'Il y a des gardes fantômes. Ils ont un air d’avoir oublié pourquoi.'}]},
+medailles_fin:{once:true,declencheur:{quand:'quete',id:'e3',etat:'terminee'},etapes:[
+{qui:'Capitaine fantôme',at:'pnj:Capitaine fantôme',txt:'Garde royale, garde-à-vous ! Souvenez-vous : nous protégeons le Roi, pas ses humeurs.'},
+{qui:'Gourmande',at:'hero',txt:'Il a salué sa propre médaille. C’est le plus beau moment de ma journée.'}]},
+salle_entree:{once:true,declencheur:{quand:'entree',carte:'salle'},etapes:[
+{qui:'Bouffon Sans Rire',at:'pnj:Bouffon Sans Rire',txt:'Ah, vous voilà. Je n’ai rien préparé, bien sûr. Mes amis non plus.'}]},
+lieutenants_avant:{once:true,declencheur:{quand:'avantCombat',renc:15},etapes:[
+{qui:'Chambellan Poussière',at:'groupe',txt:'Formulaire C-14, « Retour à l’antagonisme ». Veuillez le remplir en trois exemplaires avant de mourir.'},
+{qui:'Duchesse des Cendres',at:'groupe',txt:'Je renais de mes cendres. Ça m’a pris du temps : les cendres, ça ne se range pas.'},
+{qui:'Général Gréviste',at:'groupe',txt:'Je reprends la grève… contre vous. Les revendications sont simples : vous partez.'},
+{qui:'Gourmande',at:'hero',txt:'Un comité d’accueil. Quelqu’un a de quoi manger ?'}]},
+lieutenants_apres:{once:true,declencheur:{quand:'apresCombat',renc:15,issue:'win'},etapes:[
+{qui:'Chambellan Poussière',at:'hero',txt:'Rejeté. Définitivement. Je vous laisse passer, par manque de tampons.'},
+{qui:'Duchesse des Cendres',at:'hero',txt:'Dites au Roi que mon jardin ne repousse pas… mais que je l’ai replanté quand même.'},
+{qui:'Général Gréviste',at:'hero',txt:'Ça nous a fait du bien de se battre. On devrait se syndiquer.'},
+{set:{lieutenants_battus:true}}]},
+bouffon_avant:{once:true,declencheur:{quand:'avantCombat',renc:16},etapes:[
+{qui:'Bouffon Sans Rire',at:'groupe',txt:'Duel. Enfin. Je n’ai jamais gagné contre personne, c’est ma marque de fabrique.'},
+{qui:'Bouffon Sans Rire',at:'groupe',txt:'Le Roi m’a sauvé quand tout le monde riait de moi. Alors moi, je ne ris pas. Je me bats.'}]},
+bouffon_apres:{once:true,declencheur:{quand:'apresCombat',renc:16,issue:'win'},etapes:[
+{qui:'Bouffon Sans Rire',at:'hero',txt:'Vous… vous avez perdu votre équilibre au dernier coup, pour me laisser gagner une phrase. C’était… (il hoquette) …drôle.'},
+{qui:'Bouffon Sans Rire',at:'hero',txt:'Hihi. Je ris. C’est horrible. Allez le voir. Il est seul depuis trop longtemps.'},
+{set:{bouffon_vaincu:true}}]},
+trone_entree:{once:true,declencheur:{quand:'entree',carte:'trone'},etapes:[
+{qui:'Le Roi Éteint',at:'hero',txt:'Vous arrivez en retard. Le soleil ne s’est pas allumé tout seul, je dois le préciser. Moi non plus.'},
+{qui:'Mélancolique',at:'hero',si:{flag:'melancolique_libre'},txt:'Majesté… tu as l’air de quelqu’un qui n’a pas dormi depuis trois siècles.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'melancolique_libre'},txt:'Mélancolique ! Tu es… libre. C’est contraire à mes plans. Et très émouvant. Ne le répète à personne.'}]},
+roi_avant:{once:true,declencheur:{quand:'avantCombat',renc:17},etapes:[
+{qui:'Le Roi Éteint',at:'groupe',txt:'Je suis le Gardien. Le Gardien du Soleil. Il faut m’appeler Gardien. Pas « Roi Éteint ».'},
+{qui:'Farceuse',at:'hero',txt:'Roi Éteint ! Roi Éteint ! Roi Éteint !'},
+{qui:'Le Roi Éteint',at:'groupe',txt:'Je vous l’interdis ! Ma… vexation s’élève comme une muraille !'},
+{qui:'Gourmande',at:'hero',txt:'Ça flotte autour de lui, on dirait de la vexation. Brise-la ou chasse-la du terrain : il sera à nous.'},
+{qui:'Le Roi Éteint',at:'groupe',txt:'En garde, livreur ! Il est temps que quelqu’un livre enfin ce soleil.'}]},
+roi_apres:{once:true,declencheur:{quand:'apresCombat',renc:17,issue:'win'},etapes:[
+{qui:'Le Roi Éteint',at:'hero',txt:'Je… je n’ai pas réussi. Je n’ai jamais réussi. Le soleil est tombé, et je suis resté.'},
+{qui:'Mélancolique',at:'hero',si:{flag:'melancolique_libre'},txt:'Tu l’as tenu aussi longtemps que possible. C’est ça, un Gardien.'},
+{qui:'Le Roi Éteint',at:'hero',txt:'Livreur. Les Lueurs sont dans ta lanterne. Dis-moi : que décides-tu ?'},
+{choix:[
+{t:'Rallumer le soleil (les Lueurs se sacrifient)',set:{fin_A:true}},
+{t:'Libérer les Lueurs (le soleil reviendra lentement)',set:{fin_B:true}}]},
+{qui:'Gourmande',at:'hero',si:{flag:'fin_A'},txt:'Je m’en vais en goûtant tout. La première lumière aura goût de tarte.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'fin_A'},txt:'Le soleil… Il brille. Je suis éteint, mais il brille. Merci, livreur.'},
+{qui:'Gourmande',at:'hero',si:{flag:'fin_B'},txt:'On ne se sépare pas. On a trop mangé ensemble pour ça.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'fin_B'},txt:'Une aube lente, alors. Je veillerai. Je suis enfin autorisé à dormir.'},
+{hero:'🌅',act:'Le soleil revient, à sa manière. Ta lanterne brille encore un peu.'},
+{qui:'Maître Lampiste',at:'hero',txt:'Livraison numéro 48 : réussie. Je n’y croyais plus.'},
+{set:{jeu_termine:true}}]}});

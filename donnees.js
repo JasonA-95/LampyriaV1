@@ -249,7 +249,7 @@ DATA.cartes.camp={n:'Camp des Grévistes',biome:'desert',need:9,start:[1,6],tint
 rocks:[[4,3],[4,9],[7,6],[6,2],[6,10]],
 npcs:[{x:3,y:8,e:'🧟',n:'Délégué des Chaussettes',quests:['d3','d4'],txt:'Nous gardons cette porte depuis 300 ans. On n\'a jamais demandé pourquoi. On demande maintenant.'},
 {x:11,y:6,e:'🪖',n:'Général Gréviste',cache:[{flag:'general_convaincu'},{flag:'general_battu'}],txt:'Camarade, la grève est légitime. Et elle est longue.',
-actions:[{id:'negocier',t:'Négocier',sub:'Il réclame des chaussettes, du fil et du sable.',ok:{flag:'revendications'},why:'Il réclame des chaussettes, du fil et du sable : parle d\'abord au Délégué.',rew:{xp:800,item:'casque_negociateur'}},
+actions:[{id:'negocier',t:'Négocier',sub:'Il réclame des chaussettes, du fil et du sable.',ok:{flag:'revendications'},why:'Il réclame des chaussettes, du fil et du sable : parle d\'abord au Délégué.',rew:{xp:800,item:'casque_negociateur',renc:10}},
 {id:'combat',t:'Se battre',sub:'Lancer le combat',ok:{quete:{id:'d3',etat:'finie'}},why:'Repousse d\'abord les piquets de grève.',fight:10,cls:'danger'}]},
 {x:11,y:10,e:'🏮',n:'La lanterne-prison',cache:[{flag:'colerique_libre'}],txt:'Une lanterne ancienne. Quelqu\'un crie à l\'intérieur, mais poliment.',
 actions:[{id:'colerique',t:'Libérer la Lueur',sub:'Ouvrir la lanterne',ok:{quete:{id:'d3',etat:'finie'}},why:'Les grévistes la surveillent encore : repousse leurs piquets.',rew:{xpq:[40,'lueur'],lueur:'colerique'}}]}],
@@ -265,10 +265,93 @@ fin:'Elle t\'a trouvé, ou c\'est l\'inverse. Dans le doute, elle te suit.',rew:
 d3:{n:'Piquet de grève',desc:'Repousse 3 groupes de piquets de grève au Camp des Grévistes.',need:3,kind:'win',renc:9,req:9,donneur:'le Délégué des Chaussettes',say:'Les piquets bloquent tout. Repousse-en trois groupes, que je puisse enfin parler au Général.',fin:'Les piquets sont repoussés. Pour une fois, ils n\'ont pas fait grève de la fuite.',rew:{xpq:[38,'longue']}},
 d4:{n:'Les revendications',desc:'Rassemble 6 fils, 6 chaussettes et 4 sables pour satisfaire les revendications du Général.',need:0,kind:'don',req:9,apres:'d3',cost:{fil:6,chaussette:6,sable:4},donneur:'le Délégué des Chaussettes',say:'Le Général réclame des chaussettes assorties, du fil et du sable. Donne-moi de quoi lui faire une offre.',fin:'Des chaussettes assorties ! Le Général va peut-être pleurer. Va lui parler.',rew:{xpq:[38,'normale'],set:{revendications:true}}}});
 
+// ============ ACTE 3 : CHEMIN DU SOLEIL, TEMPLE, CITADELLE BRISÉE (niveaux 44 à 60) ============
+DATA.res.eclat='🌟 Éclats de soleil';DATA.res.gravat='🧱 Gravats';DATA.resE.eclat='🌟';DATA.resE.gravat='🧱';
+const pel=(x,y)=>({x,y,hp:75,max:75,pm:3,d:21,e:'🧎',n:'Pèlerin éteint',sort:{n:'Bénédiction ratée',r:[1,1],etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
+luc=(x,y)=>({x,y,hp:60,max:60,pm:4,d:20,e:'🪲',n:'Luciole terne',ia:'dist',garde:[3,4],sort:{n:'Éclat pâle',r:[2,5],los:1,dmg:21,cd:0}}),
+sta=(x,y)=>({x,y,hp:110,max:110,pm:2,d:25,e:'🗿',n:'Statue de soleil',mort:{n:'Éboulement',r:1,dmg:20}}),
+pre=(x,y)=>({x,y,hp:85,max:85,pm:2,d:16,e:'🧑‍🦯',n:'Prêtre aveugle',ia:'soin',sort:{n:'Prière tardive',r:[1,3],heal:18,cd:3}}),
+ecl=(x,y)=>({x,y,hp:230,max:230,pm:2,d:26,e:'🌘',n:'Éclipse',boss:1,sort:{n:'Ombre portée',r:[1,3],los:1,dmg:26,etats:[{id:'ralenti',v:1,t:2}],cd:2}}),
+voi=(x,y)=>({x,y,hp:20,max:20,pm:0,d:0,e:'🌑',n:'Le voile d’ombre',form:1}),
+gar=(x,y)=>({x,y,hp:95,max:95,pm:3,d:25,e:'🛡️',n:'Garde fantôme',sort:{n:'Charge spectrale',r:[1,1],push:1,dmg:25,cd:3}}),
+arc=(x,y)=>({x,y,hp:70,max:70,pm:4,d:22,e:'🏹',n:'Archer osseux',ia:'dist',garde:[3,4],sort:{n:'Flèche rouillée',r:[2,6],los:1,dmg:24,cd:0}}),
+che=(x,y)=>({x,y,hp:120,max:120,pm:2,d:27,e:'🤺',n:'Chevalier brisé',sort:{n:'Coup de pommeau',r:[1,1],push:1,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
+lch=(x,y)=>({x,y,hp:130,max:130,pm:2,d:24,e:'👻',n:'Chambellan Poussière',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:24,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
+ldu=(x,y)=>({x,y,hp:120,max:120,pm:2,d:22,e:'👸',n:'Duchesse des Cendres',ia:'dist',garde:[3,4],sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:26,cd:1}}),
+lge=(x,y)=>({x,y,hp:150,max:150,pm:2,d:26,e:'🪖',n:'Général Gréviste',sort:{n:'Appel à la grève',r:[1,1],push:1,dmg:26,etatsSoi:[{id:'bouclier',v:20,t:2}],cd:3}}),
+bou=(x,y)=>({x,y,hp:260,max:260,pm:3,d:27,e:'🤡',n:'Bouffon Sans Rire',boss:1,sort:{n:'Blague sans rire',r:[1,3],los:1,dmg:27,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
+roi=(x,y)=>({x,y,hp:320,max:320,pm:2,d:29,e:'👑',n:'Le Roi Éteint',boss:1,sort:{n:'Décret royal',r:[1,4],los:1,dmg:30,etats:[{id:'affaibli',v:25,t:2}],etatsSoi:[{id:'bouclier',v:25,t:2}],cd:3}}),
+vex=(x,y)=>({x,y,hp:25,max:25,pm:0,d:0,e:'😤',n:'Sa vexation',form:1}),
+cou=(x,y)=>({x,y,hp:90,max:90,pm:3,d:24,e:'💀',n:'Courtisan squelette',sort:{n:'Révérence tranchante',r:[1,1],dmg:24,cd:2}});
+DATA.rencontres.push(
+{n:'Chemin du Soleil Couchant',biome:'collines',niv:44,loot:{eclat:4,gravat:2},m:[pel(10,3),luc(11,8),sta(9,10)]},
+{n:'Parvis du Temple',biome:'desert',niv:47,loot:{eclat:4,gravat:3},m:[pre(9,10),pel(10,3),luc(11,8),sta(11,5)]},
+{n:'Temple du Soleil (boss)',biome:'desert',niv:50,loot:{eclat:8,gravat:5},m:[ecl(11,7),voi(11,6),pre(9,3),pel(10,9)]},
+{n:'Cour de la Citadelle',biome:'manoir',niv:53,loot:{gravat:5,eclat:3},m:[gar(10,3),arc(11,8),che(9,10),gar(11,5)]},
+{n:'Salle des Lieutenants',biome:'manoir',niv:56,type:'elite',loot:{eclat:5,gravat:5},m:[lch(10,4),ldu(11,9),lge(9,7)]},
+{n:'Duel du Bouffon (boss)',biome:'manoir',niv:58,loot:{eclat:6,gravat:6},m:[bou(11,7)]},
+{n:'Le Roi Éteint (boss final)',biome:'serre',niv:60,loot:{eclat:10,gravat:8},m:[roi(11,7),vex(11,6),cou(9,3),cou(10,9)]});
+DATA.objets.diademe_eclat={n:'Diadème d’éclats',e:'👑',slot:'tete',r:2,st:{pv:26},set:'soleil',cout:{eclat:6,gravat:3}};
+DATA.objets.cuirasse_aube={n:'Cuirasse d’aube',e:'🥋',slot:'corps',r:2,st:{pv:26,res:8},set:'soleil',cout:{eclat:8,gravat:4}};
+DATA.objets.bottes_crepuscule={n:'Bottes du crépuscule',e:'🥾',slot:'bottes',r:2,st:{pv:16,res:5},set:'soleil',cout:{eclat:5,gravat:3}};
+DATA.objets.anneau_eclat={n:'Anneau d’éclat',e:'💍',slot:'acc',r:2,st:{pv:12,dmg:2},set:'soleil',cout:{eclat:5,gravat:2}};
+DATA.objets.medaille_gardien={n:'Médaille du Gardien',e:'🏅',slot:'acc',r:2,st:{res:8},set:'soleil',cout:{eclat:6,gravat:3}};
+DATA.objets.lame_eclipse={n:'Lame d’éclipse',e:'🗡️',slot:'arme',r:3,st:{dmg:8}};
+DATA.objets.couronne_eteinte={n:'Couronne éteinte',e:'👑',slot:'tete',r:3,st:{pv:30,res:8}};
+DATA.sets.soleil={n:'Panoplie du soleil couchant',bonus:{2:{pv:14},4:{dmg:2,res:6}}};
+DATA.rencontres[13].drops=[{id:'lame_eclipse',p:100}];
+DATA.rencontres[17].drops=[{id:'couronne_eteinte',p:100}];
+DATA.cartes.camp.exits.push({x:12,y:6,to:'chemin',tx:1,ty:6});
+DATA.cartes.chemin={n:'Chemin du Soleil Couchant',biome:'collines',need:11,start:[1,6],tint:'rgba(240,150,70,.16)',
+rocks:[[4,2],[4,10],[6,6],[8,3],[8,9],[10,6]],
+npcs:[{x:2,y:8,e:'🧙',n:'Pèlerin Cendré',quests:['e1'],txt:'Je marche vers le Temple depuis 300 ans. Je n’ai jamais regardé où il était. Il est devant.'}],
+picks:[{x:1,y:2,quest:'e1'},{x:6,y:11,quest:'e1'},{x:11,y:11,quest:'e1'}],
+groups:[{x:9,y:4,renc:11},{x:9,y:9,renc:11}],
+nodes:[{x:2,y:3,res:'eclat'},{x:5,y:2,res:'gravat'}],
+coffres:[{x:12,y:1,res:{eclat:3,gravat:2}}],
+exits:[{x:0,y:6,to:'camp',tx:11,ty:6},{x:12,y:6,to:'parvis',tx:1,ty:6}]};
+DATA.cartes.parvis={n:'Parvis du Temple',biome:'desert',need:12,start:[1,6],tint:'rgba(255,210,120,.14)',
+rocks:[[3,3],[3,9],[6,2],[6,10],[7,6],[9,3],[9,9]],
+npcs:[{x:2,y:6,e:'🧑‍🦯',n:'Gardien du Parvis',quests:['e2'],txt:'Le Temple est fermé à cause de la tristesse. Entendez : trop de monstres qui pleurent.'}],
+groups:[{x:8,y:4,renc:12},{x:9,y:8,renc:12},{x:11,y:6,renc:12}],
+nodes:[{x:2,y:2,res:'eclat'},{x:11,y:11,res:'gravat'}],
+exits:[{x:0,y:6,to:'chemin',tx:11,ty:6},{x:12,y:2,to:'temple',tx:1,ty:6}]};
+DATA.cartes.temple={n:'Temple du Soleil',biome:'desert',need:13,start:[1,6],tint:'rgba(120,100,170,.2)',
+rocks:[[4,3],[4,9],[6,6],[8,3],[8,9]],
+npcs:[{x:2,y:10,e:'🏮',n:'La lanterne d’ombre',cache:[{flag:'melancolique_libre'}],txt:'Une lanterne noire. À l’intérieur, quelqu’un soupire avec élégance.',
+actions:[{id:'melancolique',t:'Libérer la Lueur',sub:'Ouvrir la lanterne d’ombre',ok:{renc:{min:14}},why:'Une ombre garde la lanterne : bats Éclipse.',rew:{xpq:[50,'lueur'],lueur:'melancolique'}}]}],
+groups:[{x:10,y:6,renc:13}],
+nodes:[{x:2,y:2,res:'eclat'},{x:2,y:10,res:'gravat'}],
+exits:[{x:0,y:6,to:'parvis',tx:11,ty:2},{x:12,y:6,to:'cour',tx:1,ty:6}]};
+DATA.cartes.cour={n:'Cour de la Citadelle',biome:'manoir',need:14,start:[1,6],tint:'rgba(130,70,170,.2)',
+rocks:[[4,2],[4,10],[6,4],[6,8],[8,6],[10,2],[10,10]],
+npcs:[{x:2,y:3,e:'👻',n:'Capitaine fantôme',quests:['e3'],txt:'Garde de la Citadelle depuis sa chute. Mon poste est de ne laisser entrer personne. Je n’ai pas dit pour qui.'}],
+picks:[{x:1,y:11,quest:'e3'},{x:7,y:1,quest:'e3'},{x:11,y:6,quest:'e3'}],
+groups:[{x:9,y:4,renc:14},{x:9,y:9,renc:14}],
+nodes:[{x:3,y:6,res:'gravat'},{x:11,y:11,res:'eclat'}],
+coffres:[{x:12,y:1,res:{eclat:3,gravat:3}}],
+exits:[{x:0,y:6,to:'temple',tx:11,ty:6},{x:12,y:6,to:'salle',tx:1,ty:6}]};
+DATA.cartes.salle={n:'Salle des Lieutenants',biome:'manoir',need:15,start:[1,6],tint:'rgba(150,60,90,.2)',
+rocks:[[4,3],[4,9],[7,3],[7,9]],
+npcs:[{x:11,y:3,e:'🤡',n:'Bouffon Sans Rire',cache:[{flag:'bouffon_vaincu'}],txt:'Je ne ris pas. Je dois prévenir : mon duel est prêt.',
+actions:[{id:'duel',t:'Relever le duel',sub:'Lancer le combat',ok:{renc:{min:16}},why:'Les lieutenants montent encore la garde : bats-les d’abord.',fight:16,cls:'danger'}]}],
+groups:[{x:9,y:7,renc:15}],
+nodes:[{x:2,y:2,res:'gravat'},{x:2,y:10,res:'eclat'}],
+exits:[{x:0,y:6,to:'cour',tx:11,ty:6},{x:12,y:6,to:'trone',tx:1,ty:6}]};
+DATA.cartes.trone={n:'Salle du Trône',biome:'serre',need:17,start:[1,6],tint:'rgba(90,100,125,.3)',
+rocks:[[4,3],[4,9],[7,5],[7,7]],npcs:[],
+groups:[{x:10,y:6,renc:17}],
+nodes:[{x:2,y:2,res:'eclat'},{x:2,y:10,res:'gravat'}],
+exits:[{x:0,y:6,to:'salle',tx:11,ty:6}]};
+Object.assign(DATA.quetes,{
+e1:{n:'Pétales de couchant',desc:'Ramasse 3 pétales de soleil mourant le long du Chemin pour le Pèlerin Cendré.',need:3,kind:'pick',req:11,donneur:'Pèlerin Cendré',say:'Des pétales de couchant. Elles fleurissent là où le soleil est passé pour la dernière fois. Trois, s’il te plaît.',fin:'Elles brillent encore. Je les offrirai au Temple, s’il se souvient de moi.',rew:{xpq:[44,'normale'],res:{eclat:4}}},
+e2:{n:'Parvis en deuil',desc:'Repousse 2 groupes de monstres éplorés sur le Parvis du Temple.',need:2,kind:'win',renc:12,req:12,donneur:'Gardien du Parvis',say:'Les pèlerins éteints pleurent sur mes marches. Repousse-en deux groupes, que je puisse balayer.',fin:'Enfin du silence. Il y a du bruit dans le silence, mais c’est le mien.',rew:{xpq:[47,'longue'],res:{eclat:4,gravat:2}}},
+e3:{n:'Médailles de la Garde',desc:'Retrouve 3 médailles de la Garde royale dans la Cour de la Citadelle.',need:3,kind:'pick',req:14,donneur:'Capitaine fantôme',say:'Mes gardes ont perdu leurs médailles dans la cour. Trois. Sans elles, ils ne se souviennent plus d’être des gardes.',fin:'Les voilà ! Ils vont se souvenir. Ils vont être très fâchés.',rew:{xpq:[53,'longue'],res:{eclat:4,gravat:4}}}});
+
 // ============ ÉCHELLE DE PUISSANCE (calibrée avec outils/sim.js) ============
 // Multiplicateur appliqué à chaque rencontre (PV x k, dégâts x k^0,7). Visé : un héros de niveau égal perd ~45 % de ses PV
 // dans un combat normal, ~55 % contre une élite, ~65 % contre un boss. Pour rééquilibrer : changer ces valeurs, puis relancer le simulateur.
-DATA.echelle=[2,5,5.2,4.5,5.2,4.4,3.8,3.9,4,4.7,4.0];
+DATA.echelle=[2,5,5.2,4.5,5.2,4.4,3.8,3.9,4,4.7,4.0,3.4,3.6,3.6,3.2,3.4,5.5,3.8];
 DATA.rencontres.forEach((r,i)=>{const k=DATA.echelle[i]||1,kd=Math.pow(k,.7);
 r.m.forEach(m=>{if(m.form)return;m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
 if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
