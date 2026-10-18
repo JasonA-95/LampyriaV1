@@ -182,7 +182,7 @@ DATA.objets.eventail_cendre={n:'Éventail de cendre',e:'🪭',slot:'acc',r:3,st:
 DATA.rencontres[4].drops=[{id:'voile_brume',p:25},{id:'perle_marais',p:12},{id:'bottes_vase',p:15}];
 DATA.rencontres[5].drops=[{id:'lance_libellule',p:12},{id:'manteau_brume',p:14}];
 DATA.rencontres[6].drops=[{id:'baguette_duchesse',p:35},{id:'couronne_cendre',p:35},{id:'robe_duchesse',p:35},{id:'eventail_cendre',p:35}];
-DATA.ambiance={village:{type:'lucioles'},foret:{type:'spores'},collines:{type:'brume'},manoir:{type:'poussiere'},marais:{type:'cendres'},roseliere:{type:'cendres'},serre:{type:'cendres'},desert:{type:'sable'}};
+DATA.ambiance={village:{type:'lucioles'},foret:{type:'spores'},collines:{type:'brume'},manoir:{type:'poussiere'},marais:{type:'cendres'},roseliere:{type:'cendres'},serre:{type:'cendres'},desert:{type:'sable'},temple:{type:'eclats'},citadelle:{type:'cendres'},trone:{type:'eclats'}};
 DATA.decor={village:.14,foret:.19,collines:.13,manoir:.1,marais:.16,roseliere:.2,serre:.12,desert:.1};
 
 // ============ ACTE 1 : habitants, dialogues et quêtes de livraison ============
@@ -286,13 +286,13 @@ roi=(x,y)=>({x,y,hp:320,max:320,pm:2,d:29,e:'👑',n:'Le Roi Éteint',boss:1,sor
 vex=(x,y)=>({x,y,hp:25,max:25,pm:0,d:0,e:'😤',n:'Sa vexation',form:1}),
 cou=(x,y)=>({x,y,hp:90,max:90,pm:3,d:24,e:'💀',n:'Courtisan squelette',sort:{n:'Révérence tranchante',r:[1,1],dmg:24,cd:2}});
 DATA.rencontres.push(
-{n:'Chemin du Soleil Couchant',biome:'collines',niv:44,loot:{eclat:4,gravat:2},m:[pel(10,3),luc(11,8),sta(9,10)]},
-{n:'Parvis du Temple',biome:'desert',niv:47,loot:{eclat:4,gravat:3},m:[pre(9,10),pel(10,3),luc(11,8),sta(11,5)]},
-{n:'Temple du Soleil (boss)',biome:'desert',niv:50,say:'voile',loot:{eclat:8,gravat:5},m:[ecl(11,7),voi(11,6),pre(9,3),pel(10,9)]},
-{n:'Cour de la Citadelle',biome:'manoir',niv:53,loot:{gravat:5,eclat:3},m:[gar(10,3),arc(11,8),che(9,10),gar(11,5)]},
-{n:'Salle des Lieutenants',biome:'manoir',niv:56,type:'elite',loot:{eclat:5,gravat:5},m:[lch(10,4),ldu(11,9),lge(9,7)]},
-{n:'Duel du Bouffon (boss)',biome:'manoir',niv:58,loot:{eclat:6,gravat:6},m:[bou(11,7)]},
-{n:'Le Roi Éteint (boss final)',biome:'serre',niv:60,say:'vexation',loot:{eclat:10,gravat:8},m:[roi(11,7),vex(11,6),cou(9,3),cou(10,9)]});
+{n:'Chemin du Soleil Couchant',biome:'desert',niv:44,loot:{eclat:4,gravat:2},m:[pel(10,3),luc(11,8),sta(9,10)]},
+{n:'Parvis du Temple',biome:'temple',niv:47,loot:{eclat:4,gravat:3},m:[pre(9,10),pel(10,3),luc(11,8),sta(11,5)]},
+{n:'Temple du Soleil (boss)',biome:'temple',niv:50,say:'voile',loot:{eclat:8,gravat:5},m:[ecl(11,7),voi(11,6),pre(9,3),pel(10,9)]},
+{n:'Cour de la Citadelle',biome:'citadelle',niv:53,loot:{gravat:5,eclat:3},m:[gar(10,3),arc(11,8),che(9,10),gar(11,5)]},
+{n:'Salle des Lieutenants',biome:'citadelle',niv:56,type:'elite',loot:{eclat:5,gravat:5},m:[lch(10,4),ldu(11,9),lge(9,7)]},
+{n:'Duel du Bouffon (boss)',biome:'citadelle',niv:58,loot:{eclat:6,gravat:6},m:[bou(11,7)]},
+{n:'Le Roi Éteint (boss final)',biome:'trone',niv:60,say:'vexation',loot:{eclat:10,gravat:8},m:[roi(11,7),vex(11,6),cou(9,3),cou(10,9)]});
 DATA.objets.diademe_eclat={n:'Diadème d’éclats',e:'👑',slot:'tete',r:2,st:{pv:26},set:'soleil',cout:{eclat:6,gravat:3}};
 DATA.objets.cuirasse_aube={n:'Cuirasse d’aube',e:'🥋',slot:'corps',r:2,st:{pv:26,res:8},set:'soleil',cout:{eclat:8,gravat:4}};
 DATA.objets.bottes_crepuscule={n:'Bottes du crépuscule',e:'🥾',slot:'bottes',r:2,st:{pv:16,res:5},set:'soleil',cout:{eclat:5,gravat:3}};
@@ -304,7 +304,7 @@ DATA.sets.soleil={n:'Panoplie du soleil couchant',bonus:{2:{pv:14},4:{dmg:2,res:
 DATA.rencontres[13].drops=[{id:'lame_eclipse',p:100}];
 DATA.rencontres[17].drops=[{id:'couronne_eteinte',p:100}];
 DATA.cartes.camp.exits.push({x:12,y:6,to:'chemin',tx:1,ty:6});
-DATA.cartes.chemin={n:'Chemin du Soleil Couchant',biome:'collines',need:11,start:[1,6],tint:'rgba(240,150,70,.16)',
+DATA.cartes.chemin={n:'Chemin du Soleil Couchant',biome:'desert',need:11,start:[1,6],tint:'rgba(240,150,70,.16)',
 rocks:[[4,2],[4,10],[6,6],[8,3],[8,9],[10,6]],
 npcs:[{x:2,y:8,e:'🧙',n:'Pèlerin Cendré',quests:['e1'],txt:'Je marche vers le Temple depuis 300 ans. Je n’ai jamais regardé où il était. Il est devant.'}],
 picks:[{x:1,y:2,quest:'e1'},{x:6,y:11,quest:'e1'},{x:11,y:11,quest:'e1'}],
@@ -312,20 +312,20 @@ groups:[{x:9,y:4,renc:11},{x:9,y:9,renc:11}],
 nodes:[{x:2,y:3,res:'eclat'},{x:5,y:2,res:'gravat'}],
 coffres:[{x:12,y:1,res:{eclat:3,gravat:2}}],
 exits:[{x:0,y:6,to:'camp',tx:11,ty:6},{x:12,y:6,to:'parvis',tx:1,ty:6}]};
-DATA.cartes.parvis={n:'Parvis du Temple',biome:'desert',need:12,start:[1,6],tint:'rgba(255,210,120,.14)',
+DATA.cartes.parvis={n:'Parvis du Temple',biome:'temple',need:12,start:[1,6],tint:'rgba(255,210,120,.14)',
 rocks:[[3,3],[3,9],[6,2],[6,10],[7,6],[9,3],[9,9]],
 npcs:[{x:2,y:6,e:'🧑‍🦯',n:'Gardien du Parvis',quests:['e2'],txt:'Le Temple est fermé à cause de la tristesse. Entendez : trop de monstres qui pleurent.'}],
 groups:[{x:8,y:4,renc:12},{x:9,y:8,renc:12},{x:11,y:6,renc:12}],
 nodes:[{x:2,y:2,res:'eclat'},{x:11,y:11,res:'gravat'}],
 exits:[{x:0,y:6,to:'chemin',tx:11,ty:6},{x:12,y:2,to:'temple',tx:1,ty:6}]};
-DATA.cartes.temple={n:'Temple du Soleil',biome:'desert',need:13,start:[1,6],tint:'rgba(120,100,170,.2)',
+DATA.cartes.temple={n:'Temple du Soleil',biome:'temple',need:13,start:[1,6],tint:'rgba(120,100,170,.2)',
 rocks:[[4,3],[4,9],[6,6],[8,3],[8,9]],
 npcs:[{x:2,y:10,e:'🏮',n:'La lanterne d’ombre',cache:[{flag:'melancolique_libre'}],txt:'Une lanterne noire. À l’intérieur, quelqu’un soupire avec élégance.',
 actions:[{id:'melancolique',t:'Libérer la Lueur',sub:'Ouvrir la lanterne d’ombre',ok:{renc:{min:14}},why:'Une ombre garde la lanterne : bats Éclipse.',rew:{xpq:[50,'lueur'],lueur:'melancolique'}}]}],
 groups:[{x:10,y:6,renc:13}],
 nodes:[{x:2,y:2,res:'eclat'},{x:2,y:10,res:'gravat'}],
 exits:[{x:0,y:6,to:'parvis',tx:11,ty:2},{x:12,y:6,to:'cour',tx:1,ty:6}]};
-DATA.cartes.cour={n:'Cour de la Citadelle',biome:'manoir',need:14,start:[1,6],tint:'rgba(130,70,170,.2)',
+DATA.cartes.cour={n:'Cour de la Citadelle',biome:'citadelle',need:14,start:[1,6],tint:'rgba(130,70,170,.2)',
 rocks:[[4,2],[4,10],[6,4],[6,8],[8,6],[10,2],[10,10]],
 npcs:[{x:2,y:3,e:'👻',n:'Capitaine fantôme',quests:['e3'],txt:'Garde de la Citadelle depuis sa chute. Mon poste est de ne laisser entrer personne. Je n’ai pas dit pour qui.'}],
 picks:[{x:1,y:11,quest:'e3'},{x:7,y:1,quest:'e3'},{x:11,y:6,quest:'e3'}],
@@ -333,14 +333,14 @@ groups:[{x:9,y:4,renc:14},{x:9,y:9,renc:14}],
 nodes:[{x:3,y:6,res:'gravat'},{x:11,y:11,res:'eclat'}],
 coffres:[{x:12,y:1,res:{eclat:3,gravat:3}}],
 exits:[{x:0,y:6,to:'temple',tx:11,ty:6},{x:12,y:6,to:'salle',tx:1,ty:6}]};
-DATA.cartes.salle={n:'Salle des Lieutenants',biome:'manoir',need:15,start:[1,6],tint:'rgba(150,60,90,.2)',
+DATA.cartes.salle={n:'Salle des Lieutenants',biome:'citadelle',need:15,start:[1,6],tint:'rgba(150,60,90,.2)',
 rocks:[[4,3],[4,9],[7,3],[7,9]],
 npcs:[{x:11,y:3,e:'🤡',n:'Bouffon Sans Rire',cache:[{flag:'bouffon_vaincu'}],txt:'Je ne ris pas. Je dois prévenir : mon duel est prêt.',
 actions:[{id:'duel',t:'Relever le duel',sub:'Lancer le combat',ok:{renc:{min:16}},why:'Les lieutenants montent encore la garde : bats-les d’abord.',fight:16,cls:'danger'}]}],
 groups:[{x:9,y:7,renc:15}],
 nodes:[{x:2,y:2,res:'gravat'},{x:2,y:10,res:'eclat'}],
 exits:[{x:0,y:6,to:'cour',tx:11,ty:6},{x:12,y:6,to:'trone',tx:1,ty:6}]};
-DATA.cartes.trone={n:'Salle du Trône',biome:'serre',need:17,start:[1,6],tint:'rgba(90,100,125,.3)',
+DATA.cartes.trone={n:'Salle du Trône',biome:'trone',need:17,start:[1,6],tint:'rgba(90,100,125,.3)',
 rocks:[[4,3],[4,9],[7,5],[7,7]],npcs:[],
 groups:[{x:10,y:6,renc:17}],
 nodes:[{x:2,y:2,res:'eclat'},{x:2,y:10,res:'gravat'}],
