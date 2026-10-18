@@ -209,6 +209,23 @@ L4:{n:'Courrier du berger',desc:'Porte une lettre au Berger Laine-de-Nuit, dans 
 L5:{n:'Livraison urgente',desc:'Récupère un colis scellé dans les Collines et rapporte-le au Maître Lampiste, avant que le Chambellan ne réclame un formulaire.',need:1,kind:'pick',req:2,say:'Un colis scellé m\'attend dans les collines. Rapporte-le avant le manoir : le Chambellan réclamerait un formulaire.',fin:'Scellé, intact, et sans formulaire. Tu progresses.',rew:{xpq:[15,'longue'],res:{braise:4,champi:4,laine:4}}}});
 })();
 
+// ============ VILLAGE ÉTENDU : place, quartier des Chandelles, poste de garde ============
+(()=>{const v=DATA.cartes.village,take=n=>{const i=v.npcs.findIndex(p=>p.n==n);return v.npcs.splice(i,1)[0]};
+const mem=take('Mémé Lumignon'),ton=take('Tonton Zébulon'),pet=take('Pétoche');
+mem.x=4;mem.y=4;ton.x=8;ton.y=7;pet.x=6;pet.y=5;
+const pk=v.picks.splice(0,3);v.picks=[pk[1]];
+v.exits.push({x:0,y:6,to:'quartier',tx:11,ty:6},{x:6,y:0,to:'poste',tx:6,ty:10});
+DATA.cartes.quartier={n:'Quartier des Chandelles',biome:'village',need:0,start:[11,6],tint:'rgba(255,150,90,.1)',
+rocks:[[3,2],[4,2],[8,2],[9,2],[2,8],[3,8],[7,9],[8,9],[10,4],[10,8]],npcs:[mem,ton],
+picks:[{x:1,y:2,quest:'q1'}],groups:[{x:9,y:6,renc:0}],nodes:[{x:2,y:10,res:'braise'},{x:6,y:7,res:'laine'}],
+exits:[{x:12,y:6,to:'village',tx:1,ty:6}]};
+DATA.cartes.poste={n:'Poste de garde',biome:'village',need:0,start:[6,10],tint:'rgba(255,200,120,.08)',
+rocks:[[2,4],[3,4],[9,4],[10,4],[1,8],[11,8],[5,2],[7,2]],npcs:[pet],
+picks:[{x:12,y:2,quest:'q1'}],groups:[{x:3,y:7,renc:0},{x:9,y:7,renc:0}],nodes:[{x:1,y:1,res:'braise'},{x:11,y:10,res:'champi'}],
+exits:[{x:6,y:11,to:'village',tx:6,ty:1}]};
+DATA.ambiance.quartier={type:'lucioles'};DATA.ambiance.poste={type:'lucioles'};DATA.decor.quartier=.14;DATA.decor.poste=.12;
+})();
+
 // ============ ACTE 2 : DÉSERT DES CHAUSSETTES PERDUES (niveaux 33 à 40) ============
 DATA.res.sable='🏜️ Sable';DATA.res.fil='🧵 Fil';DATA.res.chaussette='🧦 Chaussettes';DATA.resE.sable='🏜️';DATA.resE.fil='🧵';DATA.resE.chaussette='🧦';
 const squ=(x,y)=>({x,y,hp:60,max:60,pm:3,d:18,e:'💀',n:'Squelette gréviste',sort:{n:'Coup de pancarte',r:[1,1],push:1,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
