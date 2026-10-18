@@ -268,7 +268,7 @@ d4:{n:'Les revendications',desc:'Rassemble 6 fils, 6 chaussettes et 4 sables pou
 // ============ ÉCHELLE DE PUISSANCE (calibrée avec outils/sim.js) ============
 // Multiplicateur appliqué à chaque rencontre (PV x k, dégâts x k^0,7). Visé : un héros de niveau égal perd ~45 % de ses PV
 // dans un combat normal, ~55 % contre une élite, ~65 % contre un boss. Pour rééquilibrer : changer ces valeurs, puis relancer le simulateur.
-DATA.echelle=[2,5,5.2,4.5,5.2,4.4,3.8,3.9,4,4.7,4.5];
+DATA.echelle=[2,5,5.2,4.5,5.2,4.4,3.8,3.9,4,4.7,4.0];
 DATA.rencontres.forEach((r,i)=>{const k=DATA.echelle[i]||1,kd=Math.pow(k,.7);
 r.m.forEach(m=>{if(m.form)return;m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
 if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
