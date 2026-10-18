@@ -32,6 +32,7 @@ function eraseSlot(n){modal(el('div','','<h2>Effacer l\'emplacement '+n+' ?</h2>
 function titleOptions(){const fxNames={eleve:'élevé',reduit:'réduit',off:'désactivé'},soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal',b=el('div','pick','<h2>Options</h2>');
 b.appendChild(row('<span class="em">🎨</span><span class="tx"><span class="nm">Effets visuels : '+fxNames[OPT.fx]+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{cycleFx();closeModal();renderTitle();titleOptions()}));
 b.appendChild(row('<span class="em">🔊</span><span class="tx"><span class="nm">Son : '+soundLabel+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{cycleSon();closeModal();titleOptions()}));
+b.appendChild(row('<span class="em">💡</span><span class="tx"><span class="nm">Conseils des Lueurs : '+(tutoOn()?'activés':'désactivés')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{tutoToggle();closeModal();titleOptions()}));
 modal(b,[['Fermer']])}
 // ---------- création du héros ----------
 function renderCreate(n,st){st=st||{nom:'',classe:'porte',asp:null};const T=$('titre');T.replaceChildren();titleSparks(T);
@@ -44,5 +45,5 @@ const ca=el('div','card');ca.appendChild(el('h3','','Apparence'));const asp=el('
 [null,...HERO_ASP].forEach(a=>{const e=a||DATA.classes[st.classe].e,b=el('button','asp'+(st.asp===a?' on':''),escHtml(e));b.setAttribute('aria-label','Apparence '+e);b.onclick=()=>{if(typeof playSound=='function')playSound('click');st.asp=a;renderCreate(n,st)};asp.appendChild(b)});ca.appendChild(asp);main.appendChild(ca);
 const foot=el('div','tact');foot.appendChild(btn('Retour','','ghost',renderTitle));
 foot.appendChild(btn('Commencer l\'aventure','','pri',()=>createHero(n,st)));main.appendChild(foot);T.appendChild(main)}
-function createHero(n,st){const nom=(st.nom||'').trim().slice(0,16)||'Livreur',data={classe:st.classe,lueurs:['gourmande'],hero:{nom,asp:st.asp||null},hist:{vus:[],flags:{nouvellePartie:true}},maj:Date.now()};
+function createHero(n,st){const nom=(st.nom||'').trim().slice(0,16)||'Livreur',data={classe:st.classe,lueurs:['gourmande'],hero:{nom,asp:st.asp||null},hist:{vus:[],flags:{nouvellePartie:true}},tuto:{vus:[]},maj:Date.now()};
 try{localStorage.setItem(slotKey(n),JSON.stringify(data))}catch(e){toast('Impossible d\'enregistrer la sauvegarde');return}goSlot(n,'play')}

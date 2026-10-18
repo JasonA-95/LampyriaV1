@@ -1,5 +1,5 @@
 // ÉTAT : sauvegarde, réglages, équipement, butin et petits utilitaires d'interface partagés par tous les écrans.
-const VERSION='0.8.0';
+const VERSION='0.8.1';
 // Emplacements de sauvegarde : 1 = clé historique 'lampyria', 2 et 3 = 'lampyria2', 'lampyria3'. L'emplacement actif est choisi sur l'écran titre.
 const slotKey=n=>n==1?'lampyria':'lampyria'+n;
 const SLOT=(()=>{try{const n=Math.floor(+localStorage.getItem('lampyria_slot'));return n>=1&&n<=3?n:1}catch(e){return 1}})();

@@ -48,6 +48,8 @@ const fxNames={eleve:'élevé',reduit:'réduit',off:'désactivé'},fxDescription
 o.appendChild(row('<span class="em">🎨</span><span class="tx"><span class="nm">Effets visuels : '+fxNames[OPT.fx]+'</span><span class="mt">'+fxDescriptions[OPT.fx]+' Toucher pour changer.</span></span>',()=>{cycleFx();renderMenu()}));
 const soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal';
 o.appendChild(row('<span class="em">🔊</span><span class="tx"><span class="nm">Son : '+soundLabel+'</span><span class="mt">Effets sonores générés, sans musique. Toucher pour changer.</span></span>',()=>{cycleSon();renderMenu()}));
+o.appendChild(row('<span class="em">💡</span><span class="tx"><span class="nm">Conseils des Lueurs : '+(tutoOn()?'activés':'désactivés')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{tutoToggle();renderMenu()}));
+o.appendChild(row('<span class="em">🔁</span><span class="tx"><span class="nm">Revoir les conseils</span><span class="mt">Ils réapparaîtront au bon moment.</span></span>',()=>{tutoReset();toast('Conseils réinitialisés.');renderMenu()}));
 o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
 if(cfg.test)o.appendChild(row('<span class="em">🎭</span><span class="tx"><span class="nm">Voir les scènes</span><span class="mt">Lancer une scène en exploration, sans sauvegarder ses effets.</span></span>',()=>{const list=el('div','pick','<h2>Scènes</h2>');Object.entries(DATA.scenes).forEach(([id,scene])=>list.appendChild(row('<span class="tx"><span class="nm">'+id+'</span><span class="mt">'+scene.declencheur.quand+'</span></span>',()=>{if(combatLive){toast('Quitte le combat en cours avant de lancer une scène.');return}EX.start({storyId:id})})));modal(list,[['Fermer']])}));
 o.appendChild(row('<span class="em">🏠</span><span class="tx"><span class="nm">Écran titre</span><span class="mt">Changer d\'emplacement de sauvegarde ou de héros.</span></span>',()=>{store();location.reload()}));
@@ -126,14 +128,38 @@ D.forEach(id=>{const own=sv.inv.includes(id),src=DATA.rencontres.find(e=>(e.drop
 d.appendChild(row(itemRow(id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Butin : '+(src?src.n:'récompense spéciale'))+'</span>'),null,own?'':'lock'))});
 B.appendChild(d)}
 
-// ---------- onglet Quêtes ----------
-function tabQuetes(B){const Q=sv.q||{};let any=false;
-for(const id in DATA.quetes){const q=DATA.quetes[id],s=Q[id];
-if(!s&&((q.req||0)>sv.renc||(q.apres&&((sv.q||{})[q.apres]||{}).s!=2)))continue;any=true;
-const n=s?Math.min(s.n||0,q.need):0,done=s&&s.s==2,ready=s&&s.s==1&&n>=q.need;
-const c=card(done?'Terminée':s?(ready?'À rendre':'En cours'):'Disponible','<b style="color:var(--ink);font-size:15px">'+q.n+'</b>');
+// ---------- onglet Quêtes (journal) ----------
+let showDone=false;
+const qMapOf=(id,key)=>{for(const m of Object.values(DATA.cartes)){const l=(m[key]||[]);if(key=='npcs'?l.some(n=>(n.quests||[]).includes(id)):l.some(o=>o.quest==id))return m.n}return null};
+const qGiver=(id)=>{const q=DATA.quetes[id];return q.donneur||'Maître Lampiste'};
+const qGiverPlace=(id)=>qMapOf(id,'npcs')||'le village';
+const qRew=r=>{if(!r)return '';const t=[];const xp=r.xpq?XP.quete(r.xpq[0],XP.k[r.xpq[1]]||XP.k.normale):r.xp;if(xp)t.push('✨ '+xp+' XP');if(r.res)t.push(rl(r.res));if(r.item&&DATA.objets[r.item])t.push(DATA.objets[r.item].e+' '+DATA.objets[r.item].n);if(r.lueur&&DATA.lueurs[r.lueur])t.push('🏮 Lueur '+DATA.lueurs[r.lueur].n);return t.join(' · ')};
+function qGoals(id,s){const q=DATA.quetes[id],got=(s&&s.got)||[],n=s?Math.min(s.n||0,q.need):0,done=s&&s.s==2,L=[];
+const chk=(ok,t)=>'<div class="qg'+(ok?' ok':'')+'">'+(ok?'✔':'☐')+' '+t+'</div>';
+if(q.kind=='livre'){[].concat(q.to).forEach(x=>L.push(chk(done||got.includes(x),'Voir '+x)))}
+else if(q.kind=='pick'){L.push(chk(done||n>=q.need,'Ramasser '+q.need+' objets'+(qMapOf(id,'picks')?' — '+qMapOf(id,'picks'):'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
+else if(q.kind=='hide'){L.push(chk(done||n>=q.need,'Trouver '+q.need+' cachettes 🌿'+(qMapOf(id,'hides')?' — '+qMapOf(id,'hides'):'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
+else if(q.kind=='win'){const r=DATA.rencontres[q.renc];L.push(chk(done||n>=q.need,'Repousser '+q.need+' groupes'+(r?' — '+r.n:'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
+else if(q.kind=='don'){}
+if(q.cost)L.push(chk(done,'Apporter '+rl(q.cost)+(done?'':' (tu as : '+Object.keys(q.cost).map(k=>(sv.res[k]||0)+' '+rn(k)).join(', ')+')')));
+return L.join('')}
+function questCard(id,st){const q=DATA.quetes[id],s=(sv.q||{})[id],n=s?Math.min(s.n||0,q.need):0;
+const lab={rendre:'🟢 À rendre',cours:'🟡 En cours',dispo:'⚪ Disponible',fini:'✔ Terminée'}[st];
+const c=card(lab,'<b style="color:var(--ink);font-size:15px">'+q.n+'</b>');
 c.appendChild(el('p','',q.desc));
-if(s)c.appendChild(el('div','bar','<i style="width:'+Math.round(100*(done?1:q.need?n/q.need:1))+'%"></i>'));
-c.appendChild(el('p','',done?'Récompense reçue.':ready?'Retourne voir '+(q.donneur||'le Maître Lampiste')+' au village.':s?'Progression : '+n+'/'+q.need:(q.donneur?'Parle à '+q.donneur:'Parle au Maître Lampiste')+', au village.'));
-B.appendChild(c)}
-if(!any)B.appendChild(card('Quêtes','Aucune quête pour l\'instant.'))}
+if(st!='dispo')c.appendChild(el('div','qgs',qGoals(id,s)));
+if(s&&q.need&&st!='fini')c.appendChild(el('div','bar','<i style="width:'+Math.round(100*(q.need?n/q.need:1))+'%"></i>'));
+const where=st=='dispo'?'Parle à '+qGiver(id)+' ('+qGiverPlace(id)+').':st=='rendre'?'Retourne voir '+qGiver(id)+' ('+qGiverPlace(id)+').':st=='cours'?'Donneur : '+qGiver(id)+' ('+qGiverPlace(id)+').':'';
+if(where)c.appendChild(el('p','mt',where));
+const rw=qRew(q.rew);if(rw)c.appendChild(el('p','mt',(st=='fini'?'Récompense reçue : ':'Récompense : ')+rw));
+return c}
+function tabQuetes(B){const Q=sv.q||{},g={rendre:[],cours:[],dispo:[],fini:[]};
+for(const id in DATA.quetes){const q=DATA.quetes[id],s=Q[id];
+if(!s){if((q.req||0)<=sv.renc&&(!q.apres||((Q[q.apres]||{}).s==2)))g.dispo.push(id);continue}
+if(s.s==2)g.fini.push(id);else if((s.n||0)>=q.need&&(q.need>0||!q.cost||Object.keys(q.cost).every(k=>(sv.res[k]||0)>=q.cost[k])))g.rendre.push(id);else g.cours.push(id)}
+const tot=Object.keys(DATA.quetes).length;
+B.appendChild(card('Journal','<b style="color:var(--ink)">'+g.fini.length+' quête'+(g.fini.length>1?'s':'')+' terminée'+(g.fini.length>1?'s':'')+'</b> · '+(g.rendre.length+g.cours.length)+' en cours · '+g.dispo.length+' disponible'+(g.dispo.length>1?'s':'')));
+['rendre','cours','dispo'].forEach(k=>g[k].forEach(id=>B.appendChild(questCard(id,k))));
+if(!g.rendre.length&&!g.cours.length&&!g.dispo.length)B.appendChild(card('Quêtes','Rien à faire pour l\'instant. Explore de nouvelles zones : de nouveaux habitants auront du travail pour toi.'));
+if(g.fini.length){B.appendChild(row('<span class="em">📚</span><span class="tx"><span class="nm">Quêtes terminées ('+g.fini.length+')</span><span class="mt">'+(showDone?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showDone=!showDone;renderMenu()}));
+if(showDone)g.fini.forEach(id=>B.appendChild(questCard(id,'fini')))}}
