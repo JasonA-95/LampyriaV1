@@ -46,7 +46,7 @@ tetue:{n:'Têtue',t:4,sort:{n:"Mur d'entêtement",pa:2,r:[0,0],mur:1,cd:4,say:'m
 farceuse:{n:'Farceuse',t:3,sort:{n:'Tour pendable',pa:3,r:[1,5],los:1,swap:1,cd:3,say:'farce'}},
 melancolique:{n:'Mélancolique',t:4,sort:{n:'Ombre douce',pa:3,r:[1,4],los:1,dmg:12,drain:1,cd:2,say:'ombre'}}},
 repliques:{
-debut:['Gourmande','Ça se mange, ça ? On dirait un gros champignon.'],
+debut:[['Gourmande','Ça se mange, ça ? On dirait un gros champignon.'],['Gourmande','Ça sent le combat. Ou le pain grillé. Dans le doute, j’ai faim.'],['Peureuse','On pourrait faire semblant d’être des buissons ?'],['Colérique','ENFIN de la bagarre ! Tape d’abord, discute après !'],['Rêveuse','J’ai rêvé de ce moment. J’avais un meilleur costume.'],['Têtue','Je reste ici, et eux aussi, tant que ça me plaît.'],['Farceuse','Hihi, ils ont des têtes à recevoir une farce.'],['Mélancolique','Encore un combat… À quoi bon, mais allons-y.']],
 soin:['Gourmande','À table ! Mange un morceau, tu en as besoin.'],
 fuite:['Peureuse','On fuit ! On fuit !'],
 rage:['Colérique','Frappe-le ! Frappe-le ! FRAPPE-LE !'],
@@ -54,10 +54,12 @@ sommeil:['Rêveuse','Chut… fais de beaux rêves…'],
 mur:['Têtue',"Je ne bouge plus d'ici. Personne ne passe."],
 farce:['Farceuse','Hop ! Qui est où ? Même moi je ne sais plus.'],
 ombre:['Mélancolique',"Il paraît que le soleil était plus joli que ça."],
-coup:['Gourmande','Aïe ! Pas sur la lanterne !'],
-victoire:['Gourmande','Victoire ! On mange quoi ?'],
-defaite:['Peureuse','On aurait dû faire demi-tour…'],
-formulaire:['Gourmande',"C'est quoi ce papier qui flotte ? Il faut le déchirer… ou le jeter dehors !"]}
+coup:[['Gourmande','Aïe ! Pas sur la lanterne !'],['Peureuse','Ça fait mal ! Je le savais ! Je le dis toujours !'],['Colérique','Il a osé ! Il a OSÉ !'],['Têtue','Je ne bouge pas. Même touchée.'],['Mélancolique','Ça fait mal… comme tout.']],
+victoire:[['Gourmande','Victoire ! On mange quoi ?'],['Farceuse','Hihi ! Et on n’a même pas triché. Beaucoup.'],['Colérique','Trop facile ! Il y en a d’autres ?'],['Rêveuse','Quel beau rêve. On le refait ?'],['Têtue','Je l’avais dit. Je ne bougeais pas, et ils sont tombés.']],
+defaite:[['Peureuse','On aurait dû faire demi-tour…'],['Gourmande','Je ne digère pas cette défaite.'],['Mélancolique','Tout finit par tomber. Mais pas toi. On recommence.'],['Têtue','On repart. Je n’abandonne pas, j’ai juste changé de place.']],
+formulaire:['Gourmande',"C'est quoi ce papier qui flotte ? Il faut le déchirer… ou le jeter dehors !"],
+voile:['Peureuse','Ce voile noir tient Éclipse ensemble. Déchire-le, ou pousse-le hors du terrain !'],
+vexation:['Gourmande','Sa vexation flotte autour de lui. Brise-la ou chasse-la, et il sera à nous !']}
 };
 const mou=(x,y)=>({x,y,hp:24,max:24,pm:3,d:8,e:'🪰',n:'La mouche à braise',ia:'dist',garde:[2,3],sort:{n:'Étincelle',r:[2,3],los:1,dmg:6,cd:0}}),cha=(x,y)=>({x,y,hp:30,max:30,pm:2,d:10,e:'🍄',n:'Le champignon bavard',sort:{n:'Spores collantes',r:[1,3],los:1,dmg:0,etats:[{id:'ralenti',v:1,t:1}],cd:3}}),mot=(x,y)=>({x,y,hp:28,max:28,pm:3,d:9,e:'🐑',n:'Le mouton-fantôme',sort:{n:'Coup de tête',r:[1,1],push:1,cd:2}}),ber=(x,y)=>({x,y,hp:30,max:30,pm:2,d:6,e:'🐏',n:'Le berger-fantôme',ia:'soin',sort:{n:'Berceuse de laine',r:[1,3],heal:10,cd:3}});
 DATA.res={braise:'🔥 Braises',champi:'🍄 Champignons',laine:'🐑 Laine'};
@@ -286,11 +288,11 @@ cou=(x,y)=>({x,y,hp:90,max:90,pm:3,d:24,e:'💀',n:'Courtisan squelette',sort:{n
 DATA.rencontres.push(
 {n:'Chemin du Soleil Couchant',biome:'collines',niv:44,loot:{eclat:4,gravat:2},m:[pel(10,3),luc(11,8),sta(9,10)]},
 {n:'Parvis du Temple',biome:'desert',niv:47,loot:{eclat:4,gravat:3},m:[pre(9,10),pel(10,3),luc(11,8),sta(11,5)]},
-{n:'Temple du Soleil (boss)',biome:'desert',niv:50,loot:{eclat:8,gravat:5},m:[ecl(11,7),voi(11,6),pre(9,3),pel(10,9)]},
+{n:'Temple du Soleil (boss)',biome:'desert',niv:50,say:'voile',loot:{eclat:8,gravat:5},m:[ecl(11,7),voi(11,6),pre(9,3),pel(10,9)]},
 {n:'Cour de la Citadelle',biome:'manoir',niv:53,loot:{gravat:5,eclat:3},m:[gar(10,3),arc(11,8),che(9,10),gar(11,5)]},
 {n:'Salle des Lieutenants',biome:'manoir',niv:56,type:'elite',loot:{eclat:5,gravat:5},m:[lch(10,4),ldu(11,9),lge(9,7)]},
 {n:'Duel du Bouffon (boss)',biome:'manoir',niv:58,loot:{eclat:6,gravat:6},m:[bou(11,7)]},
-{n:'Le Roi Éteint (boss final)',biome:'serre',niv:60,loot:{eclat:10,gravat:8},m:[roi(11,7),vex(11,6),cou(9,3),cou(10,9)]});
+{n:'Le Roi Éteint (boss final)',biome:'serre',niv:60,say:'vexation',loot:{eclat:10,gravat:8},m:[roi(11,7),vex(11,6),cou(9,3),cou(10,9)]});
 DATA.objets.diademe_eclat={n:'Diadème d’éclats',e:'👑',slot:'tete',r:2,st:{pv:26},set:'soleil',cout:{eclat:6,gravat:3}};
 DATA.objets.cuirasse_aube={n:'Cuirasse d’aube',e:'🥋',slot:'corps',r:2,st:{pv:26,res:8},set:'soleil',cout:{eclat:8,gravat:4}};
 DATA.objets.bottes_crepuscule={n:'Bottes du crépuscule',e:'🥾',slot:'bottes',r:2,st:{pv:16,res:5},set:'soleil',cout:{eclat:5,gravat:3}};

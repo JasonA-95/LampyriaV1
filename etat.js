@@ -62,7 +62,7 @@ function hideBubble(){clearTimeout(bub.t);bub.at=null;$('bubble').classList.add(
 function speak(who,txt,o){o=o||{};const c=SPK[who]||'#8a5a1a',B=$('bubble');B.style.setProperty('--c',c);
 B.innerHTML='<span class="who" style="color:'+c+'">'+who+'</span><span class="tx">'+txt+'</span><i class="tail"></i>';B.classList.remove('hide');if(typeof playSound=='function')playSound('dialogue');
 clearTimeout(bub.t);bub.at=o.at||'hero';if(!o.stay)bub.t=setTimeout(hideBubble,6000);if(typeof placeBubble=='function')placeBubble()}
-const say=k=>speak(...DATA.repliques[k]);
+const say=k=>{let r=DATA.repliques[k];if(!r)return;if(Array.isArray(r[0])){const known=r.filter(v=>Object.keys(DATA.lueurs).some(id=>DATA.lueurs[id].n==v[0]&&(sv.deb||[]).includes(id)));const pool=known.length?known:[r[0]];r=pool[Math.floor(Math.random()*pool.length)]}speak(...r)};
 const msg=t=>$('msgEl').textContent=t;
 
 // ---------- ressources ----------
