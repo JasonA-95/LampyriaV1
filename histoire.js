@@ -73,3 +73,39 @@ colerique_libre:{once:true,declencheur:{quand:'action',id:'colerique'},etapes:[
 // La Gourmande s'interroge sur le premier colis reçu (une seule fois par partie).
 ['L1','L2','L3','L4','L5'].forEach(id=>{DATA.scenes['colis_'+id]={declencheur:{quand:'quete',id,etat:'acceptee'},si:{pasFlag:'colis_dit'},etapes:[
 {qui:'Gourmande',at:'hero',txt:'C’est chaud ? Ça se mange ?'},{set:{colis_dit:true}}]}});
+// ---- Acte 2 : fin (Marais, Duchesse, Bouffon, passé du Roi) ----
+Object.assign(DATA.scenes,{
+marais_entree:{once:true,declencheur:{quand:'entree',carte:'marais'},etapes:[
+{qui:'Gourmande',at:'hero',txt:'Ça sent la cendre mouillée. Je déconseille de goûter.'},
+{qui:'Peureuse',at:'hero',txt:'Les roseaux murmurent. Je n’aime pas quand les roseaux ont des opinions.'}]},
+tetue_assise:{once:true,declencheur:{quand:'quete',id:'q4',etat:'terminee'},etapes:[
+{qui:'Têtue',at:'hero',txt:'Un banc. Enfin quelqu’un qui comprend qu’on ne bouge pas sans raison. Je viens avec toi, mais je m’assois d’abord.'},
+{qui:'Gourmande',at:'hero',txt:'Elle a fait trois heures de négociation pour un banc. Je l’adore déjà.'}]},
+reveuse_oreiller:{once:true,declencheur:{quand:'quete',id:'q5',etat:'terminee'},etapes:[
+{qui:'Rêveuse',at:'hero',txt:'Un oreiller de roseaux… J’ai rêvé de toi, tu sais. Tu portais des lanternes et tu tombais. Je crois que c’était un souvenir.'},
+{qui:'Rêveuse',at:'hero',txt:'J’ai aussi rêvé d’un homme en armure dorée, devant le soleil. Il avait l’air… fatigué. Il n’était pas mort, dans mon rêve.'},
+{set:{reve_gardien:true}}]},
+duchesse_avant:{once:true,declencheur:{quand:'avantCombat',renc:6},etapes:[
+{qui:'Duchesse des Cendres',at:'groupe',txt:'Un moment. On n’entre pas dans ma serre avec des bottes pleines de boue vivante.'},
+{qui:'Têtue',at:'hero',txt:'Elle a de la prestance. Et un mauvais caractère. On s’entendrait.'},
+{qui:'Duchesse des Cendres',at:'groupe',txt:'J’étais duchesse d’un jardin. Le Roi m’a promis qu’il refleurirait. Il m’a menti. Alors tout deviendra cendre.'},
+{qui:'Duchesse des Cendres',at:'groupe',txt:'Et vous allez m’aider à commencer.'}]},
+duchesse_apres:{once:true,declencheur:{quand:'apresCombat',renc:6,issue:'win'},etapes:[
+{qui:'Duchesse des Cendres',at:'hero',txt:'Ah. Les cendres savent aussi pardonner. Tenez : mon sceau. Il vous ouvrira ses couloirs… Dites-lui que mon jardin ne repousse pas.'},
+{qui:'Gourmande',at:'hero',txt:'C’était presque touchant. Presque. Elle voulait nous brûler.'},
+{set:{duchesse_battue:true}}]}});
+const BOUFFON=[
+{apparait:{id:'bouffon',e:'🤡',x:11,y:5}},
+{qui:'Bouffon Sans Rire',at:'hero',txt:'Bravo. Applaudissements. Je ne rirai pas, évidemment : c’est ma marque.'},
+{qui:'Bouffon Sans Rire',at:'hero',txt:'Je suis le Bouffon du Roi, et il me prie de vous dire qu’il vous attend. Un duel ? Oui, un duel. Je le reporte : j’ai oublié ma massue.'},
+{qui:'Colérique',at:'hero',si:{flag:'colerique_libre'},txt:'ATTENDS QUE JE TE… Il est parti. Il est toujours parti, celui-là.'},
+{part:'bouffon'},
+{qui:'Gourmande',at:'hero',txt:'Il a laissé un papier. Un journal, on dirait. Du Roi.'},
+{qui:'Rêveuse',at:'hero',si:{flag:'reve_gardien'},txt:'C’est l’homme de mon rêve. Écoute…'},
+{qui:'Gourmande',at:'hero',txt:'« Le Gardien du Soleil ne dort jamais. Si le Soleil tombe, c’est de ma faute. Je reste. » Il a écrit ça avant de mourir.'},
+{qui:'Peureuse',at:'hero',txt:'Il n’a pas trahi le soleil. Il est mort en essayant de le tenir.'},
+{qui:'Gourmande',at:'hero',txt:'Ça explique pourquoi il est si vexé qu’on l’appelle « Éteint ».'},
+{set:{passe_roi:true,acte2_fini:true}}];
+DATA.scenes.general_convaincu.etapes.pop();DATA.scenes.general_convaincu.etapes.push(...BOUFFON);
+DATA.scenes.general_battu.etapes.pop();DATA.scenes.general_battu.etapes.push(...BOUFFON,{set:{general_battu:true}});
+DATA.scenes.general_convaincu.etapes.push({set:{general_convaincu:true}});
