@@ -392,10 +392,64 @@ DR(15,[{id:'tampon_chambellan',p:30},{id:'sceptre_cendres',p:20}]);
 DR(16,[{id:'masque_bouffon',p:60},{id:'marotte_bouffon',p:35}]);
 DR(17,[{id:'lanterne_gardien',p:35},{id:'armure_gardien',p:35}]);
 
+// ============ FORÊT ÉTENDUE : Sentier, Clairière et donjon « Le Terrier de la Mère Mycélium » (modèle pour les autres zones) ============
+const mer=(x,y)=>({x,y,hp:150,max:150,pm:2,d:12,e:'🍄',n:'Mère Mycélium',boss:1,renfort:{every:3,max:2,m:cha(0,0)},sort:{n:'Nuage de spores',r:[1,3],los:1,dmg:10,etats:[{id:'ralenti',v:1,t:2}],cd:2}});
+DATA.rencontres.push(
+{n:'Sentier des Lucioles',biome:'foret',niv:8,loot:{champi:3,laine:1},m:[mou(10,3),mou(11,8),cha(9,10)]},
+{n:'Clairière des Cèpes',biome:'foret',niv:9,loot:{champi:4,laine:2},m:[cha(10,3),mot(11,8),cha(9,10),mou(11,5)]},
+{n:'Terrier : galeries',biome:'foret',niv:10,loot:{champi:4,laine:2},m:[cha(9,3),cha(10,9),mot(11,6)]},
+{n:'Terrier : salle des spores',biome:'foret',niv:11,type:'elite',loot:{champi:6,laine:3},m:[cha(10,3),cha(11,6),cha(10,9),mou(9,6)]},
+{n:'Mère Mycélium (boss)',biome:'foret',niv:12,say:'mere',loot:{champi:10,laine:5},m:[mer(11,7)]});
+DATA.repliques.mere=['Gourmande','Elle fait pousser des champignons à la chaîne ! Tue-la vite, avant qu’ils ne s’accumulent.'];
+Object.assign(DATA.objets,{
+bague_luciole:{n:'Bague de luciole',e:'💍',slot:'acc',r:1,st:{pv:6,dmg:1}},
+bottes_sporees:{n:'Bottes sporées',e:'👢',slot:'bottes',r:1,st:{pv:8,res:3}},
+coiffe_mycelium:{n:'Coiffe de mycélium',e:'🍄',slot:'tete',r:2,st:{pv:16,res:3}},
+sceptre_mere:{n:'Sceptre de la Mère',e:'🪄',slot:'arme',r:2,st:{dmg:4}},
+manteau_mycelium:{n:'Manteau de mycélium',e:'🧥',slot:'corps',r:2,st:{pv:16,res:4}}});
+DR(18,[{id:'bague_luciole',p:15}]);DR(19,[{id:'bottes_sporees',p:20}]);DR(21,[{id:'coiffe_mycelium',p:25}]);DR(22,[{id:'sceptre_mere',p:100},{id:'manteau_mycelium',p:40}]);
+DATA.cartes.foret.exits.push({x:6,y:0,to:'sentier',tx:6,ty:11});
+DATA.cartes.foret.npcs.forEach(n=>{if(n.n=='Ermite Champignac')n.quests=['f3']});
+DATA.cartes.sentier={n:'Sentier des Lucioles',biome:'foret',need:1,start:[6,11],tint:'rgba(120,220,140,.14)',
+rocks:[[3,4],[3,8],[6,6],[9,4],[9,8]],
+npcs:[{x:2,y:11,e:'🧚',n:'Gardienne des lucioles',quests:['f1'],txt:'Mes lucioles s’éteignent une à une. Quelque chose, au fond de la forêt, aspire la lumière.'}],
+groups:[{x:9,y:3,renc:18},{x:10,y:9,renc:18}],
+nodes:[{x:2,y:2,res:'champi'},{x:11,y:11,res:'laine'}],
+exits:[{x:6,y:12,to:'foret',tx:6,ty:1},{x:12,y:6,to:'clairiere',tx:1,ty:6}]};
+DATA.cartes.clairiere={n:'Clairière des Cèpes',biome:'foret',need:1,start:[1,6],tint:'rgba(200,170,90,.14)',
+rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
+npcs:[{x:2,y:10,e:'👩‍🌾',n:'Cueilleuse Pâquerette',quests:['f2'],txt:'Les cèpes d’ici sont délicieux. Quand ils ne sont pas hantés.'}],
+picks:[{x:2,y:2,quest:'f2'},{x:11,y:11,quest:'f2'},{x:11,y:1,quest:'f2'}],
+groups:[{x:9,y:5,renc:19},{x:9,y:10,renc:19}],
+nodes:[{x:6,y:2,res:'champi'},{x:6,y:11,res:'laine'}],
+coffres:[{x:12,y:12,res:{champi:4,laine:2}}],
+exits:[{x:0,y:6,to:'sentier',tx:11,ty:6},{x:12,y:6,to:'terrier1',tx:1,ty:6}]};
+DATA.cartes.terrier1={n:'Terrier : galeries',biome:'foret',need:2,start:[1,6],tint:'rgba(40,70,60,.32)',
+rocks:[[4,2],[4,10],[6,5],[6,7],[8,3],[8,9]],npcs:[],
+groups:[{x:9,y:4,renc:20},{x:9,y:9,renc:20}],
+nodes:[{x:2,y:2,res:'champi'}],
+exits:[{x:0,y:6,to:'clairiere',tx:11,ty:6},{x:12,y:6,to:'terrier2',tx:1,ty:6}]};
+DATA.cartes.terrier2={n:'Terrier : salle des spores',biome:'foret',need:2,start:[1,6],tint:'rgba(70,40,80,.32)',
+rocks:[[4,3],[4,9],[7,3],[7,9]],npcs:[],
+groups:[{x:9,y:6,renc:21}],
+nodes:[{x:2,y:11,res:'champi'}],
+coffres:[{x:12,y:1,res:{champi:3,laine:2}}],
+exits:[{x:0,y:6,to:'terrier1',tx:11,ty:6},{x:12,y:6,to:'terrier3',tx:1,ty:6}]};
+DATA.cartes.terrier3={n:'Terrier : cœur de la Mère',biome:'foret',need:2,start:[1,6],tint:'rgba(90,40,100,.38)',
+rocks:[[4,3],[4,9],[7,6]],npcs:[],
+groups:[{x:10,y:6,renc:22}],
+nodes:[],
+coffres:[{x:12,y:12,res:{champi:6,laine:4}}],
+exits:[{x:0,y:6,to:'terrier2',tx:11,ty:6}]};
+Object.assign(DATA.quetes,{
+f1:{n:'Lucioles en péril',desc:'Repousse 2 groupes de monstres sur le Sentier des Lucioles.',need:2,kind:'win',renc:18,req:1,donneur:'Gardienne des lucioles',say:'Chasse les monstres qui rôdent sur le sentier : ils piétinent mes lucioles.',fin:'Elles brillent de nouveau. Un tout petit peu.',rew:{xpq:[8,'normale'],res:{champi:3}}},
+f2:{n:'Cèpes égarés',desc:'Ramasse 3 cèpes dans la Clairière pour la Cueilleuse Pâquerette.',need:3,kind:'pick',req:1,donneur:'Cueilleuse Pâquerette',say:'Trois cèpes se sont cachés dans la clairière. Trouve-les, je cuisinerai quelque chose.',fin:'Magnifiques ! Je t’en garde une part. Si tu me promets de ne pas la manger tout de suite.',rew:{xpq:[9,'normale'],res:{champi:4,laine:2}}},
+f3:{n:'La Mère qui éteint la forêt',desc:'Pénètre dans le Terrier, au bout de la Clairière, et vaincs la Mère Mycélium.',need:1,kind:'win',renc:22,req:2,donneur:'Ermite Champignac',say:'Tout le champignon de la forêt s’éteint. La source est dans un terrier, derrière la clairière. Vas-y, je reste ici, dans l’obscurité.',fin:'La forêt scintille ! Je n’ai jamais été aussi content de pouvoir lire mon courrier.',rew:{xpq:[12,'longue'],res:{champi:6,laine:4}}}});
+
 // ============ ÉCHELLE DE PUISSANCE (calibrée avec outils/sim.js) ============
 // Multiplicateur appliqué à chaque rencontre (PV x k, dégâts x k^0,7). Visé : un héros de niveau égal perd ~45 % de ses PV
 // dans un combat normal, ~55 % contre une élite, ~65 % contre un boss. Pour rééquilibrer : changer ces valeurs, puis relancer le simulateur.
-DATA.echelle=[2,5,5.2,5.2,5.2,4.4,3.8,3.9,4,4.7,4.6,3.7,3.8,3.9,3.9,4.0,6.0,3.9];
+DATA.echelle=[2,5,5.2,5.2,5.2,4.4,3.8,3.9,4,4.7,4.6,3.7,3.8,3.9,3.9,4.0,6.0,3.9,3.4,4.0,5.0,4.8,3.8];
 DATA.rencontres.forEach((r,i)=>{const k=DATA.echelle[i]||1,kd=Math.pow(k,.7);
 {const B=r.m.find(m=>m.boss),F=r.m.find(m=>m.form);if(B&&F){F.hp=F.max=Math.max(15,Math.round(B.max*k*(F.pct||.22)))}}
 r.m.forEach(m=>{if(m.form)return;m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
