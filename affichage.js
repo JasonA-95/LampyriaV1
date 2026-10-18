@@ -114,7 +114,7 @@ const k=r.hit?r.hit.filter(f=>f.hp<=0).length:0;
 const ash=C.foes.some(f=>f.cendre&&f.hp>0);
 const mortText=(r.mortEvents||[]).map(e=>e.text).join(' ');
 const effectText=[r.charge?'Charge !':'',r.recul?'Recul':'',r.garde?'Garde':''].filter(Boolean).join(' '),stateText=(r.events||[]).map(e=>e.text).filter(Boolean).join(' ');
-const FM=(C.foes.find(g=>g.form)||{n:'Le formulaire'}).n,BS=(C.foes.find(g=>g.boss)||{n:'Le Chambellan'}).n;const combatText=r.resist?'Le boss résiste à l’effet.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?FM+' est projeté hors du terrain !':FM+' est détruit !')+' '+BS+' est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?BS+' est invulnérable tant que '+FM.toLowerCase()+' le protège !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'';
+const FM=(C.foes.find(g=>g.form)||{n:'Le formulaire'}).n,BS=(C.foes.find(g=>g.boss)||{n:'Le Chambellan'}).n;const combatText=r.resist?'Le boss résiste à l’effet.':r.blocked&&ash?'La Duchesse est protégée par la cendre ! La cendre est dispersée : frappe vite, elle la reforme à son tour.':r.formDown?(r.out?FM+' est projeté hors du terrain !':FM+' est détruit !')+' '+BS+' est vulnérable 2 tours.':r.blocked&&!(r.hit&&r.hit.length)?BS+' est invulnérable : '+((C.foes.find(g=>g.boss)||{}).prot||FM.toLowerCase()+' le protège')+' !':r.mocked&&!(r.hit&&r.hit.length)?'Les Lueurs se moquent de lui : sa vexation fond !':r.ashCleared&&!(r.hit&&r.hit.length)?'La cendre se disperse.':r.hit&&r.hit.length?'-'+r.dmg+' PV sur '+r.hit.length+' ennemi(s)'+(k?', '+k+' vaincu(s).':'.'):'';
 msg(mortText||[effectText,combatText,stateText].filter(Boolean).join(' '));
 if(C.result=='lose'){ui();draw();setTimeout(()=>endFight('lose'),500);return}
 if(C.result=='win'){const rw=reward();ui();draw();setTimeout(()=>endFight('win',rw),500);return}
@@ -163,7 +163,7 @@ const decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,null,DATA.decor[
 for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-hp.x,y-hp.y)/6.5)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
 for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
-if(C.ash.has(k))dia(cx,cy,'rgba(190,180,185,.5)');if(rc[k]>0)dia(cx,cy,'rgba(255,180,84,.32)');if(rz.has(k))dia(cx,cy,'rgba(106,169,255,.2)');if(rs.has(k))dia(cx,cy,'rgba(106,169,255,.45)');if(pp[k])dia(cx,cy,'rgba(255,240,170,.6)');if(zone.has(k))dia(cx,cy,'rgba(229,86,74,.6)');
+if(C.ash.has(k))dia(cx,cy,'rgba(190,180,185,.5)');if(C.warn&&C.warn.has(k))dia(cx,cy,'rgba(229,86,74,.5)');if(rc[k]>0)dia(cx,cy,'rgba(255,180,84,.32)');if(rz.has(k))dia(cx,cy,'rgba(106,169,255,.2)');if(rs.has(k))dia(cx,cy,'rgba(106,169,255,.45)');if(pp[k])dia(cx,cy,'rgba(255,240,170,.6)');if(zone.has(k))dia(cx,cy,'rgba(229,86,74,.6)');
 if(C.rocks.has(k)){if(OPT.fx=='off'){g.fillStyle='#fff';g.fillText('🪨',cx,cy-th*.15)}else drawTerrainObstacle(g,cx,cy,tw,th,biome,x,y)}}
 const hx=(hp.x-hp.y)*tw/2+ox,hy=(hp.x+hp.y)*th/2+oy,gr=g.createRadialGradient(hx,hy,0,hx,hy,tw*3);
 gr.addColorStop(0,'rgba(255,180,84,.28)');gr.addColorStop(1,'rgba(255,180,84,0)');
