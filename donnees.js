@@ -352,10 +352,50 @@ e1:{n:'Pétales de couchant',desc:'Ramasse 3 pétales de soleil mourant le long 
 e2:{n:'Parvis en deuil',desc:'Repousse 2 groupes de monstres éplorés sur le Parvis du Temple.',need:2,kind:'win',renc:12,req:12,donneur:'Gardien du Parvis',say:'Les pèlerins éteints pleurent sur mes marches. Repousse-en deux groupes, que je puisse balayer.',fin:'Enfin du silence. Il y a du bruit dans le silence, mais c’est le mien.',rew:{xpq:[47,'longue'],res:{eclat:4,gravat:2}}},
 e3:{n:'Médailles de la Garde',desc:'Retrouve 3 médailles de la Garde royale dans la Cour de la Citadelle.',need:3,kind:'pick',req:14,donneur:'Capitaine fantôme',say:'Mes gardes ont perdu leurs médailles dans la cour. Trois. Sans elles, ils ne se souviennent plus d’être des gardes.',fin:'Les voilà ! Ils vont se souvenir. Ils vont être très fâchés.',rew:{xpq:[53,'longue'],res:{eclat:4,gravat:4}}}});
 
+// ============ ÉQUIPEMENT DES ACTES 2 ET 3 : nouveaux objets, panoplies et butins ============
+DATA.sets.marais={n:'Panoplie des marais',bonus:{2:{pv:10},4:{dmg:1,res:4}}};
+['lame_roseau','capuchon_cendre','tunique_roseau','sandales_roseau','bracelet_cendre'].forEach(id=>{if(DATA.objets[id])DATA.objets[id].set='marais'});
+Object.assign(DATA.objets,{
+baton_sable:{n:'Bâton de sable',e:'🪄',slot:'arme',r:1,st:{dmg:3},set:'dunes',cout:{sable:6,fil:3}},
+cimeterre_dunes:{n:'Cimeterre des dunes',e:'🗡️',slot:'arme',r:2,st:{dmg:5}},
+amulette_mirage:{n:'Amulette du mirage',e:'🔮',slot:'acc',r:2,st:{pv:14,dmg:1}},
+cape_marchand:{n:'Cape du marchand',e:'🧣',slot:'corps',r:2,st:{pv:24,res:6}},
+bottes_chameau:{n:'Bottes de chameau',e:'🥾',slot:'bottes',r:2,st:{pv:12,pm:1}},
+casque_piquet:{n:'Casque de piquet',e:'⛑️',slot:'tete',r:2,st:{pv:24,res:4}},
+brassard_greviste:{n:'Brassard de gréviste',e:'🎗️',slot:'acc',r:2,st:{dmg:2,res:4}},
+etendard_greve:{n:'Étendard de grève',e:'🚩',slot:'acc',r:3,st:{pv:20,dmg:2,res:6}},
+lame_aube:{n:'Lame d’aube',e:'⚔️',slot:'arme',r:2,st:{dmg:6},set:'soleil',cout:{eclat:8,gravat:5}},
+baton_pelerin:{n:'Bâton de pèlerin',e:'🦯',slot:'arme',r:2,st:{dmg:6}},
+sandales_pelerin:{n:'Sandales de pèlerin',e:'🩴',slot:'bottes',r:2,st:{pv:20,res:6}},
+collier_parvis:{n:'Collier du parvis',e:'📿',slot:'acc',r:2,st:{pv:18,dmg:1}},
+tunique_pretre:{n:'Tunique de prêtre',e:'🥻',slot:'corps',r:2,st:{pv:28,res:8}},
+manteau_ombre:{n:'Manteau d’ombre',e:'🧥',slot:'corps',r:3,st:{pv:34,res:10}},
+bottes_eclipse:{n:'Bottes d’éclipse',e:'👢',slot:'bottes',r:3,st:{pv:22,res:6,pm:1}},
+epee_garde:{n:'Épée de la Garde',e:'🗡️',slot:'arme',r:2,st:{dmg:7}},
+heaume_garde:{n:'Heaume de la Garde',e:'🪖',slot:'tete',r:2,st:{pv:28,res:6}},
+tampon_chambellan:{n:'Tampon du Chambellan',e:'📎',slot:'acc',r:3,st:{dmg:3,res:8}},
+sceptre_cendres:{n:'Sceptre des cendres rallumées',e:'🪄',slot:'arme',r:3,st:{dmg:9}},
+masque_bouffon:{n:'Masque du Bouffon',e:'🎭',slot:'tete',r:3,st:{pv:30,dmg:2}},
+marotte_bouffon:{n:'Marotte du Bouffon',e:'🃏',slot:'arme',r:3,st:{dmg:10}},
+lanterne_gardien:{n:'Lanterne du Gardien',e:'🏮',slot:'acc',r:3,st:{pv:30,dmg:3,res:10}},
+armure_gardien:{n:'Armure du Gardien',e:'🛡️',slot:'corps',r:3,st:{pv:40,res:12}}});
+const DR=(i,l)=>{DATA.rencontres[i].drops=(DATA.rencontres[i].drops||[]).concat(l)};
+DR(7,[{id:'cimeterre_dunes',p:12},{id:'amulette_mirage',p:10}]);
+DR(8,[{id:'cape_marchand',p:12},{id:'bottes_chameau',p:10}]);
+DR(9,[{id:'casque_piquet',p:20},{id:'brassard_greviste',p:20}]);
+DR(10,[{id:'etendard_greve',p:35}]);
+DR(11,[{id:'baton_pelerin',p:12},{id:'sandales_pelerin',p:14}]);
+DR(12,[{id:'collier_parvis',p:12},{id:'tunique_pretre',p:12}]);
+DR(13,[{id:'manteau_ombre',p:35},{id:'bottes_eclipse',p:35}]);
+DR(14,[{id:'epee_garde',p:12},{id:'heaume_garde',p:12}]);
+DR(15,[{id:'tampon_chambellan',p:30},{id:'sceptre_cendres',p:20}]);
+DR(16,[{id:'masque_bouffon',p:60},{id:'marotte_bouffon',p:35}]);
+DR(17,[{id:'lanterne_gardien',p:35},{id:'armure_gardien',p:35}]);
+
 // ============ ÉCHELLE DE PUISSANCE (calibrée avec outils/sim.js) ============
 // Multiplicateur appliqué à chaque rencontre (PV x k, dégâts x k^0,7). Visé : un héros de niveau égal perd ~45 % de ses PV
 // dans un combat normal, ~55 % contre une élite, ~65 % contre un boss. Pour rééquilibrer : changer ces valeurs, puis relancer le simulateur.
-DATA.echelle=[2,5,5.2,5.2,5.2,4.4,3.8,3.9,4,4.7,4.6,3.4,3.6,3.6,3.2,3.4,5.5,3.3];
+DATA.echelle=[2,5,5.2,5.2,5.2,4.4,3.8,3.9,4,4.7,4.6,3.7,3.8,3.9,3.9,4.0,6.0,3.9];
 DATA.rencontres.forEach((r,i)=>{const k=DATA.echelle[i]||1,kd=Math.pow(k,.7);
 {const B=r.m.find(m=>m.boss),F=r.m.find(m=>m.form);if(B&&F){F.hp=F.max=Math.max(15,Math.round(B.max*k*(F.pct||.22)))}}
 r.m.forEach(m=>{if(m.form)return;m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);

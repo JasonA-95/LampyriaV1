@@ -117,15 +117,23 @@ B.appendChild(L)}
 // ---------- onglet Atelier ----------
 function craft(id){const o=DATA.objets[id];if(sv.inv.includes(id)||!canPay(o.cout)){toast('Impossible');return}
 pay(o.cout);sv.inv.push(id);const e=autoEquip(id);store();toast(o.n+' fabriqué'+(e?' et équipé':''));renderMenu()}
-function tabAtelier(B){const list=craftables(),c=card('Fabrication','Transforme tes ressources en équipement. Chaque objet se fabrique une seule fois.');
-if(!list.length)c.appendChild(el('p','','Tout est fabriqué !'));
-SLOTS.filter((s,i)=>i<5).forEach(([s,n])=>{const L=list.filter(id=>DATA.objets[id].slot==slotType(s));if(!L.length)return;
-c.appendChild(el('h3','',n=='Accessoire 1'?'Accessoires':n));
-L.forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout);c.appendChild(row(itemRow(id,'<span class="mt">'+costChips(o.cout)+'</span>'),()=>craft(id),ok?'':'lock'))})});
+let atOnly=false;
+function tabAtelier(B){const all=craftables(),list=atOnly?all.filter(id=>canPay(DATA.objets[id].cout)):all;
+B.appendChild(row('<span class="em">🔎</span><span class="tx"><span class="nm">Afficher : '+(atOnly?'ce que je peux fabriquer maintenant':'tout')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{atOnly=!atOnly;renderMenu()}));
+const c=card('Fabrication','Transforme tes ressources en équipement. Chaque objet se fabrique une seule fois. Les panoplies donnent un bonus à partir de 2 pièces portées.');
+if(!all.length)c.appendChild(el('p','','Tout est fabriqué !'));else if(!list.length)c.appendChild(el('p','','Rien n’est fabricable pour l’instant : récolte des ressources.'));
+const groups={};list.forEach(id=>{const k=DATA.objets[id].set||'_';(groups[k]=groups[k]||[]).push(id)});
+const order=Object.keys(groups).sort((x,y)=>(x=='_')-(y=='_')||Object.keys(DATA.objets).indexOf(groups[x][0])-Object.keys(DATA.objets).indexOf(groups[y][0]));
+order.forEach(k=>{let title='Équipement simple',sub='';if(k!='_'){const S=DATA.sets[k],tot=Object.keys(DATA.objets).filter(i=>DATA.objets[i].set==k),own=tot.filter(i=>sv.inv.includes(i)).length;title=S.n+' ('+own+'/'+tot.length+')';sub=Object.keys(S.bonus).map(n=>'('+n+') '+fmtSt(S.bonus[n])).join(' · ')}
+c.appendChild(el('h3','',title));if(sub)c.appendChild(el('p','mt',sub));
+groups[k].sort((x,y)=>canPay(DATA.objets[y].cout)-canPay(DATA.objets[x].cout)).forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout);c.appendChild(row(itemRow(id,'<span class="mt">'+costChips(o.cout)+'</span>'),()=>craft(id),ok?'':'lock'))})});
 B.appendChild(c);
-const D=Object.keys(DATA.objets).filter(id=>!DATA.objets[id].cout),d=card('À trouver en combat','Ces objets ne se fabriquent pas : ils tombent sur les monstres (une garantie évite la malchance trop longue).');
-D.forEach(id=>{const own=sv.inv.includes(id),src=DATA.rencontres.find(e=>(e.drops||[]).some(x=>x.id==id));
-d.appendChild(row(itemRow(id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Butin : '+(src?src.n:'récompense spéciale'))+'</span>'),null,own?'':'lock'))});
+const d=card('À trouver en combat','Ces objets ne se fabriquent pas : ils tombent sur les monstres, une garantie évite la malchance trop longue. Les boss lâchent les meilleurs.');
+DATA.rencontres.forEach((e,i)=>{if(i>sv.renc+1)return;const L=(e.drops||[]).filter(x=>DATA.objets[x.id]&&!DATA.objets[x.id].cout);if(!L.length)return;
+const got=L.filter(x=>sv.inv.includes(x.id)).length;d.appendChild(el('h3','',e.n+' ('+got+'/'+L.length+')'));
+L.forEach(x=>{const own=sv.inv.includes(x.id);d.appendChild(row(itemRow(x.id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Chance : '+x.p+' %')+'</span>'),null,own?'':'lock'))})});
+const sp=Object.keys(DATA.objets).filter(id=>!DATA.objets[id].cout&&!DATA.rencontres.some(e=>(e.drops||[]).some(x=>x.id==id)));
+if(sp.length){d.appendChild(el('h3','','Récompenses spéciales'));sp.forEach(id=>{const own=sv.inv.includes(id);d.appendChild(row(itemRow(id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Récompense de quête ou d’événement')+'</span>'),null,own?'':'lock'))})}
 B.appendChild(d)}
 
 // ---------- onglet Quêtes (journal) ----------
