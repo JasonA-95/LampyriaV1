@@ -473,3 +473,318 @@ r.m.forEach(m=>{if(m.form)return;m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=
 if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
 if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)};
 if(m.renfort){const rm=m.renfort.m,sm=Math.round(rm.max*k);m.renfort={...m.renfort,m:{...rm,hp:sm,max:sm,d:Math.round(rm.d*kd),...(rm.mort?{mort:{...rm.mort,dmg:Math.round(rm.mort.dmg*kd)}}:{})}}}})});
+
+// ============ COLLINES ÉTENDUES : Pâturage Brumeux, Bergerie abandonnée et donjon « L'Enclos du Bouc Recenseur » ============
+// Ces blocs (Collines, Manoir, Marais, Désert, Acte 3) mettent eux-mêmes leurs rencontres à l'échelle (valeurs à recaler avec outils/sim.js).
+(()=>{
+const B=DATA.rencontres.length;
+const lbr=(x,y)=>({x,y,hp:34,max:34,pm:4,d:11,e:'🐺',n:'Le loup de brume',sort:{n:'Hurlement',r:[1,3],los:1,dmg:4,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
+plt=(x,y)=>({x,y,hp:30,max:30,pm:3,d:9,e:'🧶',n:'La pelote enragée',mort:{n:'Déroulement',r:1,dmg:8}}),
+bcr=(x,y)=>({x,y,hp:140,max:140,pm:3,d:11,e:'🐐',n:'Bouc Recenseur',boss:1,alerte:{every:3,r:1,mult:1.4,n:'Charge du recensement',vul:1},sort:{n:'Coup de corne',r:[1,1],push:1,dmg:10,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+DATA.rencontres.push(
+{n:'Pâturage Brumeux',biome:'collines',niv:14,loot:{laine:4,braise:2},m:[lbr(10,3),lbr(11,8),mot(9,10)]},
+{n:'Bergerie abandonnée',biome:'collines',niv:15,loot:{laine:5,champi:2},m:[plt(10,3),mot(11,8),ber(9,10),lbr(11,5)]},
+{n:'Enclos : couloir de barrières',biome:'collines',niv:16,loot:{laine:4,braise:3},m:[lbr(9,3),plt(10,9),mot(11,6)]},
+{n:'Enclos : abreuvoir',biome:'collines',niv:16,type:'elite',loot:{laine:6,braise:4},m:[plt(10,3),lbr(11,6),ber(10,9),mot(9,6)]},
+{n:'Bouc Recenseur (boss)',biome:'collines',niv:17,say:'bouc',loot:{laine:10,braise:6,champi:4},m:[bcr(11,7),ber(9,3),mot(10,10)]});
+[4.6,4.4,4.8,5.0,4.2].forEach((k,j)=>{const kd=Math.pow(k,.7);DATA.rencontres[B+j].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
+if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)}})});
+DATA.repliques.bouc=['Gourmande','Il prépare une charge ! Quand les cases rouges apparaissent, sors de là : il se fatiguera, et ce sera ton moment.'];
+Object.assign(DATA.objets,{
+clochette_brume:{n:'Clochette de brume',e:'🔔',slot:'acc',r:1,st:{pv:8,res:3}},
+guetres_berger:{n:'Guêtres de berger',e:'🥾',slot:'bottes',r:1,st:{pv:10,res:3}},
+bonnet_brume:{n:'Bonnet de brume',e:'🧢',slot:'tete',r:2,st:{pv:18,res:4}},
+houlette_recenseur:{n:'Houlette du Recenseur',e:'🪝',slot:'arme',r:2,st:{dmg:4}},
+pelisse_bouc:{n:'Pelisse du Bouc',e:'🧥',slot:'corps',r:2,st:{pv:20,res:6}}});
+DR(B,[{id:'clochette_brume',p:15}]);DR(B+1,[{id:'guetres_berger',p:20}]);DR(B+3,[{id:'bonnet_brume',p:25}]);DR(B+4,[{id:'houlette_recenseur',p:100},{id:'pelisse_bouc',p:40}]);
+DATA.cartes.collines.exits.push({x:6,y:0,to:'paturage',tx:6,ty:11});
+DATA.cartes.collines.npcs.forEach(n=>{if(n.n=='Berger Laine-de-Nuit')n.quests=['c3']});
+DATA.cartes.paturage={n:'Pâturage Brumeux',biome:'collines',need:2,start:[6,11],tint:'rgba(170,190,220,.16)',
+rocks:[[3,3],[3,9],[6,6],[9,3],[9,9]],
+npcs:[{x:2,y:11,e:'🧑‍🦰',n:'Bergère Brume',quests:['c1'],txt:'Le brouillard est si épais que mes moutons se comptent en double. J’ai deux fois plus de moutons. Sur le papier.'}],
+groups:[{x:8,y:4,renc:B},{x:3,y:6,renc:B}],
+nodes:[{x:2,y:2,res:'laine'},{x:11,y:11,res:'braise'}],
+exits:[{x:6,y:12,to:'collines',tx:6,ty:1},{x:12,y:6,to:'bergerie',tx:1,ty:6}]};
+DATA.cartes.bergerie={n:'Bergerie abandonnée',biome:'collines',need:2,start:[1,6],tint:'rgba(140,130,110,.2)',
+rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
+npcs:[{x:2,y:10,e:'✂️',n:'Tondeur Mérinos',quests:['c2'],txt:'Je tonds des fantômes. La laine repousse, mais transparente. Ça se vend mal, ça se porte léger.'}],
+picks:[{x:2,y:2,quest:'c2'},{x:11,y:11,quest:'c2'},{x:11,y:1,quest:'c2'}],
+groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
+nodes:[{x:6,y:2,res:'laine'},{x:6,y:11,res:'braise'}],
+coffres:[{x:12,y:12,res:{laine:4,braise:2}}],
+exits:[{x:0,y:6,to:'paturage',tx:11,ty:6},{x:12,y:6,to:'enclos1',tx:1,ty:6}]};
+DATA.cartes.enclos1={n:'Enclos : couloir de barrières',biome:'collines',need:2,start:[1,6],tint:'rgba(60,70,90,.3)',
+rocks:[[4,2],[4,10],[6,5],[6,7],[8,3],[8,9]],npcs:[],
+groups:[{x:9,y:4,renc:B+2},{x:9,y:9,renc:B+2}],
+nodes:[{x:2,y:2,res:'laine'}],
+exits:[{x:0,y:6,to:'bergerie',tx:11,ty:6},{x:12,y:6,to:'enclos2',tx:1,ty:6}]};
+DATA.cartes.enclos2={n:'Enclos : abreuvoir',biome:'collines',need:2,start:[1,6],tint:'rgba(80,60,100,.3)',
+rocks:[[4,3],[4,9],[7,3],[7,9]],npcs:[],
+groups:[{x:9,y:6,renc:B+3}],
+nodes:[{x:2,y:11,res:'braise'}],
+coffres:[{x:12,y:1,res:{laine:3,braise:2}}],
+exits:[{x:0,y:6,to:'enclos1',tx:11,ty:6},{x:12,y:6,to:'enclos3',tx:1,ty:6}]};
+DATA.cartes.enclos3={n:'Enclos : cœur du troupeau',biome:'collines',need:2,start:[1,6],tint:'rgba(100,60,110,.36)',
+rocks:[[4,3],[4,9],[7,6]],npcs:[],
+groups:[{x:10,y:6,renc:B+4}],
+nodes:[],
+coffres:[{x:12,y:12,res:{laine:5,champi:4}}],
+exits:[{x:0,y:6,to:'enclos2',tx:11,ty:6}]};
+Object.assign(DATA.quetes,{
+c1:{n:'Brouillard sur le troupeau',desc:'Repousse 2 groupes de monstres sur le Pâturage Brumeux.',need:2,kind:'win',renc:B,req:2,donneur:'Bergère Brume',say:'Le brouillard est monté, et les loups avec. Chasse-en deux groupes : mes moutons ne retrouvent plus leur chemin.',fin:'Ils se sont comptés trois fois en rentrant. Ça fait toujours le même nombre. C’est rassurant.',rew:{xpq:[14,'normale'],res:{laine:4,braise:2}}},
+c2:{n:'Clochettes égarées',desc:'Ramasse 3 clochettes dans la Bergerie abandonnée pour le Tondeur Mérinos.',need:3,kind:'pick',req:2,donneur:'Tondeur Mérinos',say:'Mes moutons ont perdu leurs clochettes dans la bergerie. Sans clochette, un fantôme est introuvable. Trois, s’il te plaît.',fin:'Dring ! Ah, voilà qui rassure. Un mouton fantôme qui ne tinte pas, c’est juste un mouton qui a un problème.',rew:{xpq:[15,'normale'],res:{laine:4,champi:3}}},
+c3:{n:'Le Bouc qui compte tout',desc:'Entre dans l’Enclos, au bout de la Bergerie, et vaincs le Bouc Recenseur.',need:1,kind:'win',renc:B+4,req:2,donneur:'Berger Laine-de-Nuit',say:'Un bouc a pris ma bergerie pour un bureau. Il recense mes moutons : ils ne dorment plus, ils attendent d’être comptés. Vas-y, je garde la barrière.',fin:'Mes moutons dorment ! Enfin, ils flottent en rond. Pour des fantômes, c’est dormir.',rew:{xpq:[17,'longue'],res:{laine:6,braise:4}}}});
+})();
+
+// ============ MANOIR ÉTENDU : Hall des Guichets, Bureaux des Tampons et donjon « Les Archives du Chambellan » ============
+(()=>{
+const B=DATA.rencontres.length;
+const clr=(x,y)=>({x,y,hp:36,max:36,pm:3,d:10,e:'🧑‍💼',n:'Le clerc fantôme',ia:'dist',garde:[2,3],sort:{n:'Tampon de rappel',r:[2,3],los:1,dmg:5,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),
+ccl=(x,y)=>({x,y,hp:50,max:50,pm:2,d:13,e:'🗄️',n:'Le classeur mordant',mort:{n:'Éclatement de dossiers',r:1,dmg:10}}),
+plm=(x,y)=>({x,y,hp:26,max:26,pm:4,d:9,e:'🪶',n:'La plume vexée',ia:'dist',garde:[3,4],sort:{n:'Rature',r:[2,5],los:1,dmg:8,cd:0}}),
+bgr=(x,y)=>({x,y,hp:150,max:150,pm:2,d:12,e:'🧐',n:'Greffier Ratures',boss:1,escorte:2,prot:'ses clercs font un cercle autour de lui',sort:{n:'Rature définitive',r:[1,2],los:1,dmg:10,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+DATA.rencontres.push(
+{n:'Hall des Guichets',biome:'manoir',niv:18,loot:{braise:4,champi:2},m:[clr(10,3),plm(11,8),mou(9,10)]},
+{n:'Bureaux des Tampons',biome:'manoir',niv:19,loot:{champi:4,laine:3},m:[clr(10,3),ccl(11,8),plm(9,10),clr(11,5)]},
+{n:'Archives : rayonnages',biome:'manoir',niv:19,loot:{braise:4,laine:3},m:[ccl(9,3),plm(10,9),clr(11,6)]},
+{n:'Archives : salle des dossiers',biome:'manoir',niv:20,type:'elite',loot:{braise:6,champi:5},m:[ccl(10,3),clr(11,6),plm(10,9),ccl(9,6)]},
+{n:'Greffier Ratures (boss)',biome:'manoir',niv:20,say:'greffier',loot:{braise:10,champi:6,laine:5},m:[bgr(11,7),clr(10,7),ccl(11,9),plm(9,3)]});
+[5.0,5.2,5.4,5.6,4.4].forEach((k,j)=>{const kd=Math.pow(k,.7);DATA.rencontres[B+j].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
+if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)}})});
+DATA.repliques.greffier=['Gourmande','Il est entouré de ses clercs. Écarte-les ou écrase-les : seul, il ne tient pas debout.'];
+Object.assign(DATA.objets,{
+encrier_noir:{n:'Encrier noir',e:'🖋️',slot:'acc',r:1,st:{pv:10,res:3}},
+chaussons_feutres:{n:'Chaussons feutrés',e:'🥿',slot:'bottes',r:1,st:{pv:12,res:3}},
+visiere_clerc:{n:'Visière de clerc',e:'🧢',slot:'tete',r:2,st:{pv:20,res:4}},
+regle_greffier:{n:'Règle du Greffier',e:'📏',slot:'arme',r:2,st:{dmg:4,pv:6}},
+robe_greffier:{n:'Robe du Greffier',e:'🥻',slot:'corps',r:2,st:{pv:22,res:6}}});
+DR(B,[{id:'encrier_noir',p:15}]);DR(B+1,[{id:'chaussons_feutres',p:20}]);DR(B+3,[{id:'visiere_clerc',p:25}]);DR(B+4,[{id:'regle_greffier',p:100},{id:'robe_greffier',p:40}]);
+DATA.cartes.manoir.exits.push({x:6,y:0,to:'hall',tx:6,ty:11});
+DATA.cartes.hall={n:'Hall des Guichets',biome:'manoir',need:3,start:[6,11],tint:'rgba(130,70,170,.18)',
+rocks:[[3,4],[3,8],[6,6],[9,4],[9,8]],
+npcs:[{x:2,y:11,e:'🧑‍✈️',n:'Concierge Ficelle',quests:['m1','m3'],txt:'Guichet 1 : fermé. Guichet 2 : fermé. Guichet 3 : ouvert, mais il est dans le mauvais bâtiment.'}],
+groups:[{x:8,y:3,renc:B},{x:3,y:6,renc:B}],
+nodes:[{x:2,y:2,res:'braise'},{x:11,y:11,res:'champi'}],
+exits:[{x:6,y:12,to:'manoir',tx:6,ty:1},{x:12,y:6,to:'bureaux',tx:1,ty:6}]};
+DATA.cartes.bureaux={n:'Bureaux des Tampons',biome:'manoir',need:3,start:[1,6],tint:'rgba(150,100,170,.2)',
+rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
+npcs:[{x:2,y:10,e:'🖋️',n:'Copiste Rature',quests:['m2'],txt:'Je recopie le même formulaire depuis 40 ans. Je ne sais pas ce qu’il dit. Il est très bien écrit.'}],
+picks:[{x:2,y:2,quest:'m2'},{x:11,y:11,quest:'m2'},{x:11,y:1,quest:'m2'}],
+groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
+nodes:[{x:6,y:2,res:'champi'},{x:6,y:11,res:'laine'}],
+coffres:[{x:12,y:12,res:{braise:4,champi:2}}],
+exits:[{x:0,y:6,to:'hall',tx:11,ty:6},{x:12,y:6,to:'archives1',tx:1,ty:6}]};
+DATA.cartes.archives1={n:'Archives : rayonnages',biome:'manoir',need:3,start:[1,6],tint:'rgba(60,50,80,.34)',
+rocks:[[4,2],[4,10],[6,5],[6,7],[8,3],[8,9]],npcs:[],
+groups:[{x:9,y:4,renc:B+2},{x:9,y:9,renc:B+2}],
+nodes:[{x:2,y:2,res:'braise'}],
+exits:[{x:0,y:6,to:'bureaux',tx:11,ty:6},{x:12,y:6,to:'archives2',tx:1,ty:6}]};
+DATA.cartes.archives2={n:'Archives : salle des dossiers',biome:'manoir',need:3,start:[1,6],tint:'rgba(80,50,100,.34)',
+rocks:[[4,3],[4,9],[7,3],[7,9]],npcs:[],
+groups:[{x:9,y:6,renc:B+3}],
+nodes:[{x:2,y:11,res:'champi'}],
+coffres:[{x:12,y:1,res:{braise:3,laine:2}}],
+exits:[{x:0,y:6,to:'archives1',tx:11,ty:6},{x:12,y:6,to:'archives3',tx:1,ty:6}]};
+DATA.cartes.archives3={n:'Archives : bureau du Greffier',biome:'manoir',need:3,start:[1,6],tint:'rgba(100,50,110,.4)',
+rocks:[[4,3],[4,9],[7,6]],npcs:[],
+groups:[{x:10,y:6,renc:B+4}],
+nodes:[],
+coffres:[{x:12,y:12,res:{braise:5,champi:4}}],
+exits:[{x:0,y:6,to:'archives2',tx:11,ty:6}]};
+Object.assign(DATA.quetes,{
+m1:{n:'Courrier en souffrance',desc:'Repousse 2 groupes de monstres dans le Hall des Guichets.',need:2,kind:'win',renc:B,req:3,donneur:'Concierge Ficelle',say:'Le courrier s’entasse devant les guichets, gardé par des clercs et des mouches. Repousses-en deux groupes, je te ferai un reçu.',fin:'Un reçu ! Tamponné, signé et déjà périmé. Tu as bien mérité ta récompense.',rew:{xpq:[18,'normale'],res:{braise:4,champi:3}}},
+m2:{n:'Formulaires égarés',desc:'Ramasse 3 formulaires perdus dans les Bureaux des Tampons pour le Copiste Rature.',need:3,kind:'pick',req:3,donneur:'Copiste Rature',say:'Trois formulaires ont glissé hors de leur dossier. Sans eux, mon formulaire est incomplet. Je ne sais pas de quoi, mais ça me gêne.',fin:'Complet ! Je peux enfin le recopier à nouveau. Merci, je suis ému. Il y a de l’encre sur ma joue.',rew:{xpq:[19,'normale'],res:{laine:4,champi:3}}},
+m3:{n:'Les Archives du Chambellan',desc:'Pénètre dans les Archives, au fond des Bureaux, et vaincs le Greffier Ratures.',need:1,kind:'win',renc:B+4,req:3,donneur:'Concierge Ficelle',say:'Le Greffier archive tout, même les gens. Quelqu’un doit lui rappeler qu’on ne classe pas les visiteurs. Les Archives sont derrière les Bureaux.',fin:'Les visiteurs sont sortis des classeurs ! Certains ont un peu jauni. Merci, on sent que ça circule.',rew:{xpq:[20,'longue'],res:{braise:6,champi:4,laine:4}}}});
+})();
+
+// ============ MARAIS ÉTENDU : Gué des Crapauds, Île aux Berceuses et donjon « Le Manoir des Rêves » ============
+(()=>{
+const B=DATA.rencontres.length;
+const pap=(x,y)=>({x,y,hp:30,max:30,pm:4,d:11,e:'🦋',n:'Le papillon de nuit',ia:'dist',garde:[3,4],sort:{n:'Poudre soporifique',r:[2,4],los:1,dmg:6,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),
+ore=(x,y)=>({x,y,hp:60,max:60,pm:2,d:14,e:'🛏️',n:'L’oreiller hanté',mort:{n:'Explosion de plumes',r:1,dmg:12}}),
+chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
+bar=(x,y)=>({x,y,hp:160,max:160,pm:2,d:13,e:'🦉',n:'Baronne Insomnie',boss:1,cycle:{a:2,b:2},prot:'elle rêve encore',sort:{n:'Bâillement',r:[1,3],los:1,dmg:11,etats:[{id:'ralenti',v:1,t:2}],cd:2}});
+DATA.rencontres.push(
+{n:'Gué des Crapauds',biome:'marais',niv:22,loot:{cendre:4,roseau:2},m:[cra(10,3),pap(11,8),cra(9,10)]},
+{n:'Île aux Berceuses',biome:'marais',niv:23,loot:{roseau:5,cendre:3},m:[pap(10,3),chr(11,8),ore(9,10),gri(11,5)]},
+{n:'Rêves : couloir des oreillers',biome:'roseliere',niv:24,loot:{roseau:4,cendre:3},m:[ore(9,3),pap(10,9),chr(11,6)]},
+{n:'Rêves : salle des cauchemars',biome:'roseliere',niv:25,type:'elite',loot:{cendre:6,roseau:5},m:[chr(10,3),ore(11,6),pap(10,9),cra(9,6)]},
+{n:'Baronne Insomnie (boss)',biome:'roseliere',niv:26,say:'insomnie',loot:{cendre:10,roseau:6,braise:4},m:[bar(11,7),pap(9,3),ore(10,10)]});
+[4.8,4.6,4.4,4.6,3.8].forEach((k,j)=>{const kd=Math.pow(k,.7);DATA.rencontres[B+j].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
+if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)}})});
+DATA.repliques.insomnie=['Peureuse','Elle s’endort et se réveille ! Quand elle dort, elle est protégée. Attends qu’elle ouvre les yeux : là, frappe fort !'];
+Object.assign(DATA.objets,{
+amulette_dormeur:{n:'Amulette du dormeur',e:'📿',slot:'acc',r:1,st:{pv:10,dmg:1}},
+pantoufles_reve:{n:'Pantoufles de rêve',e:'🥿',slot:'bottes',r:1,st:{pv:14,res:4}},
+bonnet_nuit:{n:'Bonnet de nuit',e:'🧢',slot:'tete',r:2,st:{pv:22,res:4}},
+plume_insomnie:{n:'Plume de l’Insomnie',e:'🪶',slot:'arme',r:2,st:{dmg:4,pv:8}},
+robe_nuit:{n:'Robe de nuit',e:'👘',slot:'corps',r:2,st:{pv:24,res:7}}});
+DR(B,[{id:'amulette_dormeur',p:15}]);DR(B+1,[{id:'pantoufles_reve',p:20}]);DR(B+3,[{id:'bonnet_nuit',p:25}]);DR(B+4,[{id:'plume_insomnie',p:100},{id:'robe_nuit',p:40}]);
+DATA.cartes.marais.exits.push({x:6,y:0,to:'gue',tx:6,ty:11});
+DATA.cartes.marais.npcs.forEach(n=>{if(n.n=='La Passeuse')n.quests.push('n3')});
+DATA.cartes.gue={n:'Gué des Crapauds',biome:'marais',need:4,start:[6,11],tint:'rgba(110,130,120,.22)',
+rocks:[[3,3],[3,9],[6,6],[9,3],[9,9]],
+npcs:[{x:2,y:11,e:'🎣',n:'Pêcheur de Brume',quests:['n1'],txt:'Je pêche depuis vingt ans. Pas un poisson. Mais le brouillard mord beaucoup.'}],
+groups:[{x:8,y:4,renc:B},{x:3,y:6,renc:B}],
+nodes:[{x:2,y:2,res:'roseau'},{x:11,y:11,res:'cendre'}],
+exits:[{x:6,y:12,to:'marais',tx:6,ty:1},{x:12,y:6,to:'ile',tx:1,ty:6}]};
+DATA.cartes.ile={n:'Île aux Berceuses',biome:'marais',need:4,start:[1,6],tint:'rgba(130,140,170,.2)',
+rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
+npcs:[{x:2,y:10,e:'👵',n:'Vieille Berceuse',quests:['n2'],txt:'Je chantais pour endormir le marais. Maintenant le marais me chante des reproches.'}],
+picks:[{x:2,y:2,quest:'n2'},{x:11,y:11,quest:'n2'},{x:11,y:1,quest:'n2'}],
+groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
+nodes:[{x:6,y:2,res:'roseau'},{x:6,y:11,res:'cendre'}],
+coffres:[{x:12,y:12,res:{roseau:4,cendre:3}}],
+exits:[{x:0,y:6,to:'gue',tx:11,ty:6},{x:12,y:6,to:'reves1',tx:1,ty:6}]};
+DATA.cartes.reves1={n:'Rêves : couloir des oreillers',biome:'roseliere',need:4,start:[1,6],tint:'rgba(110,80,150,.32)',
+rocks:[[4,2],[4,10],[6,5],[6,7],[8,3],[8,9]],npcs:[],
+groups:[{x:9,y:4,renc:B+2},{x:9,y:9,renc:B+2}],
+nodes:[{x:2,y:2,res:'roseau'}],
+exits:[{x:0,y:6,to:'ile',tx:11,ty:6},{x:12,y:6,to:'reves2',tx:1,ty:6}]};
+DATA.cartes.reves2={n:'Rêves : salle des cauchemars',biome:'roseliere',need:4,start:[1,6],tint:'rgba(70,50,110,.36)',
+rocks:[[4,3],[4,9],[7,3],[7,9]],npcs:[],
+groups:[{x:9,y:6,renc:B+3}],
+nodes:[{x:2,y:11,res:'cendre'}],
+coffres:[{x:12,y:1,res:{roseau:3,cendre:3}}],
+exits:[{x:0,y:6,to:'reves1',tx:11,ty:6},{x:12,y:6,to:'reves3',tx:1,ty:6}]};
+DATA.cartes.reves3={n:'Rêves : chambre de la Baronne',biome:'roseliere',need:4,start:[1,6],tint:'rgba(90,50,120,.4)',
+rocks:[[4,3],[4,9],[7,6]],npcs:[],
+groups:[{x:10,y:6,renc:B+4}],
+nodes:[],
+coffres:[{x:12,y:12,res:{cendre:5,roseau:5}}],
+exits:[{x:0,y:6,to:'reves2',tx:11,ty:6}]};
+Object.assign(DATA.quetes,{
+n1:{n:'Les crapauds de passage',desc:'Repousse 2 groupes de monstres au Gué des Crapauds.',need:2,kind:'win',renc:B,req:4,donneur:'Pêcheur de Brume',say:'Des crapauds et des papillons squattent mon gué. Repousses-en deux groupes : j’aimerais pêcher quelque chose, même un caillou.',fin:'J’ai pêché un caillou ! Il est gros, il est mouillé, il est à moi.',rew:{xpq:[22,'normale'],res:{cendre:4,roseau:3}}},
+n2:{n:'Berceuses envolées',desc:'Ramasse 3 berceuses sur l’Île aux Berceuses pour la Vieille Berceuse.',need:3,kind:'pick',req:4,donneur:'Vieille Berceuse',say:'Trois berceuses se sont échappées de mon carnet. Elles brillent un peu. Sans elles, plus personne ne dort ici.',fin:'La première note est revenue. Les roseaux bâillent. Merci, je vais pouvoir me reposer, moi aussi.',rew:{xpq:[23,'normale'],res:{roseau:4,cendre:3}}},
+n3:{n:'La Baronne qui ne dort jamais',desc:'Pénètre dans le Manoir des Rêves, au bout de l’Île, et vaincs la Baronne Insomnie.',need:1,kind:'win',renc:B+4,req:4,donneur:'La Passeuse',say:'Une baronne veille dans le manoir des rêves. Tant qu’elle ne dort pas, tout le marais fait des cauchemars. Je connais les habitudes du marais, mais pas les siennes.',fin:'Les cauchemars retombent en cendres. Le marais dort. C’est très inhabituel, et très agréable.',rew:{xpq:[26,'longue'],res:{cendre:6,roseau:4,braise:4}}}});
+})();
+
+// ============ DÉSERT ÉTENDU : Mirage Changeant, Puits aux Mille Pieds et donjon « La Pyramide des Pieds » ============
+(()=>{
+const B=DATA.rencontres.length;
+const vtr=(x,y)=>({x,y,hp:50,max:50,pm:4,d:17,e:'🦅',n:'Le vautour affamé',ia:'dist',garde:[3,4],sort:{n:'Piqué',r:[2,4],los:1,dmg:17,cd:1}}),
+cob=(x,y)=>({x,y,hp:54,max:54,pm:3,d:18,e:'🐍',n:'Le cobra de sable',sort:{n:'Morsure',r:[1,1],etats:[{id:'poison',v:4,t:3}],cd:2}}),
+mom=(x,y)=>({x,y,hp:85,max:85,pm:2,d:20,e:'🧻',n:'La momie bandée',sort:{n:'Bandelettes',r:[1,3],los:1,dmg:10,pull:2,etats:[{id:'ralenti',v:1,t:1}],cd:3}}),
+sph=(x,y)=>({x,y,hp:200,max:200,pm:2,d:18,e:'🦁',n:'Sphinx Dépareillé',boss:1,renfort:{every:3,max:2,m:chs(0,0)},sort:{n:'Énigme sans réponse',r:[1,3],los:1,dmg:14,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+DATA.rencontres.push(
+{n:'Mirage Changeant',biome:'desert',niv:33,loot:{sable:4,fil:2},m:[vtr(10,3),cob(11,8),squ(9,10)]},
+{n:'Puits aux Mille Pieds',biome:'desert',niv:34,loot:{chaussette:4,sable:3},m:[cob(10,3),mom(11,8),vtr(9,10),chl(11,5)]},
+{n:'Pyramide : couloir',biome:'desert',niv:35,loot:{fil:4,sable:3},m:[mom(9,3),vtr(10,9),cob(11,6)]},
+{n:'Pyramide : salle des momies',biome:'desert',niv:36,type:'elite',loot:{chaussette:5,fil:4},m:[mom(10,3),chs(11,6),vtr(10,9),cob(9,6)]},
+{n:'Sphinx Dépareillé (boss)',biome:'desert',niv:37,say:'sphinx',loot:{sable:10,fil:6,chaussette:6},m:[sph(11,7),vtr(9,3),cob(10,10)]});
+[3.9,4.0,4.2,4.4,3.6].forEach((k,j)=>{const kd=Math.pow(k,.7);DATA.rencontres[B+j].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
+if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)};
+if(m.renfort){const rm=m.renfort.m,sm=Math.round(rm.max*k);m.renfort={...m.renfort,m:{...rm,hp:sm,max:sm,d:Math.round(rm.d*kd),...(rm.mort?{mort:{...rm.mort,dmg:Math.round(rm.mort.dmg*kd)}}:{})}}}})});
+DATA.repliques.sphinx=['Gourmande','Il appelle des chaussettes sales qui explosent ! Frappe-les de loin, ou fais-les éclater loin de toi.'];
+Object.assign(DATA.objets,{
+scarabee_dore:{n:'Scarabée doré',e:'🪲',slot:'acc',r:1,st:{pv:12,dmg:1}},
+sandales_momie:{n:'Sandales de momie',e:'🩴',slot:'bottes',r:1,st:{pv:14,res:4}},
+coiffe_pharaon:{n:'Coiffe de pharaon',e:'👑',slot:'tete',r:2,st:{pv:26,res:5}},
+sceptre_sphinx:{n:'Sceptre du Sphinx',e:'🪄',slot:'arme',r:2,st:{dmg:5}},
+bandelettes_sable:{n:'Bandelettes de sable',e:'🥋',slot:'corps',r:2,st:{pv:28,res:8}}});
+DR(B,[{id:'scarabee_dore',p:15}]);DR(B+1,[{id:'sandales_momie',p:20}]);DR(B+3,[{id:'coiffe_pharaon',p:25}]);DR(B+4,[{id:'sceptre_sphinx',p:100},{id:'bandelettes_sable',p:40}]);
+DATA.cartes.dunes.exits.push({x:6,y:0,to:'mirage',tx:6,ty:11});
+DATA.cartes.dunes.npcs.forEach(n=>{if(n.n=='Vieux Sablier')n.quests.push('o3')});
+DATA.cartes.mirage={n:'Mirage Changeant',biome:'desert',need:7,start:[6,11],tint:'rgba(230,190,120,.14)',
+rocks:[[3,3],[3,9],[6,6],[9,3],[9,9]],
+npcs:[{x:2,y:11,e:'🧞',n:'Guide du Mirage',quests:['o1'],txt:'Je connais le chemin. Il change tous les quarts d’heure. Moi aussi, d’ailleurs.'}],
+groups:[{x:8,y:4,renc:B},{x:3,y:6,renc:B}],
+nodes:[{x:2,y:2,res:'sable'},{x:11,y:11,res:'fil'}],
+exits:[{x:6,y:12,to:'dunes',tx:6,ty:1},{x:12,y:6,to:'puits',tx:1,ty:6}]};
+DATA.cartes.puits={n:'Puits aux Mille Pieds',biome:'desert',need:7,start:[1,6],tint:'rgba(200,170,120,.18)',
+rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
+npcs:[{x:2,y:10,e:'🪣',n:'Porteur d’eau',quests:['o2'],txt:'Le puits est à sec. Mais il est très profond. C’est le seul compliment qu’on puisse lui faire.'}],
+picks:[{x:2,y:2,quest:'o2'},{x:11,y:11,quest:'o2'},{x:11,y:1,quest:'o2'}],
+groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
+nodes:[{x:6,y:2,res:'chaussette'},{x:6,y:11,res:'sable'}],
+coffres:[{x:12,y:12,res:{chaussette:4,sable:3}}],
+exits:[{x:0,y:6,to:'mirage',tx:11,ty:6},{x:12,y:6,to:'pyr1',tx:1,ty:6}]};
+DATA.cartes.pyr1={n:'Pyramide : couloir',biome:'desert',need:7,start:[1,6],tint:'rgba(120,90,60,.34)',
+rocks:[[4,2],[4,10],[6,5],[6,7],[8,3],[8,9]],npcs:[],
+groups:[{x:9,y:4,renc:B+2},{x:9,y:9,renc:B+2}],
+nodes:[{x:2,y:2,res:'fil'}],
+exits:[{x:0,y:6,to:'puits',tx:11,ty:6},{x:12,y:6,to:'pyr2',tx:1,ty:6}]};
+DATA.cartes.pyr2={n:'Pyramide : salle des momies',biome:'desert',need:7,start:[1,6],tint:'rgba(100,80,70,.36)',
+rocks:[[4,3],[4,9],[7,3],[7,9]],npcs:[],
+groups:[{x:9,y:6,renc:B+3}],
+nodes:[{x:2,y:11,res:'sable'}],
+coffres:[{x:12,y:1,res:{fil:3,chaussette:2}}],
+exits:[{x:0,y:6,to:'pyr1',tx:11,ty:6},{x:12,y:6,to:'pyr3',tx:1,ty:6}]};
+DATA.cartes.pyr3={n:'Pyramide : chambre du Sphinx',biome:'desert',need:7,start:[1,6],tint:'rgba(140,100,60,.4)',
+rocks:[[4,3],[4,9],[7,6]],npcs:[],
+groups:[{x:10,y:6,renc:B+4}],
+nodes:[],
+coffres:[{x:12,y:12,res:{sable:5,fil:4,chaussette:4}}],
+exits:[{x:0,y:6,to:'pyr2',tx:11,ty:6}]};
+Object.assign(DATA.quetes,{
+o1:{n:'Chemin du mirage',desc:'Repousse 2 groupes de monstres sur le Mirage Changeant.',need:2,kind:'win',renc:B,req:7,donneur:'Guide du Mirage',say:'Des vautours et des cobras squattent mon mirage. Repousses-en deux groupes, que je puisse rediriger les touristes vers autre chose.',fin:'Le mirage est dégagé. Il a même l’air plus vrai. C’est inquiétant, mais c’est mieux.',rew:{xpq:[33,'normale'],res:{sable:4,fil:3}}},
+o2:{n:'Gourdes asséchées',desc:'Ramasse 3 gourdes oubliées autour du Puits aux Mille Pieds pour le Porteur d’eau.',need:3,kind:'pick',req:7,donneur:'Porteur d’eau',say:'Trois gourdes ont roulé dans le sable. Elles sont vides, mais elles ont de la valeur sentimentale.',fin:'Les voilà ! Vides, comme dans mon souvenir. Merci, je vais pouvoir les remplir de rien.',rew:{xpq:[34,'normale'],res:{chaussette:4,sable:3}}},
+o3:{n:'L’énigme sans réponse',desc:'Pénètre dans la Pyramide, au bout du Puits, et vaincs le Sphinx Dépareillé.',need:1,kind:'win',renc:B+4,req:7,donneur:'Vieux Sablier',say:'Un sphinx pose une énigme depuis mille ans. Personne n’a trouvé la réponse. Lui non plus, d’ailleurs. Il serait temps qu’on lui dise d’arrêter.',fin:'Il arrête ! Enfin ! Et il y avait bien une chaussette au fond. Je tiens mon registre à jour.',rew:{xpq:[37,'longue'],res:{sable:6,fil:5,chaussette:5}}}});
+})();
+
+// ============ ACTE 3 ÉTENDU : Cloître des Pèlerins, Jardin de cire et donjon « La Crypte du Gardien » ============
+(()=>{
+const B=DATA.rencontres.length;
+const omb=(x,y)=>({x,y,hp:70,max:70,pm:4,d:22,e:'👤',n:'L’ombre errante',sort:{n:'Frisson',r:[1,3],los:1,dmg:12,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),
+cie=(x,y)=>({x,y,hp:65,max:65,pm:3,d:20,e:'🕯️',n:'Le cierge vivant',ia:'dist',garde:[3,4],sort:{n:'Cire brûlante',r:[2,4],los:1,dmg:20,etats:[{id:'brule',v:4,t:2}],cd:1}}),
+eco=(x,y)=>({x,y,hp:280,max:280,pm:2,d:24,e:'🛡️',n:'Écho du Gardien',boss:1,renfort:{every:3,max:2,m:gar(0,0)},sort:{n:'Souvenir tranchant',r:[1,3],los:1,dmg:22,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+DATA.rencontres.push(
+{n:'Cloître des Pèlerins',biome:'temple',niv:45,loot:{eclat:4,gravat:2},m:[pel(10,3),omb(11,8),cie(9,10)]},
+{n:'Jardin de cire',biome:'temple',niv:46,loot:{eclat:4,gravat:3},m:[cie(10,3),pre(9,10),omb(11,8),sta(11,5)]},
+{n:'Crypte : galerie',biome:'citadelle',niv:47,loot:{gravat:4,eclat:3},m:[omb(9,3),sta(10,9),cie(11,6)]},
+{n:'Crypte : ossuaire',biome:'citadelle',niv:48,type:'elite',loot:{eclat:5,gravat:5},m:[pre(10,3),omb(11,6),cie(10,9),pel(9,6)]},
+{n:'Écho du Gardien (boss)',biome:'citadelle',niv:49,say:'echo',loot:{eclat:8,gravat:6},m:[eco(11,7),omb(9,3),cie(10,10)]});
+[3.7,3.8,3.8,3.9,3.5].forEach((k,j)=>{const kd=Math.pow(k,.7);DATA.rencontres[B+j].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
+if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)};
+if(m.renfort){const rm=m.renfort.m,sm=Math.round(rm.max*k);m.renfort={...m.renfort,m:{...rm,hp:sm,max:sm,sortCd:0,d:Math.round(rm.d*kd),...(rm.sort?{sort:{...rm.sort,dmg:Math.round(rm.sort.dmg*kd)}}:{})}}}})});
+DATA.repliques.echo=['Gourmande','Il rappelle sa garde toutes les trois tours ! Abats les renforts vite, ou frappe-le avant qu’ils arrivent.'];
+Object.assign(DATA.objets,{
+cierge_poche:{n:'Cierge de poche',e:'🕯️',slot:'acc',r:1,st:{pv:14,dmg:1}},
+sandales_cloitre:{n:'Sandales du cloître',e:'🩴',slot:'bottes',r:1,st:{pv:18,res:5}},
+capuche_veilleur:{n:'Capuche de veilleur',e:'🧕',slot:'tete',r:2,st:{pv:30,res:5}},
+veilleuse:{n:'Veilleuse du Gardien',e:'🏮',slot:'arme',r:2,st:{dmg:6}},
+habit_penitent:{n:'Habit de pénitent',e:'🥻',slot:'corps',r:2,st:{pv:32,res:9}}});
+DR(B,[{id:'cierge_poche',p:15}]);DR(B+1,[{id:'sandales_cloitre',p:20}]);DR(B+3,[{id:'capuche_veilleur',p:25}]);DR(B+4,[{id:'veilleuse',p:100},{id:'habit_penitent',p:40}]);
+DATA.cartes.parvis.exits.push({x:6,y:0,to:'cloitre',tx:6,ty:11});
+DATA.cartes.parvis.npcs.forEach(n=>{if(n.n=='Gardien du Parvis')n.quests.push('t3')});
+DATA.cartes.cloitre={n:'Cloître des Pèlerins',biome:'temple',need:12,start:[6,11],tint:'rgba(255,210,120,.12)',
+rocks:[[3,3],[3,9],[6,6],[9,3],[9,9]],
+npcs:[{x:2,y:11,e:'🧕',n:'Sœur Veilleuse',quests:['t1'],txt:'Nous veillons depuis des siècles. Personne n’a pensé à nous dire quoi.'}],
+groups:[{x:8,y:4,renc:B},{x:3,y:6,renc:B}],
+nodes:[{x:2,y:2,res:'eclat'},{x:11,y:11,res:'gravat'}],
+exits:[{x:6,y:12,to:'parvis',tx:6,ty:1},{x:12,y:6,to:'jardin',tx:1,ty:6}]};
+DATA.cartes.jardin={n:'Jardin de cire',biome:'temple',need:12,start:[1,6],tint:'rgba(240,200,140,.16)',
+rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
+npcs:[{x:2,y:10,e:'🧑‍🌾',n:'Jardinier de cire',quests:['t2'],txt:'Mes fleurs sont en cire. Elles ne fanent pas, elles fondent. C’est plus poétique.'}],
+picks:[{x:2,y:2,quest:'t2'},{x:11,y:11,quest:'t2'},{x:11,y:1,quest:'t2'}],
+groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
+nodes:[{x:6,y:2,res:'eclat'},{x:6,y:11,res:'gravat'}],
+coffres:[{x:12,y:12,res:{eclat:4,gravat:3}}],
+exits:[{x:0,y:6,to:'cloitre',tx:11,ty:6},{x:12,y:6,to:'crypte1',tx:1,ty:6}]};
+DATA.cartes.crypte1={n:'Crypte : galerie',biome:'citadelle',need:12,start:[1,6],tint:'rgba(60,60,90,.36)',
+rocks:[[4,2],[4,10],[6,5],[6,7],[8,3],[8,9]],npcs:[],
+groups:[{x:9,y:4,renc:B+2},{x:9,y:9,renc:B+2}],
+nodes:[{x:2,y:2,res:'gravat'}],
+exits:[{x:0,y:6,to:'jardin',tx:11,ty:6},{x:12,y:6,to:'crypte2',tx:1,ty:6}]};
+DATA.cartes.crypte2={n:'Crypte : ossuaire',biome:'citadelle',need:12,start:[1,6],tint:'rgba(70,50,90,.38)',
+rocks:[[4,3],[4,9],[7,3],[7,9]],npcs:[],
+groups:[{x:9,y:6,renc:B+3}],
+nodes:[{x:2,y:11,res:'eclat'}],
+coffres:[{x:12,y:1,res:{eclat:3,gravat:3}}],
+exits:[{x:0,y:6,to:'crypte1',tx:11,ty:6},{x:12,y:6,to:'crypte3',tx:1,ty:6}]};
+DATA.cartes.crypte3={n:'Crypte : tombeau du Gardien',biome:'citadelle',need:12,start:[1,6],tint:'rgba(90,60,110,.42)',
+rocks:[[4,3],[4,9],[7,6]],npcs:[],
+groups:[{x:10,y:6,renc:B+4}],
+nodes:[],
+coffres:[{x:12,y:12,res:{eclat:6,gravat:5}}],
+exits:[{x:0,y:6,to:'crypte2',tx:11,ty:6}]};
+Object.assign(DATA.quetes,{
+t1:{n:'Cloître assiégé',desc:'Repousse 2 groupes de monstres dans le Cloître des Pèlerins.',need:2,kind:'win',renc:B,req:12,donneur:'Sœur Veilleuse',say:'Des ombres et des cierges errent dans le cloître. Repousses-en deux groupes : nous ne pouvons plus veiller en paix.',fin:'Le silence est revenu. Nous pouvons de nouveau veiller sans rien surveiller.',rew:{xpq:[45,'normale'],res:{eclat:4,gravat:3}}},
+t2:{n:'Fleurs de cire',desc:'Ramasse 3 fleurs de cire dans le Jardin pour le Jardinier.',need:3,kind:'pick',req:12,donneur:'Jardinier de cire',say:'Trois fleurs de cire ont fondu à travers le jardin. Elles sont encore tièdes : retrouve-les avant qu’elles refroidissent.',fin:'Les voilà, presque intactes ! Je vais les replanter. Elles fondront quand même, mais plus tard.',rew:{xpq:[46,'normale'],res:{eclat:4,gravat:3}}},
+t3:{n:'La Crypte du Gardien',desc:'Pénètre dans la Crypte, au fond du Jardin, et vaincs l’Écho du Gardien.',need:1,kind:'win',renc:B+4,req:12,donneur:'Gardien du Parvis',say:'Sous le jardin, il y a la crypte où le Gardien a veillé une dernière fois. Son écho y monte encore la garde. Quelqu’un doit lui dire que c’est fini.',fin:'L’écho s’est tu. Je crois qu’il a enfin pu s’asseoir. Merci pour lui.',rew:{xpq:[49,'longue'],res:{eclat:6,gravat:5}}}});
+})();

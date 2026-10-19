@@ -184,3 +184,111 @@ roi_apres:{once:true,declencheur:{quand:'apresCombat',renc:17,issue:'win'},etape
 {hero:'🌅',act:'Le soleil revient, à sa manière. Ta lanterne brille encore un peu.'},
 {qui:'Maître Lampiste',at:'hero',txt:'Livraison numéro 48 : réussie. Je n’y croyais plus.'},
 {set:{jeu_termine:true}}]}});
+
+// ---- Forêt étendue : donjon de la Mère Mycélium ----
+Object.assign(DATA.scenes,{
+terrier_entree:{once:true,declencheur:{quand:'entree',carte:'terrier1'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'C’est étroit, c’est humide, et ça respire. Je dis ça, je dis rien.'},
+{qui:'Gourmande',at:'hero',txt:'Ça sent le champignon cuit. J’ai très faim et très peur, dans cet ordre.'}]},
+mere_avant:{once:true,declencheur:{quand:'avantCombat',renc:22},etapes:[
+{qui:'Mère Mycélium',at:'groupe',txt:'Ne me dérangez pas. J’ai signé un formulaire : « Extinction volontaire des lueurs ». Page 12, alinéa 3.'},
+{qui:'Gourmande',at:'hero',txt:'Le Chambellan, encore. Il fait signer des papiers à des champignons.'},
+{qui:'Mère Mycélium',at:'groupe',txt:'Je ne voulais pas éteindre la forêt. Mais il y avait un tampon. Un très beau tampon.'}]},
+mere_apres:{once:true,declencheur:{quand:'apresCombat',renc:22,issue:'win'},etapes:[
+{qui:'Mère Mycélium',at:'hero',txt:'Merci… Je ne savais plus comment m’arrêter. Dites à la forêt que je suis désolée.'},
+{qui:'Peureuse',at:'hero',txt:'Elle avait peur de désobéir. Je comprends parfaitement.'},
+{set:{mere_battue:true}}]}});
+
+// ---- Collines étendues : donjon du Bouc Recenseur ----
+Object.assign(DATA.scenes,{
+paturage_entree:{once:true,declencheur:{quand:'entree',carte:'paturage'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'Je ne vois pas mes pieds. Je ne vois pas les loups non plus. C’est équitable, mais je proteste.'},
+{qui:'Gourmande',at:'hero',txt:'Le brouillard sent la laine mouillée. Je ne le mangerai pas. Pour l’instant.'}]},
+enclos_entree:{once:true,declencheur:{quand:'entree',carte:'enclos1'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'Il y a des numéros peints sur les barrières. Je n’aime pas quand on numérote des animaux.'},
+{qui:'Gourmande',at:'hero',txt:'Et des tampons. Partout. Ça ressemble à quelqu’un que je connais.'}]},
+bouc_avant:{once:true,declencheur:{quand:'avantCombat',renc:27},etapes:[
+{qui:'Bouc Recenseur',at:'groupe',txt:'Un, deux… non, silence. Vous n’êtes pas sur la liste. Veuillez vous inscrire avant d’être piétinés.'},
+{qui:'Gourmande',at:'hero',txt:'Le Chambellan lui a encore donné un tampon. Il en fait n’importe quoi.'},
+{qui:'Bouc Recenseur',at:'groupe',txt:'Mission : compter chaque mouton, chaque nuit, jusqu’à ce que le total change. Il ne change jamais. Je recommence.'},
+{hero:'🤔',act:'Tu observes ses sabots. Avant chaque charge, il baisse la tête et le sol rougit.'},
+{qui:'Peureuse',at:'hero',txt:'Quand le sol devient rouge, on part. C’est la seule règle que j’ai jamais aimée.'}]},
+bouc_apres:{once:true,declencheur:{quand:'apresCombat',renc:27,issue:'win'},etapes:[
+{qui:'Bouc Recenseur',at:'hero',txt:'Total : il manque un mouton. Ah non. C’était moi. Je ne m’étais pas compté.'},
+{qui:'Gourmande',at:'hero',txt:'Il faut qu’il se repose. Compter, c’est fatigant, surtout quand on a des cornes.'},
+{qui:'Peureuse',at:'hero',txt:'Dans son carnet, il y a un ordre signé : « Recenser les Lueurs ». Avec une adresse. Au Manoir.'},
+{set:{bouc_battu:true}}]}});
+
+// ---- Manoir étendu : Archives du Chambellan ----
+Object.assign(DATA.scenes,{
+hall_entree:{once:true,declencheur:{quand:'entree',carte:'hall'},etapes:[
+{qui:'Gourmande',at:'hero',txt:'Des guichets partout, et personne derrière. Je suis déçue, j’espérais un buffet.'},
+{qui:'Peureuse',at:'hero',txt:'Un guichet vient de se fermer tout seul. Je n’ai rien dit, je l’ai juste pensé très fort.'}]},
+archives_entree:{once:true,declencheur:{quand:'entree',carte:'archives1'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'Il y a des fiches sur des gens. Avec des photos. Dessinées. Mal.'},
+{qui:'Gourmande',at:'hero',txt:'Celle-ci dit « Livreur, maladroit, 47 colis, 46 échecs ». C’est très injuste. C’est 47.'}]},
+greffier_avant:{once:true,declencheur:{quand:'avantCombat',renc:32},etapes:[
+{qui:'Greffier Ratures',at:'groupe',txt:'Visiteurs non répertoriés. Veuillez patienter dans le classeur le plus proche. Il reste de la place sous la lettre R.'},
+{qui:'Gourmande',at:'hero',txt:'Il classe les gens par ordre alphabétique. Je suis à G. Je refuse d’être à G.'},
+{qui:'Greffier Ratures',at:'groupe',txt:'Mes clercs, en cercle ! Un greffier bien entouré est un greffier à jour.'},
+{hero:'🤔',act:'Tu regardes le cercle de clercs. Un seul bon coup, et il n’aura plus personne pour le protéger.'}]},
+greffier_apres:{once:true,declencheur:{quand:'apresCombat',renc:32,issue:'win'},etapes:[
+{qui:'Greffier Ratures',at:'hero',txt:'Rature… Je viens de me rayer moi-même. C’est la première fois que ça arrive. C’est très agréable.'},
+{qui:'Peureuse',at:'hero',txt:'Il y a une fiche à ton nom, avec une adresse au bout. Le Marais de Cendres. Quelqu’un t’y attend.'},
+{qui:'Gourmande',at:'hero',txt:'Et une note : « Ne jamais laisser le livreur arriver au Marais ». Voilà qui donne envie.'},
+{set:{greffier_battu:true}}]}});
+
+// ---- Marais étendu : Manoir des Rêves ----
+Object.assign(DATA.scenes,{
+gue_entree:{once:true,declencheur:{quand:'entree',carte:'gue'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'Les crapauds nous regardent. Je précise que je les regarde aussi, pour l’équilibre.'},
+{qui:'Gourmande',at:'hero',txt:'On dit que ça a le goût de poulet. Je dis ça sans conviction, mais avec appétit.'}]},
+reves_entree:{once:true,declencheur:{quand:'entree',carte:'reves1'},etapes:[
+{qui:'Rêveuse',at:'hero',si:{flag:'reve_gardien'},txt:'Je connais ce couloir. C’est le début d’un de mes rêves. Ne marche pas sur les oreillers, ils sont rancuniers.'},
+{qui:'Peureuse',at:'hero',txt:'Il y a des oreillers qui nous suivent des yeux. Les oreillers n’ont pas d’yeux. Voilà, je ne dors plus.'}]},
+insomnie_avant:{once:true,declencheur:{quand:'avantCombat',renc:37},etapes:[
+{qui:'Baronne Insomnie',at:'groupe',txt:'Chut. Je ne dors pas. Je ne dors plus depuis le soir où le soleil est tombé. Quelqu’un devait rester éveillé.'},
+{qui:'Gourmande',at:'hero',txt:'Elle a des cernes plus grandes que la lanterne. Je la plains, un peu.'},
+{qui:'Baronne Insomnie',at:'groupe',txt:'Je m’endors par instants, je le sens, mais je me réveille avec plus de colère. Alors, en garde, avant que je fasse un cauchemar !'},
+{hero:'🤔',act:'Tu observes ses paupières. Quand elles se ferment, elle est intouchable. Quand elles s’ouvrent, elle ne l’est plus.'}]},
+insomnie_apres:{once:true,declencheur:{quand:'apresCombat',renc:37,issue:'win'},etapes:[
+{qui:'Baronne Insomnie',at:'hero',txt:'Je… je peux fermer les yeux ? Pour de bon ? Merci. Quelqu’un d’autre veillera. Moins bien, mais quelqu’un.'},
+{qui:'Rêveuse',at:'hero',si:{flag:'reve_gardien'},txt:'Elle fait de beaux rêves, maintenant. Dans l’un d’eux, il y a un roi qui dort aussi. Il a enfin l’air serein.'},
+{qui:'Gourmande',at:'hero',txt:'Bonne nuit, Baronne. On te laisse un morceau de tarte, au cas où.'},
+{set:{insomnie_battue:true}}]}});
+
+// ---- Désert étendu : Pyramide des Pieds ----
+Object.assign(DATA.scenes,{
+mirage_entree:{once:true,declencheur:{quand:'entree',carte:'mirage'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'Ce rocher vient de changer de place. Je ne dis rien, je note.'},
+{qui:'Gourmande',at:'hero',txt:'Si le mirage est un buffet, je veux bien y croire un peu.'}]},
+pyramide_entree:{once:true,declencheur:{quand:'entree',carte:'pyr1'},etapes:[
+{qui:'Gourmande',at:'hero',txt:'Des fresques de chaussettes sur tous les murs. Une civilisation entière à la recherche de sa moitié.'},
+{qui:'Peureuse',at:'hero',txt:'Les momies bougent dès qu’on ne les regarde pas. Je les regarde donc très fort.'}]},
+sphinx_avant:{once:true,declencheur:{quand:'avantCombat',renc:42},etapes:[
+{qui:'Sphinx Dépareillé',at:'groupe',txt:'Qu’est-ce qui a deux pieds le matin, un seul le soir, et jamais de paire à midi ?'},
+{qui:'Gourmande',at:'hero',txt:'Une chaussette ? Je tente la chaussette.'},
+{qui:'Sphinx Dépareillé',at:'groupe',txt:'…Non. Mais on s’en rapproche. Mes chaussettes sales, à moi !'}]},
+sphinx_apres:{once:true,declencheur:{quand:'apresCombat',renc:42,issue:'win'},etapes:[
+{qui:'Sphinx Dépareillé',at:'hero',txt:'La réponse était « une chaussette ». Je le savais depuis le début. Je voulais juste qu’on me demande.'},
+{qui:'Gourmande',at:'hero',txt:'Mille ans pour ça. Je l’adore et je veux rentrer.'},
+{set:{sphinx_battu:true}}]}});
+
+// ---- Acte 3 étendu : Crypte du Gardien ----
+Object.assign(DATA.scenes,{
+cloitre_entree:{once:true,declencheur:{quand:'entree',carte:'cloitre'},etapes:[
+{qui:'Gourmande',at:'hero',txt:'Un cloître en cire. Je n’ose pas lécher. Je me retiens, c’est héroïque.'},
+{qui:'Peureuse',at:'hero',txt:'Les cierges sont allumés tout seuls. Je préfère ne pas savoir qui les allume.'}]},
+crypte_entree:{once:true,declencheur:{quand:'entree',carte:'crypte1'},etapes:[
+{qui:'Rêveuse',at:'hero',si:{flag:'reve_gardien'},txt:'C’est ici que l’homme de mon rêve venait s’asseoir quand il ne pouvait plus tenir debout.'},
+{qui:'Peureuse',at:'hero',txt:'Il fait froid et il y a des os. Je vote pour faire demi-tour. À l’unanimité de moi.'}]},
+echo_avant:{once:true,declencheur:{quand:'avantCombat',renc:47},etapes:[
+{qui:'Écho du Gardien',at:'groupe',txt:'Je tiens le soleil. Je le tiens encore. Quiconque approche, je le tiens aussi.'},
+{qui:'Gourmande',at:'hero',txt:'Il ne sait pas que c’est fini. Il continue de veiller. J’ai un peu envie de pleurer, et un peu de manger.'},
+{qui:'Écho du Gardien',at:'groupe',txt:'Garde, à moi ! Pas un pas de plus !'},
+{hero:'🤔',act:'Tu vois des gardes surgir de l’ombre à chaque appel. Mieux vaut les écarter vite.'}]},
+echo_apres:{once:true,declencheur:{quand:'apresCombat',renc:47,issue:'win'},etapes:[
+{qui:'Écho du Gardien',at:'hero',txt:'Le soleil… Je l’ai lâché, n’est-ce pas. Je ne l’ai pas laissé tomber. Je l’ai lâché pour vous sauver.'},
+{qui:'Mélancolique',at:'hero',si:{flag:'melancolique_libre'},txt:'C’est exactement ce qu’il s’est dit, ce soir-là. Il ne l’a jamais cru. Il va peut-être y arriver.'},
+{qui:'Gourmande',at:'hero',txt:'On le dira au vrai, tout à l’heure. Avec une tarte, si possible.'},
+{set:{echo_battu:true}}]}});
