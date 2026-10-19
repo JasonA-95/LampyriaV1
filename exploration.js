@@ -1,6 +1,7 @@
 // EXPLORATION : cartes du monde, déplacement, récolte, rencontres. Utilise la grille et le style de affichage.js.
 const EX={on:false,map:null,x:0,y:0,avatar:{},groups:[],nodes:[],pend:null,tok:0,steps:0,group:null,walking:false,sceneActive:false,storyActors:[],storyGroup:null};
 const exK=(x,y)=>x+','+y,qs=()=>sv.q=sv.q||{};
+const exLock=e=>{const t=DATA.cartes[e.to];if(sv.renc<t.need)return 'Passage fermé : bats d\'abord les monstres de cette zone.';if(e.cle&&!sv.hist.flags[e.cle]&&sv.renc<=t.need)return e.why;return ''};
 const exStory=(trigger,after)=>EX.storyTrigger?EX.storyTrigger(trigger,after):after&&after();
 function exBlock(){const d=DATA.cartes[EX.map],s=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 EX.groups.forEach(q=>{if(!q.dead)s.add(exK(q.x,q.y))});EX.nodes.forEach(n=>s.add(exK(n.x,n.y)));
@@ -21,7 +22,7 @@ d[k]=1;p[k]=[x,y];if(goal(nx,ny)){end=[nx,ny];break}q.push([nx,ny])}}
 if(!end)return null;const r=[];let c=end;while(c&&!(c[0]==EX.x&&c[1]==EX.y)){r.unshift(c);c=p[exK(c[0],c[1])]}return r}
 // Masque les PNJ dont une condition de 'cache' est vraie (ex. le Général après sa défaite).
 function exPrune(){for(const m of Object.values(DATA.cartes)){if(!m._npcs)m._npcs=m.npcs.slice();m.npcs=m._npcs.filter(n=>!(n.cache||[]).some(c=>storyCondition(c,sv,sv.hist.flags)))}}
-EX.enter=(name,x,y,quiet=false)=>{exPrune();const d=DATA.cartes[name],previous=EX.map,chg=previous!==name;if(chg)EX.avatar={};EX.map=name;sv.map=name;if(!quiet)store();if(chg&&previous)setTimeout(()=>{if(!EX.sceneActive)startScreenTransition(d.n)},0);
+EX.enter=(name,x,y,quiet=false)=>{exPrune();sv.hist.flags['vu_'+name]=true;const d=DATA.cartes[name],previous=EX.map,chg=previous!==name;if(chg)EX.avatar={};EX.map=name;sv.map=name;if(!quiet)store();if(chg&&previous)setTimeout(()=>{if(!EX.sceneActive)startScreenTransition(d.n)},0);
 EX.x=x??d.start[0];EX.y=y??d.start[1];EX.groups=d.groups.map(q=>({...q}));EX.nodes=d.nodes.map(n=>({...n,until:0}));EX.pend=null;const Q=qs(),on=(p,i)=>{const s=Q[p.quest];return s&&s.s==1&&!(s.got||[]).includes(name+i)};
 (d.picks||[]).forEach((p,i)=>{if(on(p,i))EX.nodes.push({x:p.x,y:p.y,pick:1,quest:p.quest,id:name+i,until:0})});
 (d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})});(d.coffres||[]).forEach(c=>{if(sv.deb.includes('farceuse')&&!sv.hist.flags['coffre_'+name])EX.nodes.push({x:c.x,y:c.y,coffre:1,res:c.res,id:name,until:0})});if(chg&&W)resetView()}
@@ -30,7 +31,7 @@ if(entering)EX.enter(sv.map||'village',undefined,undefined,!!(options.storyId&&c
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
 msg('Tu es : '+DATA.cartes[EX.map].n+'.');EX.ui();EX.draw();if(options.storyId)EX.storyPlay(options.storyId);else if(!EX.storyResume()&&entering)EX.storyTrigger({quand:'entree',carte:EX.map})};
 EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span><span class="chip">Niv '+sv.niv+'</span>'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')};
-EX.ui=()=>{exPrune();const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';F.appendChild(btn('☰ Menu','','pri',()=>openMenu()));F.appendChild(btn('📜 Quêtes','','',()=>openMenu('quetes')))};
+EX.ui=()=>{exPrune();const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';F.appendChild(btn('☰ Menu','','pri',()=>openMenu()));F.appendChild(btn('🗺️ Carte','','',()=>EX.carte()));F.appendChild(btn('📜 Quêtes','','',()=>openMenu('quetes')))};
 EX.gain=r=>{let t='';const xp=r.xpq?XP.quete(r.xpq[0],XP.k[r.xpq[1]]||XP.k.normale):r.xp;if(xp){const lv=XP.add(sv,xp);t+=' +'+xp+' XP';if(lv){t+=' Niveau '+sv.niv+' !';if(typeof playSound=='function')playSound('level')}}
 for(const k in (r.res||{})){sv.res[k]+=r.res[k];t+=' +'+r.res[k]+' '+DATA.res[k].split(' ')[0]}
 if(r.item&&!sv.inv.includes(r.item)){sv.inv.push(r.item);autoEquip(r.item);t+=' '+DATA.objets[r.item].n+' !'}
@@ -59,7 +60,7 @@ x=Math.round((a+b)/2),y=Math.round((b-a)/2),N=DATA.taille,d=DATA.cartes[EX.map];
 if(EX.sceneActive){EX.storyNext();return}if(x<0||y<0||x>=N||y>=N||(x==EX.x&&y==EX.y))return;
 if(d.rocks.some(r=>r[0]==x&&r[1]==y)){EX.pend=null;msg('Un rocher bloque le passage.');EX.draw();return}
 const ent=exEnt(x,y);
-if(ent&&ent.t=='e'&&!cfg.test&&(sv.renc<DATA.cartes[ent.o.to].need)){EX.pend=null;msg('Passage fermé : bats d\'abord les monstres de cette zone.');EX.draw();return}
+if(ent&&ent.t=='e'&&!cfg.test&&exLock(ent.o)){EX.pend=null;msg(exLock(ent.o));EX.draw();return}
 const path=exPath(x,y,ent);if(!path){EX.pend=null;msg('Aucun chemin vers cette case.');EX.draw();return}
 if(!EX.pend||EX.pend.x!=x||EX.pend.y!=y){EX.pend={x,y,ent,path};
 msg(!ent?'Touche encore la case pour t\'y rendre ('+path.length+' cases).':ent.t=='g'?'Groupe de monstres : touche encore pour engager le combat.':ent.t=='n'?'Ressource : touche encore pour la récolter.':ent.t=='p'?'Touche encore pour parler à '+ent.o.n+'.':'Touche encore pour '+(ent.o.don?'entrer dans '+ent.o.lbl+' ('+ent.o.nv+')':'partir vers '+DATA.cartes[ent.o.to].n)+'.');EX.draw();return}
@@ -82,7 +83,8 @@ EX.back=res=>{const g0=EX.group;if(res=='win'&&g0)g0.dead=true;if(res=='lose'){s
 EX.start();
 if(res=='lose')msg('Tu te réveilles au village, sans rien avoir perdu.');
 else if(g0){if(g0.hide)EX.prog(g0.quest,g0.id);
-Object.keys(DATA.quetes).forEach(id=>{const q=DATA.quetes[id];if(q.kind=='win'&&q.renc==g0.renc&&!g0.hide)EX.prog(id)})}
+Object.keys(DATA.quetes).forEach(id=>{const q=DATA.quetes[id];if(q.kind=='win'&&q.renc==(DATA.rencontres[g0.renc].base??g0.renc)&&!g0.hide)EX.prog(id)})}
+if(res=='win'){const rr=g0?g0.renc:cfg.renc;sv.hist.flags['vaincu_'+(DATA.rencontres[rr].base??rr)]=true;store()}
 EX.hud();if(g0)EX.storyGroup=g0;EX.storyTrigger({quand:'apresCombat',renc:g0?g0.renc:cfg.renc,issue:res});if(!EX.sceneActive)startScreenTransition()};
 EX.draw=()=>{const N=DATA.taille,d=DATA.cartes[EX.map],rocks=new Set(d.rocks.map(r=>exK(r[0],r[1]))),avatar=displayPosition(EX.avatar,EX.x,EX.y,rocks);cam(avatar.x,avatar.y);g.clearRect(0,0,W,H);
 const pp={},ex={},E={};
@@ -101,16 +103,38 @@ decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,excluded,DATA.decor[bi
 for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
 for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
-if(d.tint)dia(cx,cy,d.tint);if(ex[k])dia(cx,cy,sv.renc<DATA.cartes[ex[k].to].need?'rgba(120,120,140,.45)':'rgba(255,180,84,.45)');
+if(d.tint)dia(cx,cy,d.tint);if(ex[k])dia(cx,cy,exLock(ex[k])?'rgba(120,120,140,.45)':'rgba(255,180,84,.45)');
 if(pp[k])dia(cx,cy,'rgba(255,240,170,.55)');if(EX.pend&&EX.pend.x==x&&EX.pend.y==y)dia(cx,cy,'rgba(255,240,170,.35)');
 if(rocks.has(k)){if(OPT.fx=='off'){g.fillStyle='#fff';g.fillText('🪨',cx,cy-th*.15)}else drawTerrainObstacle(g,cx,cy,tw,th,biome,x,y)}}
 const hx=(EX.x-EX.y)*tw/2+ox,hy=(EX.x+EX.y)*th/2+oy,gr=g.createRadialGradient(hx,hy,0,hx,hy,tw*3);
 gr.addColorStop(0,'rgba(255,180,84,.28)');gr.addColorStop(1,'rgba(255,180,84,0)');
 g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';
 for(const exit of d.exits){const cx=(exit.x-exit.y)*tw/2+ox,cy=(exit.x+exit.y)*th/2+oy;g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';g.fillText(exit.don?'🕳️':exit.x==0?'⬅️':exit.x>=12?'➡️':exit.y==0?'⬆️':'⬇️',cx,cy-th*.1);
-if(exit.lbl){const f=Math.round(tw*.3),up=exit.y>=11?1:0,y0=cy+(up?-th*1.15:th*.75);g.font='bold '+f+'px sans-serif';g.lineWidth=3;g.strokeStyle='#000';g.lineJoin='round';g.fillStyle=exit.don?'#ffd27a':'#e8e4f5';
+if(exit.don){const f=Math.round(tw*.3),up=exit.y>=11?1:0,y0=cy+(up?-th*1.15:th*.75);g.font='bold '+f+'px sans-serif';g.lineWidth=3;g.strokeStyle='#000';g.lineJoin='round';g.fillStyle=exit.don?'#ffd27a':'#e8e4f5';
 const ls=exit.don?[exit.lbl,exit.nv]:[exit.lbl];ls.forEach((t,i)=>{const yy=y0+(up?-(ls.length-1-i):i)*f*1.15;g.strokeText(t,cx,yy);g.fillText(t,cx,yy)})}}
 drawDisplayEffects(g,tw,th,ox,oy);
 for(const key of Object.keys(E)){const u=E[key],[x,y]=key.split(',').map(Number),visual=u.visual||u,p=displayPosition(visual,x,y,rocks),style=displayUnitStyle(visual,undefined,tw,th),cx=(p.x-p.y)*tw/2+ox+style.x,cy=(p.x+p.y)*th/2+oy+style.y;g.save();g.globalAlpha=(u.a??1)*style.alpha;drawGroundShadow(g,cx,cy,tw,th,u.b?1.1:1);g.translate(cx,cy);g.scale(style.scale,style.scale);g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';g.fillText(u.e,0,-th*.3);g.restore();
 if(u.b){g.font='bold '+Math.round(tw*.3)+'px Georgia,serif';g.lineWidth=3;g.strokeStyle='#120d1a';g.strokeText(u.b,cx+tw*.3,cy-th*.7);g.fillStyle='#ffb454';g.fillText(u.b,cx+tw*.3,cy-th*.7)}}
 drawDisplayTexts(g,tw,th,ox,oy);updateDisplayTransition();placeBubble();syncAmbience()};
+
+// ===== Minicarte du monde : zones découvertes, donjons, boss, quêtes =====
+EX.carte=()=>{const L=DATA.monde,C=DATA.cartes,R=DATA.rencontres,F=sv.hist.flags,Q=qs(),vu=k=>!!F['vu_'+k],show=k=>vu(k)||C[k].exits.some(e=>vu(e.to)),ks=Object.keys(L).filter(show),
+BC={village:'#d49a4a',foret:'#3f8f5a',collines:'#7f9fd0',manoir:'#8a50aa',marais:'#7a8070',roseliere:'#5a9a90',serre:'#9a8fa8',desert:'#d4a850',temple:'#e0c070',citadelle:'#8a4a9a',trone:'#5a6a85'},
+dj=k=>/^(terrier|enclos|archives|reves|pyr|crypte)\d$/.test(k),bs=r=>R[r].base??r,
+niv=k=>{const v=(C[k].groups||[]).map(g=>R[g.renc].niv);return v.length?Math.min(...v)==Math.max(...v)?'niv '+v[0]:'niv '+Math.min(...v)+'-'+Math.max(...v):''},
+boss=k=>(C[k].groups||[]).some(g=>R[g.renc].n.includes('boss')&&!F['vaincu_'+bs(g.renc)]),
+marks=k=>{const m=C[k],o=[];if(k=='village')o.push('🏠');if(m.exits.some(e=>e.don))o.push('🕳️');if(boss(k))o.push('💀');
+const act=Object.keys(Q).filter(id=>Q[id].s==1&&DATA.quetes[id]);
+if((m.npcs||[]).some(n=>(n.quests||[]).some(id=>{const q=DATA.quetes[id];return q&&!Q[id]&&(q.req||0)<=sv.renc&&(!q.apres||(Q[q.apres]||{}).s==2)})))o.push('❗');
+if(act.some(id=>{const q=DATA.quetes[id];return(m.npcs||[]).some(n=>n.n==q.donneur||[].concat(q.to||[]).includes(n.n))||(m.picks||[]).concat(m.hides||[]).some(p=>p.quest==id)||(q.kind=='win'&&(m.groups||[]).some(g=>bs(g.renc)==q.renc))}))o.push('🎯');return o},
+xs=ks.map(k=>L[k][0]),ys=ks.map(k=>L[k][1]),x0=Math.min(...xs),y0=Math.min(...ys),cw=Math.max(...xs)-x0+1,ch=Math.max(...ys)-y0+1,S=Math.min(64,Math.floor(380/cw),Math.floor(520/ch)),
+cv2=el('canvas'),g2=cv2.getContext('2d'),info=el('p');cv2.width=cw*S;cv2.height=ch*S;cv2.style.cssText='width:100%;max-height:52vh;object-fit:contain;background:#120d1f;border-radius:10px;touch-action:manipulation';
+const P=k=>[(L[k][0]-x0)*S+S/2,(L[k][1]-y0)*S+S/2],say=k=>{const m=C[k],mk=marks(k);info.innerHTML='<b>'+(vu(k)?m.n:'Zone inconnue')+'</b>'+(vu(k)&&niv(k)?' · '+niv(k):'')+(k==EX.map?' · 📍 tu es ici':'')+(vu(k)&&mk.length?'<br>'+mk.join(' '):'')+(vu(k)&&m.exits.some(e=>e.don)?'<br>Entrée : '+m.exits.find(e=>e.don).lbl+' ('+m.exits.find(e=>e.don).nv+')':'')};
+g2.lineCap='round';
+for(const k of ks)for(const e of C[k].exits)if(show(e.to)&&k<e.to){const a=P(k),b=P(e.to),lk=exLock(e)||exLock(C[e.to].exits.find(x=>x.to==k)||{to:k});g2.strokeStyle=lk?'#555':'#ffb454';g2.lineWidth=S/8;g2.setLineDash(lk?[S/10,S/10]:[]);g2.beginPath();g2.moveTo(a[0],a[1]);g2.lineTo(b[0],b[1]);g2.stroke()}
+g2.setLineDash([]);g2.textAlign='center';g2.textBaseline='middle';
+for(const k of ks){const[cx,cy]=P(k),w=S*.7,v=vu(k);g2.fillStyle=v?BC[C[k].biome]||'#6a5a8a':'#2a2540';g2.globalAlpha=v?(dj(k)?.5:.85):.6;g2.beginPath();g2.roundRect?g2.roundRect(cx-w/2,cy-w/2,w,w,S/8):g2.rect(cx-w/2,cy-w/2,w,w);g2.fill();g2.globalAlpha=1;
+g2.lineWidth=k==EX.map?S/10:dj(k)?2:1;g2.strokeStyle=k==EX.map?'#fff':dj(k)?'#d9534f':'#0008';g2.stroke();
+g2.font=Math.round(S*.3)+'px serif';g2.fillStyle='#fff';if(!v)g2.fillText('?',cx,cy);else{const mk=marks(k);if(k==EX.map)mk.unshift('📍');mk.slice(0,4).forEach((t,i,a)=>g2.fillText(t,cx+(a.length>1?(i%2?1:-1)*S*.17:0),cy+(a.length>2?(i<2?-1:1)*S*.17:0)))}}
+cv2.onclick=ev=>{const r=cv2.getBoundingClientRect(),px=(ev.clientX-r.left)*cv2.width/r.width,py=(ev.clientY-r.top)*cv2.height/r.height,k=ks.find(k=>{const c=P(k);return Math.abs(px-c[0])<S/2&&Math.abs(py-c[1])<S/2});if(k)say(k)};
+const box=el('div');box.appendChild(el('h2','','Carte du monde'));box.appendChild(cv2);box.appendChild(info);box.appendChild(el('p','','🏠 village · 🕳️ donjon · 💀 boss · ❗ quête à prendre · 🎯 objectif de quête · 📍 toi. Touche une zone pour les détails.'));say(EX.map);modal(box,[['Fermer']])};

@@ -790,18 +790,19 @@ t3:{n:'La Crypte du Gardien',desc:'Pénètre dans la Crypte, au fond du Jardin, 
 })();
 
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
-(()=>{const C=DATA.cartes,L={quartier:[-1,0],village:[0,0],poste:[0,-1],foret:[1,0],sentier:[1,-1],clairiere:[1,-2],terrier1:[0,-2],terrier2:[-1,-2],terrier3:[-2,-2],
-collines:[2,0],paturage:[2,1],bergerie:[2,2],enclos1:[2,3],enclos2:[1,3],enclos3:[0,3],
-manoir:[3,0],hall:[3,-1],bureaux:[3,-2],archives1:[4,-2],archives2:[5,-2],archives3:[6,-2],
-marais:[4,0],gue:[4,1],ile:[4,2],reves1:[4,3],reves2:[4,4],reves3:[4,5],roseliere:[5,0],serre:[6,0],
-dunes:[6,1],mirage:[6,2],puits:[6,3],pyr1:[6,4],pyr2:[7,4],pyr3:[8,4],oasis:[7,1],camp:[8,1],chemin:[9,1],parvis:[10,1],
-cloitre:[10,0],jardin:[10,-1],crypte1:[11,-1],crypte2:[12,-1],crypte3:[13,-1],temple:[11,1],cour:[12,1],salle:[12,2],trone:[12,3]};
+(()=>{const C=DATA.cartes,L={quartier:[-1,0],village:[0,0],poste:[0,-1],foret:[1,0],collines:[1,1],manoir:[1,2],marais:[0,2],roseliere:[-1,2],serre:[-2,2],dunes:[-2,1],oasis:[-2,0],camp:[-2,-1],chemin:[-2,-2],parvis:[-1,-2],temple:[0,-2],cour:[1,-2],salle:[2,-2],trone:[2,-1],
+sentier:[2,0],clairiere:[3,0],terrier1:[4,0],terrier2:[5,0],terrier3:[6,0],
+paturage:[2,1],bergerie:[3,1],enclos1:[4,1],enclos2:[5,1],enclos3:[6,1],
+hall:[1,3],bureaux:[1,4],archives1:[1,5],archives2:[1,6],archives3:[1,7],
+gue:[0,3],ile:[0,4],reves1:[0,5],reves2:[0,6],reves3:[0,7],
+mirage:[-3,1],puits:[-4,1],pyr1:[-5,1],pyr2:[-6,1],pyr3:[-7,1],
+cloitre:[-1,-3],jardin:[-1,-4],crypte1:[-1,-5],crypte2:[-1,-6],crypte3:[-1,-7]};
 DATA.monde=L;
 const dir=(a,b)=>{const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'S':'N'},
 side=e=>e.x==0?'W':e.x>=12?'E':e.y==0?'N':'S',def={E:[12,6],W:[0,6],N:[6,0],S:[6,12]},inn={E:[-1,0],W:[1,0],N:[0,1],S:[0,-1]},opp={E:'W',W:'E',N:'S',S:'N'},P={};
 for(const k in C)P[k]={};
 for(const k in C)for(const e of C[k].exits){const d=dir(k,e.to);P[k][e.to]=side(e)==d?[e.x,e.y]:def[d]}
-for(const k in C)C[k].exits=C[k].exits.map(e=>{const d=dir(k,e.to),q=P[e.to][k],a=opp[d],p=P[k][e.to];return{x:p[0],y:p[1],to:e.to,tx:q[0]+inn[a][0],ty:q[1]+inn[a][1],lbl:C[e.to].n}});
+for(const k in C)C[k].exits=C[k].exits.map(e=>{const d=dir(k,e.to),q=P[e.to][k],a=opp[d],p=P[k][e.to];return{x:p[0],y:p[1],to:e.to,tx:q[0]+inn[a][0],ty:q[1]+inn[a][1]}});
 const arr={};for(const k in C)for(const e of C[k].exits)(arr[e.to]=arr[e.to]||[]).push([e.tx,e.ty]);
 for(const k in C){const m=C[k],ents=['npcs','picks','groups','nodes','coffres','hides'].flatMap(q=>m[q]||[]),bl=[...m.exits.map(e=>[e.x,e.y]),...(arr[k]||[])],is=(c,x,y)=>c[0]==x&&c[1]==y;
 for(const o of ents)if(bl.some(c=>is(c,o.x,o.y)))for(const [a,b] of [[-1,0],[0,-1],[1,0],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[0,-2]]){const x=o.x+a,y=o.y+b;
@@ -811,4 +812,18 @@ for(const k in C){const m=C[k],cells=[...m.exits.map(e=>[e.x,e.y]),...m.exits.ma
 const D=[['clairiere','terrier','Terrier de la Mère'],['bergerie','enclos','Enclos du Troupeau'],['bureaux','archives','Archives du Greffier'],['ile','reves','Rêves de la Baronne'],['puits','pyr','Pyramide du Sphinx'],['jardin','crypte','Crypte du Gardien']];
 for(const [hub,p,nom] of D){const ns=[1,2,3].map(i=>C[p+i]),nv=[];ns.forEach(m=>(m.groups||[]).forEach(g=>nv.push(DATA.rencontres[g.renc].niv)));
 const a=Math.min(...nv),b=Math.max(...nv),e=C[hub].exits.find(e=>e.to==p+'1');e.don=1;e.lbl=nom;e.nv='niv '+(a==b?a:a+'-'+b)}
+
+// Passages verrouillés : il faut vaincre le boss du donjon de la zone pour avancer
+for(const [a,b,r,nom] of [['foret','collines',22,'Terrier de la Mère'],['collines','manoir',27,'Enclos du Troupeau'],['manoir','marais',32,'Archives du Greffier'],['marais','roseliere',37,'Rêves de la Baronne'],['dunes','oasis',42,'Pyramide du Sphinx'],['parvis','temple',47,'Crypte du Gardien']]){const e=C[a].exits.find(e=>e.to==b);e.cle='vaincu_'+r;e.why='Passage bloqué : vaincs d’abord le boss de '+nom+'.'}
+// Boss sur la route du joueur : à quelques cases de la sortie qui mène plus loin
+const R=DATA.rencontres,isB=g=>R[g.renc].n.includes('boss');
+for(const [k,to] of [['manoir','marais'],['serre','dunes'],['temple','cour']]){const m=C[k],g=(m.groups||[]).find(isB),e=m.exits.find(e=>e.to==to);if(!g)continue;
+const sx=e.x==0?1:e.x>=12?-1:0,sy=e.y==0?1:e.y>=12?-1:0,taken=u=>[...m.groups,...(m.npcs||[]),...(m.nodes||[]),...(m.picks||[])].some(o=>o!==g&&o.x==u[0]&&o.y==u[1])||m.rocks.some(r=>r[0]==u[0]&&r[1]==u[1]);
+for(const d of [3,4,2,5]){const c=[e.x+sx*d,e.y+sy*d];if(c[0]>0&&c[0]<12&&c[1]>0&&c[1]<12&&!taken(c)){g.x=c[0];g.y=c[1];break}}}
+// Groupes diversifiés : les doublons d'une carte deviennent des variantes avec d'autres monstres du même biome
+let sd=7;const rnd=()=>(sd=sd*16807%2147483647)/2147483647,pool={};
+R.forEach(r=>{if(r.n.includes('boss'))return;(pool[r.biome]=pool[r.biome]||[]).push({niv:r.niv,ms:r.m.filter(u=>!u.boss&&!u.form)})});
+for(const k in C){const seen=new Set();for(const g of C[k].groups||[]){const b=R[g.renc];if(isB(g)||b.base!=null)continue;if(!seen.has(g.renc)){seen.add(g.renc);continue}
+const P=(pool[b.biome]||[]).filter(p=>Math.abs(p.niv-b.niv)<=4).flatMap(p=>p.ms).filter(u=>!b.m.some(w=>w.n==u.n));if(!P.length)continue;
+const v=JSON.parse(JSON.stringify(b)),j=Math.floor(rnd()*v.m.length),o=v.m[j],c=JSON.parse(JSON.stringify(P[Math.floor(rnd()*P.length)]));c.x=o.x;c.y=o.y;v.m[j]=c;v.base=g.renc;R.push(v);g.renc=R.length-1}}
 })();

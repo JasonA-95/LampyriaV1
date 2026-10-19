@@ -27,7 +27,7 @@ if(item.hp>0&&unit.hp<=0)deathAnimation(unit)}}
 function reward(){const e=DATA.rencontres[cfg.renc];if(cfg.test)return{test:true};
 const type=e.type||(e.m.some(m=>m.boss)?'boss':'normal'),gain=XP.rencontre({niv:e.niv||1+cfg.renc*3,m:XP.m[type]||1},sv.niv,!EX.group),r={xp:gain,loot:e.loot||{},lv:0,items:[],eq:[],lueur:null};for(const k in r.loot)sv.res[k]+=r.loot[k];
 r.lv=XP.add(sv,gain);if(r.lv&&typeof playSound=='function')playSound('level');
-if(cfg.renc==sv.renc&&sv.renc<DATA.rencontres.length-1)sv.renc++;
+if((DATA.rencontres[cfg.renc].base??cfg.renc)==sv.renc&&sv.renc<DATA.rencontres.length-1)sv.renc++;
 if(e.unlock&&!sv.deb.includes(e.unlock)){sv.deb.push(e.unlock);r.lueur=e.unlock}
 r.items=rollDrops(cfg.renc);r.eq=r.items.map(autoEquip);store();return r}
 function endFight(res,r){combatLive=false;const win=res=='win',n=el('div','');if(typeof playSound=='function')playSound(win?'victory':'defeat');
