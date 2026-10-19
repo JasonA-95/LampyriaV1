@@ -30,8 +30,8 @@ EX.start=options=>{options=options||{};const entering=EX.map!==(sv.map||'village
 if(entering)EX.enter(sv.map||'village',undefined,undefined,!!(options.storyId&&cfg.test));resetView();
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
 msg('Tu es : '+DATA.cartes[EX.map].n+'.');EX.ui();EX.draw();if(options.storyId)EX.storyPlay(options.storyId);else if(!EX.storyResume()&&entering)EX.storyTrigger({quand:'entree',carte:EX.map})};
-EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span><span class="chip">Niv '+sv.niv+'</span>'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')};
-EX.ui=()=>{exPrune();const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';F.appendChild(btn('☰ Menu','','pri',()=>openMenu()));F.appendChild(btn('🗺️ Carte','','',()=>EX.carte()));F.appendChild(btn('📜 Quêtes','','',()=>openMenu('quetes')))};
+EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span><span class="chip">Niv '+sv.niv+(sv.niv<XP.max?' · '+Math.round(100*XP.part(sv))+'%':' max')+'</span>'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')};
+EX.ui=()=>{exPrune();const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';EX.dock(F)};
 EX.gain=r=>{let t='';const xp=r.xpq?XP.quete(r.xpq[0],XP.k[r.xpq[1]]||XP.k.normale):r.xp;if(xp){const lv=XP.add(sv,xp);t+=' +'+xp+' XP';if(lv){t+=' Niveau '+sv.niv+' !';if(typeof playSound=='function')playSound('level')}}
 for(const k in (r.res||{})){sv.res[k]+=r.res[k];t+=' +'+r.res[k]+' '+DATA.res[k].split(' ')[0]}
 if(r.item&&!sv.inv.includes(r.item)){sv.inv.push(r.item);autoEquip(r.item);t+=' '+DATA.objets[r.item].n+' !'}
@@ -138,3 +138,24 @@ g2.lineWidth=k==EX.map?S/10:dj(k)?2:1;g2.strokeStyle=k==EX.map?'#fff':dj(k)?'#d9
 g2.font=Math.round(S*.3)+'px serif';g2.fillStyle='#fff';if(!v)g2.fillText('?',cx,cy);else{const mk=marks(k);if(k==EX.map)mk.unshift('📍');mk.slice(0,4).forEach((t,i,a)=>g2.fillText(t,cx+(a.length>1?(i%2?1:-1)*S*.17:0),cy+(a.length>2?(i<2?-1:1)*S*.17:0)))}}
 cv2.onclick=ev=>{const r=cv2.getBoundingClientRect(),px=(ev.clientX-r.left)*cv2.width/r.width,py=(ev.clientY-r.top)*cv2.height/r.height,k=ks.find(k=>{const c=P(k);return Math.abs(px-c[0])<S/2&&Math.abs(py-c[1])<S/2});if(k)say(k)};
 wr.appendChild(cv2);const box=el('div');box.style.flex='none';box.appendChild(el('h2','','Carte du monde'));box.appendChild(wr);box.appendChild(info);box.appendChild(el('p','','🏠 village · 🕳️ donjon · 💀 boss · ❗ quête à prendre · 🎯 objectif de quête · 📍 toi. Touche une zone pour les détails.'));say(EX.map);modal(box,[['Fermer']]);const c=P(EX.map);wr.scrollTop=c[1]-wr.clientHeight/2;wr.scrollLeft=c[0]-wr.clientWidth/2};
+
+// ===== Interface en jeu : barre d'icônes, fiche du héros, équipement, sorts =====
+EX.dock=F=>{if(!document.getElementById('dockcss')){const s=document.createElement('style');s.id='dockcss';s.textContent='.dock{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:100%}.dock button{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 4px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:inherit;font:600 9px system-ui,sans-serif}.dock .ic{font-size:20px;line-height:1}.dock .dot{position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--ember)}.bigem{font-size:34px;line-height:1}.xpb{height:8px;border-radius:6px;background:#0006;overflow:hidden}.xpb i{display:block;height:100%;background:var(--ember)}';document.head.appendChild(s)}
+const D=el('div','dock');[['🛡️','Héros',()=>EX.fiche(),talLeft()>0||spLeft()>0],['🎒','Équip.',()=>EX.inv(),0],['✨','Sorts',()=>EX.sorts(),spLeft()>0],['🏮','Lanterne',()=>openMenu('lanterne'),0],['🗺️','Carte',()=>EX.carte(),0],['📜','Quêtes',()=>openMenu('quetes'),questReady()],['⚙️','Options',()=>openMenu('jouer','Options'),0]].forEach(([ic,n,fn,dot])=>{const b=el('button','','<span class="ic">'+ic+'</span><span>'+n+'</span>');b.setAttribute('aria-label',n);if(dot)b.appendChild(el('span','dot'));b.onclick=fn;D.appendChild(b)});F.appendChild(D)};
+EX.stats=()=>{const G=gear().t,st=el('div','grid2');st.innerHTML=[[heroMax(),'PV'],['+'+(sv.niv-1+G.dmg),'Dégâts bonus'],[G.res+' %','Résistance'],[(DATA.heros.pm||3)+G.pm,'PM par tour']].map(([v,n])=>'<div class="stat"><b>'+v+'</b><span>'+n+'</span></div>').join('');return st};
+EX.fiche=()=>{const c=DATA.classes[cfg.classe],need=XP.next(sv.niv),box=el('div','','<div style="display:flex;gap:12px;align-items:center"><span class="bigem">'+heroEmoji()+'</span><div><h2 style="margin:0">'+escHtml((sv.hero&&sv.hero.nom)||'Livreur')+'</h2><p>'+c.e+' '+c.n+' · Niveau <b>'+sv.niv+'</b></p></div></div><div class="xpb"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><p>'+(sv.niv>=XP.max?'Niveau maximum':sv.xp+' / '+need+' XP')+'</p>');
+box.appendChild(EX.stats());
+const L=cfg.lueurs.map(k=>DATA.lueurs[k]).filter(Boolean).map(z=>(z.e||'')+' '+z.n).join(', ');
+box.appendChild(el('p','','🏮 Lanterne : capacité <b>'+capNow()+'</b>'+(L?' · Lueurs actives : '+L:'')));
+const pts=talLeft()+spLeft();if(pts>0)box.appendChild(el('p','','<b style="color:var(--ember)">'+talLeft()+' point(s) de talent</b> et <b style="color:var(--ember)">'+spLeft()+' point(s) de sort</b> à dépenser.'));
+modal(box,[['Fermer'],['Talents',()=>openMenu('heros','Talents')]])};
+EX.inv=()=>{const box=el('div','','<h2>Équipement</h2>'),gr=el('div','grid2');
+SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,o=id&&DATA.objets[id];gr.appendChild(btn(o?o.e+' '+o.n:ic+' '+n,o?n:'Vide','' +(o?'on':''),()=>pickGear(s,EX.inv)))});
+box.appendChild(gr);box.appendChild(EX.stats());
+box.appendChild(el('div','chips',Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')));
+box.appendChild(el('p','','Objets possédés : <b>'+sv.inv.length+'</b>. Touche un emplacement pour changer d\'objet.'));
+modal(box,[['Fermer'],['Atelier',()=>openMenu('atelier')]])};
+EX.sorts=()=>{const box=el('div','','<h2>Sorts</h2><p>Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b></p>');
+const eqp=[...sortsEquipes(),...cfg.lueurs.map(k=>DATA.lueurs[k]&&DATA.lueurs[k].sort).filter(Boolean)];
+eqp.forEach(s=>box.appendChild(row('<span class="em">'+(s.e||'✨')+'</span><span class="tx"><span class="nm">'+s.n+' · '+s.pa+' PA</span><span class="mt">'+descrBody(s)+'</span></span>',()=>{},'')));
+modal(box,[['Fermer'],['Gérer',()=>openMenu('heros','Sorts')]])};

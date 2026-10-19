@@ -22,8 +22,8 @@ const confirm=el('div','','<h2>Remplacer ta sauvegarde actuelle ?</h2><p>Cette a
 }]])}
 
 // ---------- ouverture / fermeture ----------
-function openMenu(t){if(EX.on)resume='ex';else if(combatLive&&!$('game').classList.contains('hide'))resume='combat';else if(!combatLive)resume=null;
-EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t;normL();closeModal();hideBubble();$('game').classList.add('hide');stopAmbience();$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0}
+function openMenu(t,a){if(EX.on)resume='ex';else if(combatLive&&!$('game').classList.contains('hide'))resume='combat';else if(!combatLive)resume=null;
+EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t;normL();closeModal();hideBubble();$('game').classList.add('hide');stopAmbience();$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0;if(a){const h=[...$('mbody').querySelectorAll('h3')].find(x=>x.textContent.startsWith(a));if(h)h.scrollIntoView()}}
 function hideMenu(){$('menu').classList.add('hide')}
 function showGame(){hideMenu();$('game').classList.remove('hide');size();if(EX.on)EX.draw();else if(C)draw()}
 function renderMenu(){const sc=$('mbody').scrollTop,need=XP.next(sv.niv);
@@ -61,8 +61,8 @@ B.appendChild(o);o.appendChild(el('p','sp','Version '+VERSION))}
 
 // ---------- onglet Héros ----------
 function tabHeros(B){const cl=el('div','grid');
-for(const k in DATA.classes){const c=DATA.classes[k];cl.appendChild(btn(c.e+' '+c.n,c.info,cfg.classe==k?'on':'',()=>{cfg.classe=k;normL();saveCfg();renderMenu()}))}
-B.appendChild(card('Classe',cl,'Les sorts de classe sont toujours disponibles en combat.'));
+for(const k in DATA.classes){if(!cfg.test&&cfg.classe!=k)continue;const c=DATA.classes[k];cl.appendChild(btn(c.e+' '+c.n,c.info,cfg.classe==k?'on':'',()=>{if(!cfg.test)return;cfg.classe=k;normL();saveCfg();renderMenu()}))}
+B.appendChild(card('Classe',cl,cfg.test?'Mode test : tu peux changer de classe.':'Ta classe est définitive. Seul le mode test permet d\'en changer.'));
 const spellCard=card('Sorts','Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b>'),current=DATA.classes[cfg.classe].sorts,first=current[0].id;
 for(const base of current){const unlocked=cfg.test||base.niv<=sv.niv,rank=cfg.test?3:(sv.sp.rg[base.id]||1),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),entry=el('div','pick');
 const name=s.n+(rank>1?' ★'+rank:'')+(base.id==first?' 🔒':'');
@@ -88,10 +88,10 @@ eq.appendChild(id?row(itemRow(id)+'<span class="mt">'+n+'</span>',()=>pickGear(s
 const gc=gear().cnt;for(const k in DATA.sets){const S=DATA.sets[k],n=gc[k]||0,l=Object.keys(S.bonus).map(p=>'<span style="color:'+(n>=+p?'var(--ok)':'var(--dim)')+'">'+p+' pièces : '+fmtSt(S.bonus[p])+'</span>').join('<br>');
 eq.appendChild(el('div','set','<b>'+S.n+' ('+n+'/'+Math.max(...Object.keys(S.bonus).map(Number))+')</b><br>'+l))}
 B.appendChild(eq)}
-function pickGear(slot){const t=slotType(slot),own=sv.inv.filter(i=>DATA.objets[i].slot==t),n=el('div','pick','<h2>'+SLOTS.find(s=>s[0]==slot)[1]+'</h2>');
+function pickGear(slot,back){const t=slotType(slot),own=sv.inv.filter(i=>DATA.objets[i].slot==t),n=el('div','pick','<h2>'+SLOTS.find(s=>s[0]==slot)[1]+'</h2>');
 if(!own.length)n.appendChild(el('p','','Aucun objet de ce type pour l\'instant. L\'atelier et les combats en fournissent.'));
-own.forEach(id=>{const cur=sv.eq[slot]==id,r=row(itemRow(id,cur?'<span class="mt" style="color:var(--ok)">Équipé ici</span>':(Object.keys(sv.eq).find(s=>sv.eq[s]==id)?'<span class="mt">Équipé ailleurs : sera déplacé</span>':'')),()=>{equip(slot,id);closeModal();renderMenu()});n.appendChild(r)});
-if(sv.eq[slot])n.appendChild(row('<span class="em">✖️</span><span class="tx"><span class="nm">Retirer</span></span>',()=>{equip(slot,null);closeModal();renderMenu()}));
+own.forEach(id=>{const cur=sv.eq[slot]==id,r=row(itemRow(id,cur?'<span class="mt" style="color:var(--ok)">Équipé ici</span>':(Object.keys(sv.eq).find(s=>sv.eq[s]==id)?'<span class="mt">Équipé ailleurs : sera déplacé</span>':'')),()=>{equip(slot,id);closeModal();renderMenu();if(back)back()});n.appendChild(r)});
+if(sv.eq[slot])n.appendChild(row('<span class="em">✖️</span><span class="tx"><span class="nm">Retirer</span></span>',()=>{equip(slot,null);closeModal();renderMenu();if(back)back()}));
 modal(n,[['Fermer']])}
 
 // ---------- onglet Lanterne ----------
