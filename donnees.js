@@ -788,3 +788,27 @@ t1:{n:'Cloître assiégé',desc:'Repousse 2 groupes de monstres dans le Cloître
 t2:{n:'Fleurs de cire',desc:'Ramasse 3 fleurs de cire dans le Jardin pour le Jardinier.',need:3,kind:'pick',req:12,donneur:'Jardinier de cire',say:'Trois fleurs de cire ont fondu à travers le jardin. Elles sont encore tièdes : retrouve-les avant qu’elles refroidissent.',fin:'Les voilà, presque intactes ! Je vais les replanter. Elles fondront quand même, mais plus tard.',rew:{xpq:[46,'normale'],res:{eclat:4,gravat:3}}},
 t3:{n:'La Crypte du Gardien',desc:'Pénètre dans la Crypte, au fond du Jardin, et vaincs l’Écho du Gardien.',need:1,kind:'win',renc:B+4,req:12,donneur:'Gardien du Parvis',say:'Sous le jardin, il y a la crypte où le Gardien a veillé une dernière fois. Son écho y monte encore la garde. Quelqu’un doit lui dire que c’est fini.',fin:'L’écho s’est tu. Je crois qu’il a enfin pu s’asseoir. Merci pour lui.',rew:{xpq:[49,'longue'],res:{eclat:6,gravat:5}}}});
 })();
+
+// ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
+(()=>{const C=DATA.cartes,L={quartier:[-1,0],village:[0,0],poste:[0,-1],foret:[1,0],sentier:[1,-1],clairiere:[1,-2],terrier1:[0,-2],terrier2:[-1,-2],terrier3:[-2,-2],
+collines:[2,0],paturage:[2,1],bergerie:[2,2],enclos1:[2,3],enclos2:[1,3],enclos3:[0,3],
+manoir:[3,0],hall:[3,-1],bureaux:[3,-2],archives1:[4,-2],archives2:[5,-2],archives3:[6,-2],
+marais:[4,0],gue:[4,1],ile:[4,2],reves1:[4,3],reves2:[4,4],reves3:[4,5],roseliere:[5,0],serre:[6,0],
+dunes:[6,1],mirage:[6,2],puits:[6,3],pyr1:[6,4],pyr2:[7,4],pyr3:[8,4],oasis:[7,1],camp:[8,1],chemin:[9,1],parvis:[10,1],
+cloitre:[10,0],jardin:[10,-1],crypte1:[11,-1],crypte2:[12,-1],crypte3:[13,-1],temple:[11,1],cour:[12,1],salle:[12,2],trone:[12,3]};
+DATA.monde=L;
+const dir=(a,b)=>{const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'S':'N'},
+side=e=>e.x==0?'W':e.x>=12?'E':e.y==0?'N':'S',def={E:[12,6],W:[0,6],N:[6,0],S:[6,12]},inn={E:[-1,0],W:[1,0],N:[0,1],S:[0,-1]},opp={E:'W',W:'E',N:'S',S:'N'},P={};
+for(const k in C)P[k]={};
+for(const k in C)for(const e of C[k].exits){const d=dir(k,e.to);P[k][e.to]=side(e)==d?[e.x,e.y]:def[d]}
+for(const k in C)C[k].exits=C[k].exits.map(e=>{const d=dir(k,e.to),q=P[e.to][k],a=opp[d],p=P[k][e.to];return{x:p[0],y:p[1],to:e.to,tx:q[0]+inn[a][0],ty:q[1]+inn[a][1],lbl:C[e.to].n}});
+const arr={};for(const k in C)for(const e of C[k].exits)(arr[e.to]=arr[e.to]||[]).push([e.tx,e.ty]);
+for(const k in C){const m=C[k],ents=['npcs','picks','groups','nodes','coffres','hides'].flatMap(q=>m[q]||[]),bl=[...m.exits.map(e=>[e.x,e.y]),...(arr[k]||[])],is=(c,x,y)=>c[0]==x&&c[1]==y;
+for(const o of ents)if(bl.some(c=>is(c,o.x,o.y)))for(const [a,b] of [[-1,0],[0,-1],[1,0],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[0,-2]]){const x=o.x+a,y=o.y+b;
+if(x<1||y<1||x>11||y>11||(m.rocks||[]).some(r=>is(r,x,y))||ents.some(u=>u.x==x&&u.y==y)||bl.some(c=>is(c,x,y)))continue;o.x=x;o.y=y;break}}
+for(const k in C){const m=C[k],cells=[...m.exits.map(e=>[e.x,e.y]),...m.exits.map(e=>[e.tx,e.ty])];m.rocks=(m.rocks||[]).filter(r=>!cells.some(c=>c[0]==r[0]&&c[1]==r[1]))}
+// Donjons : entrée visible depuis une carte de la zone, avec nom et niveau
+const D=[['clairiere','terrier','Terrier de la Mère'],['bergerie','enclos','Enclos du Troupeau'],['bureaux','archives','Archives du Greffier'],['ile','reves','Rêves de la Baronne'],['puits','pyr','Pyramide du Sphinx'],['jardin','crypte','Crypte du Gardien']];
+for(const [hub,p,nom] of D){const ns=[1,2,3].map(i=>C[p+i]),nv=[];ns.forEach(m=>(m.groups||[]).forEach(g=>nv.push(DATA.rencontres[g.renc].niv)));
+const a=Math.min(...nv),b=Math.max(...nv),e=C[hub].exits.find(e=>e.to==p+'1');e.don=1;e.lbl=nom;e.nv='niv '+(a==b?a:a+'-'+b)}
+})();

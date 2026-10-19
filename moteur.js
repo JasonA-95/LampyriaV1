@@ -24,7 +24,7 @@ if(hit.absorbed)this.event(events,u,'Bouclier absorbé -'+hit.absorbed,'#9ecbff'
 result.blocked=this.hasEtat(u,'etourdi');const slow=u.etats&&u.etats.find(e=>e.id=='ralenti'&&e.t>0);if(slow)result.slow=slow.v||0;
 for(const e of [...(u.etats||[])]){e.t--;if(e.t<=0){u.etats=u.etats.filter(s=>s!==e);if(e.id=='bouclier')this.event(events,u,'Bouclier expiré','#9ecbff','Le bouclier disparaît.')}}
 if(result.blocked)this.event(events,u,'Étourdi !','#ffe08a',u.n+' est étourdi et passe son tour.');if(result.slow)this.event(events,u,'Ralenti','#9ecbff',u.n+' est ralenti : -'+result.slow+' PM.');return result}
-checkWin(){if(this.hero.hp>0&&this.foes.filter(f=>!f.form).every(f=>f.hp<=0))this.result='win';return this.result}
+checkWin(){if(!this.foes.some(f=>f.renfort&&f.hp>0))this.foes.forEach(f=>{if(f.renfortNe&&f.hp>0)f.hp=0});if(this.hero.hp>0&&this.foes.filter(f=>!f.form).every(f=>f.hp<=0))this.result='win';return this.result}
 resolveTickDeath(f,events){if(f.hp<=0&&!f.deathHandled){f.deathHandled=true;if(f.mort&&this.dist(f,this.hero)<=f.mort.r){const hit=this.applyDamage(this.hero,f.mort.dmg,false);this.event(events,this.hero,'-'+hit.damage,'#e5564a',f.mort.n+' : -'+hit.damage+' PV.');if(hit.absorbed)this.event(events,this.hero,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}}this.checkWin()}
 nuit(f){const a=f.cycle.a,b=f.cycle.b;return (this.turn-1)%(a+b)<a}
 escorted(f){return this.foes.some(g=>g!==f&&!g.boss&&!g.form&&g.hp>0&&this.dist(g,f)<=f.escorte)}
