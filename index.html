@@ -125,7 +125,7 @@ button.asp.on{background:#3a2a22;border-color:var(--ember);box-shadow:0 0 0 2px 
 .pick{display:flex;flex-direction:column;gap:6px}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0));transform:translateX(-50%);background:var(--panel2);border:1px solid var(--ember);border-radius:99px;padding:8px 16px;font-size:14px;z-index:30;max-width:92vw;text-align:center}
 @media (orientation:landscape) and (max-height:600px){#mhead{padding:6px 14px 2px}#mhead h1{font-size:16px}#tabs button{min-height:40px}#tabs button .ic{font-size:15px}#mfoot{padding:6px 14px}.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
-</style></head><body>
+#turn{display:none;position:fixed;inset:0;z-index:100;background:#120d1a;color:#f4e6c8;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;font:600 18px system-ui,sans-serif}#turn b{font-size:64px;display:block;animation:tr 2s ease-in-out infinite}@keyframes tr{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}@media (orientation:portrait) and (max-width:900px){#turn{display:flex}}</style></head><body><div id="turn"><b>📱</b>Tourne ton téléphone en mode paysage pour jouer à Lampyria.</div>
 <div id="menu" class="hide"><div id="mhead"></div><div id="tabs"></div><div id="mbody"></div><div id="mfoot"></div></div>
 <div id="game" class="hide"><div id="stage"><canvas id="c"></canvas><canvas id="amb" aria-hidden="true"></canvas><div id="screenFade" class="hide" aria-hidden="true"></div><div id="hud"></div><div id="zoneBanner" class="hide" aria-live="polite"></div><div id="bubble" class="hide"><b class="who"></b><span class="tx"></span><i class="tail"></i></div></div><div id="panel"><div id="msgEl"></div><div id="foes" class="hide" aria-label="Ennemis en combat"></div><div id="tip"></div><div id="bar"></div><div id="foot"></div></div></div>
 <div id="titre" class="hide"></div>
@@ -146,4 +146,4 @@ button.asp.on{background:#3a2a22;border-color:var(--ember);box-shadow:0 0 0 2px 
 <script src="tuto.js"></script>
 <script src="affichage.js"></script>
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
-</body></html>
+<script>try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})}catch(e){}</script></body></html>
