@@ -3,7 +3,7 @@ const TUTO=[
 {id:'bouger',spk:'Gourmande',ok:()=>EX.on&&EX.map,txt:'Touche une case pour voir le trajet, puis touche-la encore pour y aller. Les monstres, les habitants et les sorties sont aussi des cases.'},
 {id:'parler',spk:'Gourmande',ok:()=>EX.on&&EX.steps>=3,txt:'Les habitants ont toujours quelque chose à raconter, et souvent un service à demander. Approche-toi et touche-les.'},
 {id:'combat',spk:'Colérique',ok:()=>combatLive&&!EX.on&&!$('game').classList.contains('hide'),txt:'Chaque tour : 6 PA pour les sorts, 3 PM pour bouger. Touche un sort pour voir sa portée, touche la cible pour confirmer. Quand tu n\'as plus rien à faire, termine ton tour.'},
-{id:'quete',spk:'Peureuse',ok:()=>EX.on&&Object.keys(sv.q||{}).length>0,txt:'Le menu garde tes quêtes dans l\'onglet 📜. Tu y verras quoi faire, pour qui, et où aller.'},
+{id:'quete',spk:'Peureuse',ok:()=>EX.on&&Object.keys(sv.q||{}).length>0,txt:'La barre d\'icônes du bas garde tes quêtes dans l\'onglet 📜. Tu y verras quoi faire, pour qui, et où aller.'},
 {id:'niveau',spk:'Têtue',ok:()=>EX.on&&sv.niv>=2,txt:'Tu as gagné un niveau ! Passe par l\'onglet Héros : points de talent, nouveaux sorts, rangs d\'amélioration.'},
 {id:'lanterne',spk:'Rêveuse',ok:()=>EX.on&&sv.deb.length>1,txt:'Une nouvelle Lueur nous a rejoints… Dans l\'onglet Lanterne, tu choisis lesquelles emporter. Seulement hors combat, et la place est comptée.'},
 {id:'atelier',spk:'Farceuse',ok:()=>EX.on&&typeof canCraftAny=='function'&&canCraftAny(),txt:'Hé hé, tu as de quoi fabriquer quelque chose ! File à l\'onglet Atelier, c\'est gratuit de regarder.'}
@@ -16,7 +16,7 @@ function tutoShow(t){let d=$('tuto');if(!d){d=el('div','hide');d.id='tuto';docum
 const col=(typeof SPK!='undefined'&&SPK[t.spk])||'#c17b26';d.className='';d.style.borderLeftColor=col;
 d.innerHTML='<b style="color:'+col+'">💡 '+t.spk+'</b><p>'+t.txt+'</p>';
 const b=el('div','tb');b.appendChild(btn('Compris','','pri',()=>{tutoHide()}));
-b.appendChild(btn('Plus de conseils','','ghost',()=>{tutoToggle();tutoHide();toast('Conseils désactivés (réactivables dans le menu).')}));d.appendChild(b)}
+b.appendChild(btn('Plus de conseils','','ghost',()=>{tutoToggle();tutoHide();toast('Conseils désactivés (réactivables dans ⚙️ Options).')}));d.appendChild(b)}
 function tutoTick(){try{if(!tutoOn()||typeof sv=='undefined'||!$('titre').classList.contains('hide')||!$('menu').classList.contains('hide')||!$('modal').classList.contains('hide')||(typeof STORY_RUN!='undefined'&&STORY_RUN))return;
 if(!sv.tuto||!Array.isArray(sv.tuto.vus)){sv.tuto={vus:sv.hist&&sv.hist.flags&&sv.hist.flags.nouvellePartie?[]:TUTO.map(t=>t.id)};store()}
 const d=$('tuto');if(d&&!d.classList.contains('hide'))return;

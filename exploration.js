@@ -118,7 +118,7 @@ if(u.b){g.font='bold '+Math.round(tw*.3)+'px Georgia,serif';g.lineWidth=3;g.stro
 drawDisplayTexts(g,tw,th,ox,oy);updateDisplayTransition();placeBubble();syncAmbience()};
 
 // ===== Minicarte du monde : zones découvertes, donjons, boss, quêtes =====
-EX.carte=()=>{const L=DATA.monde,C=DATA.cartes,R=DATA.rencontres,F=sv.hist.flags,Q=qs(),vu=k=>!!F['vu_'+k],show=k=>vu(k)||C[k].exits.some(e=>vu(e.to)),ks=Object.keys(L).filter(show),
+EX.carteNode=()=>{const L=DATA.monde,C=DATA.cartes,R=DATA.rencontres,F=sv.hist.flags,Q=qs(),vu=k=>!!F['vu_'+k],show=k=>vu(k)||C[k].exits.some(e=>vu(e.to)),ks=Object.keys(L).filter(show),
 BC={village:'#d49a4a',foret:'#3f8f5a',collines:'#7f9fd0',manoir:'#8a50aa',marais:'#7a8070',roseliere:'#5a9a90',serre:'#9a8fa8',desert:'#d4a850',temple:'#e0c070',citadelle:'#8a4a9a',trone:'#5a6a85'},
 dj=k=>/^(terrier|enclos|archives|reves|pyr|crypte)\d$/.test(k),bs=r=>R[r].base??r,
 niv=k=>{const v=(C[k].groups||[]).map(g=>R[g.renc].niv);return v.length?Math.min(...v)==Math.max(...v)?'niv '+v[0]:'niv '+Math.min(...v)+'-'+Math.max(...v):''},
@@ -137,25 +137,8 @@ for(const k of ks){const[cx,cy]=P(k),w=S*.7,v=vu(k);g2.fillStyle=v?BC[C[k].biome
 g2.lineWidth=k==EX.map?S/10:dj(k)?2:1;g2.strokeStyle=k==EX.map?'#fff':dj(k)?'#d9534f':'#0008';g2.stroke();
 g2.font=Math.round(S*.3)+'px serif';g2.fillStyle='#fff';if(!v)g2.fillText('?',cx,cy);else{const mk=marks(k);if(k==EX.map)mk.unshift('📍');mk.slice(0,4).forEach((t,i,a)=>g2.fillText(t,cx+(a.length>1?(i%2?1:-1)*S*.17:0),cy+(a.length>2?(i<2?-1:1)*S*.17:0)))}}
 cv2.onclick=ev=>{const r=cv2.getBoundingClientRect(),px=(ev.clientX-r.left)*cv2.width/r.width,py=(ev.clientY-r.top)*cv2.height/r.height,k=ks.find(k=>{const c=P(k);return Math.abs(px-c[0])<S/2&&Math.abs(py-c[1])<S/2});if(k)say(k)};
-wr.appendChild(cv2);const box=el('div');box.style.flex='none';box.appendChild(el('h2','','Carte du monde'));box.appendChild(wr);box.appendChild(info);box.appendChild(el('p','','🏠 village · 🕳️ donjon · 💀 boss · ❗ quête à prendre · 🎯 objectif de quête · 📍 toi. Touche une zone pour les détails.'));say(EX.map);modal(box,[['Fermer']]);const c=P(EX.map);wr.scrollTop=c[1]-wr.clientHeight/2;wr.scrollLeft=c[0]-wr.clientWidth/2};
+wr.appendChild(cv2);const box=el('div');box.style.flex='none';box.appendChild(wr);box.appendChild(info);box.appendChild(el('p','','🏠 village · 🕳️ donjon · 💀 boss · ❗ quête à prendre · 🎯 objectif de quête · 📍 toi. Touche une zone pour les détails.'));say(EX.map);box.center=()=>{const c=P(EX.map);wr.scrollTop=c[1]-wr.clientHeight/2;wr.scrollLeft=c[0]-wr.clientWidth/2};return box};
 
-// ===== Interface en jeu : barre d'icônes, fiche du héros, équipement, sorts =====
-EX.dock=F=>{if(!document.getElementById('dockcss')){const s=document.createElement('style');s.id='dockcss';s.textContent='.dock{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:100%}.dock button{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 4px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:inherit;font:600 9px system-ui,sans-serif}.dock .ic{font-size:20px;line-height:1}.dock .dot{position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--ember)}.bigem{font-size:34px;line-height:1}.xpb{height:8px;border-radius:6px;background:#0006;overflow:hidden}.xpb i{display:block;height:100%;background:var(--ember)}';document.head.appendChild(s)}
-const D=el('div','dock');[['🛡️','Héros',()=>EX.fiche(),talLeft()>0||spLeft()>0],['🎒','Équip.',()=>EX.inv(),0],['✨','Sorts',()=>EX.sorts(),spLeft()>0],['🏮','Lanterne',()=>openMenu('lanterne'),0],['🗺️','Carte',()=>EX.carte(),0],['📜','Quêtes',()=>openMenu('quetes'),questReady()],['⚙️','Options',()=>openMenu('jouer','Options'),0]].forEach(([ic,n,fn,dot])=>{const b=el('button','','<span class="ic">'+ic+'</span><span>'+n+'</span>');b.setAttribute('aria-label',n);if(dot)b.appendChild(el('span','dot'));b.onclick=fn;D.appendChild(b)});F.appendChild(D)};
-EX.stats=()=>{const G=gear().t,st=el('div','grid2');st.innerHTML=[[heroMax(),'PV'],['+'+(sv.niv-1+G.dmg),'Dégâts bonus'],[G.res+' %','Résistance'],[(DATA.heros.pm||3)+G.pm,'PM par tour']].map(([v,n])=>'<div class="stat"><b>'+v+'</b><span>'+n+'</span></div>').join('');return st};
-EX.fiche=()=>{const c=DATA.classes[cfg.classe],need=XP.next(sv.niv),box=el('div','','<div style="display:flex;gap:12px;align-items:center"><span class="bigem">'+heroEmoji()+'</span><div><h2 style="margin:0">'+escHtml((sv.hero&&sv.hero.nom)||'Livreur')+'</h2><p>'+c.e+' '+c.n+' · Niveau <b>'+sv.niv+'</b></p></div></div><div class="xpb"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><p>'+(sv.niv>=XP.max?'Niveau maximum':sv.xp+' / '+need+' XP')+'</p>');
-box.appendChild(EX.stats());
-const L=cfg.lueurs.map(k=>DATA.lueurs[k]).filter(Boolean).map(z=>(z.e||'')+' '+z.n).join(', ');
-box.appendChild(el('p','','🏮 Lanterne : capacité <b>'+capNow()+'</b>'+(L?' · Lueurs actives : '+L:'')));
-const pts=talLeft()+spLeft();if(pts>0)box.appendChild(el('p','','<b style="color:var(--ember)">'+talLeft()+' point(s) de talent</b> et <b style="color:var(--ember)">'+spLeft()+' point(s) de sort</b> à dépenser.'));
-modal(box,[['Fermer'],['Talents',()=>openMenu('heros','Talents')]])};
-EX.inv=()=>{const box=el('div','','<h2>Équipement</h2>'),gr=el('div','grid2');
-SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,o=id&&DATA.objets[id];gr.appendChild(btn(o?o.e+' '+o.n:ic+' '+n,o?n:'Vide','' +(o?'on':''),()=>pickGear(s,EX.inv)))});
-box.appendChild(gr);box.appendChild(EX.stats());
-box.appendChild(el('div','chips',Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' <b>'+sv.res[k]+'</b></span>').join('')));
-box.appendChild(el('p','','Objets possédés : <b>'+sv.inv.length+'</b>. Touche un emplacement pour changer d\'objet.'));
-modal(box,[['Fermer'],['Atelier',()=>openMenu('atelier')]])};
-EX.sorts=()=>{const box=el('div','','<h2>Sorts</h2><p>Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b></p>');
-const eqp=[...sortsEquipes(),...cfg.lueurs.map(k=>DATA.lueurs[k]&&DATA.lueurs[k].sort).filter(Boolean)];
-eqp.forEach(s=>box.appendChild(row('<span class="em">'+(s.e||'✨')+'</span><span class="tx"><span class="nm">'+s.n+' · '+s.pa+' PA</span><span class="mt">'+descrBody(s)+'</span></span>',()=>{},'')));
-modal(box,[['Fermer'],['Gérer',()=>openMenu('heros','Sorts')]])};
+
+// ===== Interface en jeu : la barre d'icônes ouvre les panneaux (menu.js) =====
+EX.dock=F=>{const D=el('div','dock');TABS.forEach(([id,n,ic])=>{const dot=(id=='heros'&&talLeft()>0)||(id=='sorts'&&spLeft()>0)||(id=='atelier'&&canCraftAny())||(id=='quetes'&&questReady()),b=el('button','','<span class="ic">'+ic+'</span><span>'+n+'</span>');b.setAttribute('aria-label',n);if(dot)b.appendChild(el('span','dot'));b.onclick=()=>openMenu(id);D.appendChild(b)});F.appendChild(D)};

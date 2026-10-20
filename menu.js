@@ -1,6 +1,6 @@
 // MENU : écran à onglets (Jouer, Héros, Lanterne, Atelier, Quêtes). Aucun dessin de grille ici.
-let tab='jouer',resume=null,combatLive=false;
-const TABS=[['jouer','Jouer','🏠'],['heros','Héros','🛡️'],['lanterne','Lanterne','🏮'],['atelier','Atelier','🔨'],['quetes','Quêtes','📜']];
+let tab='heros',resume=null,combatLive=false;
+const TABS=[['heros','Héros','🛡️'],['equip','Équip.','🎒'],['sorts','Sorts','✨'],['lanterne','Lanterne','🏮'],['atelier','Atelier','🔨'],['quetes','Quêtes','📜'],['carte','Carte','🗺️'],['options','Options','⚙️']];
 const craftables=()=>Object.keys(DATA.objets).filter(id=>DATA.objets[id].cout&&!sv.inv.includes(id));
 const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout));
 const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];return s&&s.s==1&&(s.n||0)>=DATA.quetes[id].need});
@@ -23,27 +23,28 @@ const confirm=el('div','','<h2>Remplacer ta sauvegarde actuelle ?</h2><p>Cette a
 
 // ---------- ouverture / fermeture ----------
 function openMenu(t,a){if(EX.on)resume='ex';else if(combatLive&&!$('game').classList.contains('hide'))resume='combat';else if(!combatLive)resume=null;
-EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t;normL();closeModal();hideBubble();$('game').classList.add('hide');stopAmbience();$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0;if(a){const h=[...$('mbody').querySelectorAll('h3')].find(x=>x.textContent.startsWith(a));if(h)h.scrollIntoView()}}
+EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t=='jouer'?'quetes':t;normL();closeModal();hideBubble();$('game').classList.add('hide');stopAmbience();$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0;if(a){const h=[...$('mbody').querySelectorAll('h3')].find(x=>x.textContent.startsWith(a));if(h)h.scrollIntoView()}}
 function hideMenu(){$('menu').classList.add('hide')}
 function showGame(){hideMenu();$('game').classList.remove('hide');size();if(EX.on)EX.draw();else if(C)draw()}
 function renderMenu(){const sc=$('mbody').scrollTop,need=XP.next(sv.niv);
-$('mhead').innerHTML='<div class="top"><h1>Lampyria</h1><span class="lv">'+(sv.hero&&sv.hero.nom?escHtml(sv.hero.nom)+' · ':'')+'Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' '+sv.res[k]+'</span>').join('')+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
+const cur=TABS.find(x=>x[0]==tab)||TABS[0],closeP=()=>{if(resume=='combat'&&combatLive)showGame();else EX.start()};
+$('mhead').innerHTML='<div class="top"><h1>'+cur[2]+' '+cur[1].replace('.','')+'</h1><span class="lv">'+(sv.hero&&sv.hero.nom?escHtml(sv.hero.nom)+' · ':'')+'Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' '+sv.res[k]+'</span>').join('')+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
+{const x=el('button','xbtn','✕');x.setAttribute('aria-label','Retour au jeu');x.onclick=closeP;$('mhead').querySelector('.top').appendChild(x)}
 const T=$('tabs');T.innerHTML='';TABS.forEach(([id,n,ic])=>{const b=el('button',id==tab?'sel':'','<span class="ic">'+ic+'</span><span class="nm">'+n+'</span>');
-if((id=='heros'&&(talLeft()>0||spLeft()>0))||(id=='atelier'&&canCraftAny())||(id=='quetes'&&questReady()))b.appendChild(el('span','dot'));b.onclick=()=>{tab=id;renderMenu();$('mbody').scrollTop=0};T.appendChild(b)});
-const B=$('mbody');B.innerHTML='';({jouer:tabJouer,heros:tabHeros,lanterne:tabLanterne,atelier:tabAtelier,quetes:tabQuetes})[tab](B);B.scrollTop=sc;
-const F=$('mfoot');F.innerHTML='';
-F.appendChild(resume=='combat'&&combatLive?btn('Reprendre le combat','','pri',showGame):resume=='ex'?btn("Reprendre l'exploration",DATA.cartes[sv.map||'village'].n,'pri',()=>EX.start()):btn('Explorer le monde',DATA.cartes[sv.map||'village'].n,'pri',()=>EX.start()))}
+if((id=='heros'&&talLeft()>0)||(id=='sorts'&&spLeft()>0)||(id=='atelier'&&canCraftAny())||(id=='quetes'&&questReady()))b.appendChild(el('span','dot'));b.onclick=()=>{tab=id;renderMenu();$('mbody').scrollTop=0};T.appendChild(b)});
+const B=$('mbody');B.innerHTML='';({heros:tabHeros,equip:tabEquip,sorts:tabSorts,lanterne:tabLanterne,atelier:tabAtelier,quetes:tabQuetes,carte:tabCarte,options:tabOptions})[tab](B);B.scrollTop=sc;
+$('mfoot').style.display='none'}
 
 // ---------- onglet Jouer ----------
-function tabJouer(B){const m=DATA.cartes[sv.map||'village'];
-B.appendChild(card('Aventure','Tu es à : <b>'+m.n+'</b>. Explore, parle aux habitants, récolte et affronte les monstres pour progresser.',
-questReady()?el('div','chips','<span class="chip ok">Une quête est prête à être rendue</span>'):null));
-if(combatLive)B.appendChild(card('Combat en cours','Un combat est en pause. Tu peux le reprendre avec le bouton en bas, ou y renoncer.',btn('Abandonner le combat','','danger',leaveFight)));
-const t=card('Combat d\'entraînement','Rejoue un combat déjà débloqué pour gagner de l\'XP, des ressources et du butin.');
+function jouerPart(B,part){const m=DATA.cartes[sv.map||'village'];
+if(false){B.appendChild(card('Aventure','Tu es à : <b>'+m.n+'</b>. Explore, parle aux habitants, récolte et affronte les monstres pour progresser.',
+questReady()?el('div','chips','<span class="chip ok">Une quête est prête à être rendue</span>'):null));}
+if(part=='opt'){if(combatLive)B.appendChild(card('Combat en cours','Un combat est en pause. Tu peux le reprendre avec le bouton en bas, ou y renoncer.',btn('Abandonner le combat','','danger',leaveFight)));}
+if(part=='train'){const t=card('Combat d\'entraînement','Rejoue un combat déjà débloqué pour gagner de l\'XP, des ressources et du butin.');
 DATA.rencontres.forEach((e,i)=>{if(i>sv.renc)return;const d=(e.drops||[]).filter(x=>!sv.inv.includes(x.id)).length;
 t.appendChild(row('<span class="em">⚔️</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+XP.rencontre({niv:e.niv||1+i*3,m:XP.m[e.type||(e.m.some(z=>z.boss)?'boss':'normal')]||1},sv.niv,true)+' XP · '+(d?d+' objet(s) à obtenir':'tout obtenu')+'</span></span>',()=>startTraining(i),combatLive?'lock':''))});
-B.appendChild(t);
-const o=card('Options');
+B.appendChild(t);}
+if(part=='opt'){const o=card('Options');
 const fxNames={eleve:'élevé',reduit:'réduit',off:'désactivé'},fxDescriptions={eleve:'Textures détaillées avec de légères variations.',reduit:'Textures atténuées, avec des détails plus discrets.',off:'Cases en couleurs plates, rendu classique.'};
 o.appendChild(row('<span class="em">🎨</span><span class="tx"><span class="nm">Effets visuels : '+fxNames[OPT.fx]+'</span><span class="mt">'+fxDescriptions[OPT.fx]+' Toucher pour changer.</span></span>',()=>{cycleFx();renderMenu()}));
 const soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal';
@@ -52,18 +53,16 @@ o.appendChild(row('<span class="em">💡</span><span class="tx"><span class="nm"
 o.appendChild(row('<span class="em">🔁</span><span class="tx"><span class="nm">Revoir les conseils</span><span class="mt">Ils réapparaîtront au bon moment.</span></span>',()=>{tutoReset();toast('Conseils réinitialisés.');renderMenu()}));
 o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
 if(cfg.test)o.appendChild(row('<span class="em">🎭</span><span class="tx"><span class="nm">Voir les scènes</span><span class="mt">Lancer une scène en exploration, sans sauvegarder ses effets.</span></span>',()=>{const list=el('div','pick','<h2>Scènes</h2>');Object.entries(DATA.scenes).forEach(([id,scene])=>list.appendChild(row('<span class="tx"><span class="nm">'+id+'</span><span class="mt">'+scene.declencheur.quand+'</span></span>',()=>{if(combatLive){toast('Quitte le combat en cours avant de lancer une scène.');return}EX.start({storyId:id})})));modal(list,[['Fermer']])}));
-o.appendChild(row('<span class="em">🏠</span><span class="tx"><span class="nm">Écran titre</span><span class="mt">Changer d\'emplacement de sauvegarde ou de héros.</span></span>',()=>{store();location.reload()}));
+o.appendChild(row('<span class="em">🏠</span><span class="tx"><span class="nm">Changer de personnage</span><span class="mt">Retour à l\'écran titre : créer, choisir ou supprimer un personnage.</span></span>',()=>{store();location.reload()}));
 o.appendChild(row('<span class="em">📤</span><span class="tx"><span class="nm">Exporter ma sauvegarde</span><span class="mt">Créer un code de secours à conserver.</span></span>',exportSave));
 o.appendChild(row('<span class="em">📥</span><span class="tx"><span class="nm">Importer une sauvegarde</span><span class="mt">Restaurer une progression depuis un code.</span></span>',importSave));
-o.appendChild(row('<span class="em">🗑️</span><span class="tx"><span class="nm">Effacer la sauvegarde</span><span class="mt">Recommencer l\'aventure depuis le début.</span></span>',()=>{
-modal(el('div','','<h2>Tout effacer ?</h2><p>Niveau, objets, quêtes et ressources seront perdus. Cette action est définitive.</p>'),[['Annuler'],['Effacer',()=>{try{localStorage.removeItem(slotKey(SLOT))}catch(e){}location.reload()},'danger']])}));
-B.appendChild(o);o.appendChild(el('p','sp','Version '+VERSION))}
+B.appendChild(o);o.appendChild(el('p','sp','Version '+VERSION))}}
 
 // ---------- onglet Héros ----------
-function tabHeros(B){const cl=el('div','grid');
-for(const k in DATA.classes){if(!cfg.test&&cfg.classe!=k)continue;const c=DATA.classes[k];cl.appendChild(btn(c.e+' '+c.n,c.info,cfg.classe==k?'on':'',()=>{if(!cfg.test)return;cfg.classe=k;normL();saveCfg();renderMenu()}))}
-B.appendChild(card('Classe',cl,cfg.test?'Mode test : tu peux changer de classe.':'Ta classe est définitive. Seul le mode test permet d\'en changer.'));
-const spellCard=card('Sorts','Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b>'),current=DATA.classes[cfg.classe].sorts,first=current[0].id;
+function heroPart(B,part){const cl=el('div','grid');
+if(part=='heros'){for(const k in DATA.classes){if(!cfg.test&&cfg.classe!=k)continue;const c=DATA.classes[k];cl.appendChild(btn(c.e+' '+c.n,c.info,cfg.classe==k?'on':'',()=>{if(!cfg.test)return;cfg.classe=k;normL();saveCfg();renderMenu()}))}
+B.appendChild(card('Classe',cl,cfg.test?'Mode test : tu peux changer de classe.':'Ta classe est définitive. Seul le mode test permet d\'en changer.'));}
+if(part=='sorts'){const spellCard=card('Sorts','Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b>'),current=DATA.classes[cfg.classe].sorts,first=current[0].id;
 for(const base of current){const unlocked=cfg.test||base.niv<=sv.niv,rank=cfg.test?3:(sv.sp.rg[base.id]||1),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),entry=el('div','pick');
 const name=s.n+(rank>1?' ★'+rank:'')+(base.id==first?' 🔒':'');
 const status=!unlocked?'Niveau '+base.niv:base.id==first?'Toujours équipé':equipped?'Équipé · touche pour retirer':'Libre · touche pour équiper';
@@ -74,20 +73,20 @@ entry.appendChild(row(html,unlocked?toggle:null,unlocked?(equipped?'on':''):'loc
 if(unlocked){const upgrades=el('div','grid2');for(const next of [2,3]){const cost=next==2?1:2,can=rank==next-1&&spLeft()>=cost&&!cfg.test;upgrades.appendChild(btn('Rang '+next+' : '+cost+' point'+(cost>1?'s':''),bonusLabel(base,next),'ghost',()=>{if(!can)return;sv.sp.rg[base.id]=next;store();renderMenu()},!can))}entry.appendChild(upgrades)}
 spellCard.appendChild(entry)}
 const hasRanks=Object.values(sv.sp.rg).some(rank=>rank>1);
-spellCard.appendChild(btn('Réinitialiser les sorts','Rend les points de rang dépensés.','ghost',()=>{sv.sp.rg={};store();renderMenu()},!hasRanks));B.appendChild(spellCard);
-const G=gear().t,st=el('div','grid2');
+spellCard.appendChild(btn('Réinitialiser les sorts','Rend les points de rang dépensés.','ghost',()=>{sv.sp.rg={};store();renderMenu()},!hasRanks));B.appendChild(spellCard);}
+if(part!='sorts'){const G=gear().t,st=el('div','grid2');
 st.innerHTML=[[heroMax(),'PV'],['+'+(sv.niv-1+G.dmg),'Dégâts bonus'],[G.res+' %','Résistance'],[DATA.heros.pm+G.pm,'PM par tour']].map(([v,n])=>'<div class="stat"><b>'+v+'</b><span>'+n+'</span></div>').join('');
-B.appendChild(card('Statistiques',st,combatLive?'Les changements d\'équipement s\'appliquent au prochain combat.':null));
-const tl=card('Talents','Points disponibles : <b style="color:var(--ember)">'+talLeft()+'</b> (1 par niveau gagné).');
+B.appendChild(card('Statistiques',st,combatLive?'Les changements d\'équipement s\'appliquent au prochain combat.':null));}
+if(part=='heros'){const tl=card('Talents','Points disponibles : <b style="color:var(--ember)">'+talLeft()+'</b> (1 par niveau gagné).');
 TAL.forEach(([k,n,d,v,max,ic])=>{const cur=sv.tal[k]||0,full=cur>=max;tl.appendChild(row('<span class="em">'+ic+'</span><span class="tx"><span class="nm">'+n+' '+cur+'/'+max+'</span><span class="mt">'+d+'</span></span><span class="chip '+(talLeft()>0&&!full?'ok':'')+'">'+(full?'max':'+1')+'</span>',()=>{if(full){toast('Déjà au maximum');return}if(talLeft()<1){toast('Aucun point disponible : monte de niveau');return}sv.tal[k]=cur+1;store();renderMenu()},talLeft()>0&&!full?'':'lock'))});
 if(talSpent())tl.appendChild(btn('Réinitialiser les talents','Récupère tous tes points, gratuit.','ghost',()=>{sv.tal={pv:0,dmg:0,res:0};store();renderMenu()}));
-B.appendChild(tl);
-const eq=card('Équipement');
+B.appendChild(tl);}
+if(part=='equip'){const eq=card('Équipement');
 SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,have=sv.inv.filter(i=>DATA.objets[i].slot==slotType(s)).length;
 eq.appendChild(id?row(itemRow(id)+'<span class="mt">'+n+'</span>',()=>pickGear(s)):row('<span class="em">'+ic+'</span><span class="tx"><span class="nm">'+n+'</span><span class="mt">'+(have?'Vide : touche pour équiper ('+have+' disponible'+(have>1?'s':'')+')':'Vide : fabrique ou trouve un objet')+'</span></span>',()=>pickGear(s),'empty'))});
 const gc=gear().cnt;for(const k in DATA.sets){const S=DATA.sets[k],n=gc[k]||0,l=Object.keys(S.bonus).map(p=>'<span style="color:'+(n>=+p?'var(--ok)':'var(--dim)')+'">'+p+' pièces : '+fmtSt(S.bonus[p])+'</span>').join('<br>');
 eq.appendChild(el('div','set','<b>'+S.n+' ('+n+'/'+Math.max(...Object.keys(S.bonus).map(Number))+')</b><br>'+l))}
-B.appendChild(eq)}
+B.appendChild(eq)}}
 function pickGear(slot,back){const t=slotType(slot),own=sv.inv.filter(i=>DATA.objets[i].slot==t),n=el('div','pick','<h2>'+SLOTS.find(s=>s[0]==slot)[1]+'</h2>');
 if(!own.length)n.appendChild(el('p','','Aucun objet de ce type pour l\'instant. L\'atelier et les combats en fournissent.'));
 own.forEach(id=>{const cur=sv.eq[slot]==id,r=row(itemRow(id,cur?'<span class="mt" style="color:var(--ok)">Équipé ici</span>':(Object.keys(sv.eq).find(s=>sv.eq[s]==id)?'<span class="mt">Équipé ailleurs : sera déplacé</span>':'')),()=>{equip(slot,id);closeModal();renderMenu();if(back)back()});n.appendChild(r)});
@@ -161,7 +160,7 @@ const where=st=='dispo'?'Parle à '+qGiver(id)+' ('+qGiverPlace(id)+').':st=='re
 if(where)c.appendChild(el('p','mt',where));
 const rw=qRew(q.rew);if(rw)c.appendChild(el('p','mt',(st=='fini'?'Récompense reçue : ':'Récompense : ')+rw));
 return c}
-function tabQuetes(B){const Q=sv.q||{},g={rendre:[],cours:[],dispo:[],fini:[]};
+function questPart(B){const Q=sv.q||{},g={rendre:[],cours:[],dispo:[],fini:[]};
 for(const id in DATA.quetes){const q=DATA.quetes[id],s=Q[id];
 if(!s){if((q.req||0)<=sv.renc&&(!q.apres||((Q[q.apres]||{}).s==2)))g.dispo.push(id);continue}
 if(s.s==2)g.fini.push(id);else if((s.n||0)>=q.need&&(q.need>0||!q.cost||Object.keys(q.cost).every(k=>(sv.res[k]||0)>=q.cost[k])))g.rendre.push(id);else g.cours.push(id)}
@@ -171,3 +170,11 @@ B.appendChild(card('Journal','<b style="color:var(--ink)">'+g.fini.length+' quê
 if(!g.rendre.length&&!g.cours.length&&!g.dispo.length)B.appendChild(card('Quêtes','Rien à faire pour l\'instant. Explore de nouvelles zones : de nouveaux habitants auront du travail pour toi.'));
 if(g.fini.length){B.appendChild(row('<span class="em">📚</span><span class="tx"><span class="nm">Quêtes terminées ('+g.fini.length+')</span><span class="mt">'+(showDone?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showDone=!showDone;renderMenu()}));
 if(showDone)g.fini.forEach(id=>B.appendChild(questCard(id,'fini')))}}
+
+function tabHeros(B){heroPart(B,'heros')}
+function tabEquip(B){heroPart(B,'equip')}
+function tabSorts(B){heroPart(B,'sorts')}
+function tabQuetes(B){questPart(B);jouerPart(B,'train')}
+function tabOptions(B){jouerPart(B,'opt')}
+function tabCarte(B){const c=EX.carteNode();B.appendChild(c);c.center()}
+(()=>{const s=document.createElement('style');s.textContent=`#tabs{order:5;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--line);border-bottom:0;background:var(--bg)}#tabs button{min-height:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 4px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px}#tabs button .ic{font-size:20px;line-height:1}#tabs button .nm{font-size:9px;font-weight:600;color:inherit}#tabs button.sel{border-color:var(--ember);background:#ffb45422}#tabs button.sel .nm{color:var(--ember)}#tabs .dot{top:3px;right:5px}#mhead .top{align-items:center}#mhead .xbtn{background:transparent;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:16px;padding:4px 12px;min-height:34px;flex:none}.dock{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;width:100%}.dock button{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 4px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:inherit;font:600 9px system-ui,sans-serif}.dock .ic{font-size:20px;line-height:1}.dock .dot{position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--bad)}.bigem{font-size:34px;line-height:1}`;document.head.appendChild(s);$('menu').insertBefore($('tabs'),$('mfoot'))})();
