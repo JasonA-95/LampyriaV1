@@ -16,7 +16,7 @@ goal=(x,y)=>near?Math.abs(x-tx)+Math.abs(y-ty)==1:(x==tx&&y==ty);
 if(goal(EX.x,EX.y))return[];
 const p={},d={[exK(EX.x,EX.y)]:1},q=[[EX.x,EX.y]];let end=null;
 while(q.length&&!end){const [x,y]=q.shift();for(const [a,b] of DIRS){const nx=x+a,ny=y+b,k=exK(nx,ny);
-if(nx<0||ny<0||nx>=N||ny>=N||d[k])continue;
+if(!DATA.in(nx,ny)||d[k])continue;
 if(B.has(k)&&!(ent&&ent.t=='e'&&nx==tx&&ny==ty))continue;
 d[k]=1;p[k]=[x,y];if(goal(nx,ny)){end=[nx,ny];break}q.push([nx,ny])}}
 if(!end)return null;const r=[];let c=end;while(c&&!(c[0]==EX.x&&c[1]==EX.y)){r.unshift(c);c=p[exK(c[0],c[1])]}return r}
@@ -57,7 +57,7 @@ const q=DATA.quetes[id],line=typeof q.recu=='object'?q.recu[p.n]:q.recu;EX.prog(
 EX.talk=p=>exStory({quand:'parle',pnj:p.n},()=>{if(!EX.deliver(p))EX.talkNormal(p)});
 EX.click=e=>{if(EX.walking)return;const rc=cv.getBoundingClientRect(),a=(e.clientX-rc.left-ox)/(tw/2),b=(e.clientY-rc.top-oy)/(th/2),
 x=Math.round((a+b)/2),y=Math.round((b-a)/2),N=DATA.taille,d=DATA.cartes[EX.map];
-if(EX.sceneActive){EX.storyNext();return}if(x<0||y<0||x>=N||y>=N||(x==EX.x&&y==EX.y))return;
+if(EX.sceneActive){EX.storyNext();return}if(!DATA.in(x,y)||(x==EX.x&&y==EX.y))return;
 if(d.rocks.some(r=>r[0]==x&&r[1]==y)){EX.pend=null;msg('Un rocher bloque le passage.');EX.draw();return}
 const ent=exEnt(x,y);
 if(ent&&ent.t=='e'&&!cfg.test&&exLock(ent.o)){EX.pend=null;msg(exLock(ent.o));EX.draw();return}
@@ -100,17 +100,17 @@ const occupied=new Set(rocks);Object.keys(E).forEach(k=>occupied.add(k));d.npcs.
 (d.picks||[]).forEach(p=>occupied.add(exK(p.x,p.y)));(d.hides||[]).forEach(p=>occupied.add(exK(p.x,p.y)));
 const excluded=new Set([exK(d.start[0],d.start[1]),...d.exits.map(e=>exK(e.x,e.y))]),biome=d.biome,
 decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,excluded,DATA.decor[biome]),decorAt=new Map(decor.map(item=>[exK(item.x,item.y),item]));
-fillOuter(biome,N);for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);
+fillOuter(biome,N);for(const [x,y] of DATA.cells){const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
-for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
+for(const [x,y] of DATA.cells){const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
 if(d.tint)dia(cx,cy,d.tint);if(ex[k])dia(cx,cy,exLock(ex[k])?'rgba(120,120,140,.45)':'rgba(255,180,84,.45)');
 if(pp[k])dia(cx,cy,'rgba(255,240,170,.55)');if(EX.pend&&EX.pend.x==x&&EX.pend.y==y)dia(cx,cy,'rgba(255,240,170,.35)');
 if(rocks.has(k)){if(OPT.fx=='off'){g.fillStyle='#fff';g.fillText('🪨',cx,cy-th*.15)}else drawTerrainObstacle(g,cx,cy,tw,th,biome,x,y)}}
 const hx=(EX.x-EX.y)*tw/2+ox,hy=(EX.x+EX.y)*th/2+oy,gr=g.createRadialGradient(hx,hy,0,hx,hy,tw*3);
 gr.addColorStop(0,'rgba(255,180,84,.28)');gr.addColorStop(1,'rgba(255,180,84,0)');
 g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';
-for(const exit of d.exits){const cx=(exit.x-exit.y)*tw/2+ox,cy=(exit.x+exit.y)*th/2+oy;g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';g.fillText(exit.don?'🕳️':exit.x==0?'⬅️':exit.x>=12?'➡️':exit.y==0?'⬆️':'⬇️',cx,cy-th*.1);
-if(exit.don){const f=Math.round(tw*.3),up=exit.y>=11?1:0,y0=cy+(up?-th*1.15:th*.75);g.font='bold '+f+'px sans-serif';g.lineWidth=3;g.strokeStyle='#000';g.lineJoin='round';g.fillStyle=exit.don?'#ffd27a':'#e8e4f5';
+for(const exit of d.exits){const cx=(exit.x-exit.y)*tw/2+ox,cy=(exit.x+exit.y)*th/2+oy;g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';g.fillText(exit.don?'🕳️':({W:'⬅️',E:'➡️',N:'⬆️',S:'⬇️'})[exit.d]||'➡️',cx,cy-th*.1);
+if(exit.don){const f=Math.round(tw*.3),up=exit.d=='S'?1:0,y0=cy+(up?-th*1.15:th*.75);g.font='bold '+f+'px sans-serif';g.lineWidth=3;g.strokeStyle='#000';g.lineJoin='round';g.fillStyle=exit.don?'#ffd27a':'#e8e4f5';
 const ls=exit.don?[exit.lbl,exit.nv]:[exit.lbl];ls.forEach((t,i)=>{const yy=y0+(up?-(ls.length-1-i):i)*f*1.15;g.strokeText(t,cx,yy);g.fillText(t,cx,yy)})}}
 drawDisplayEffects(g,tw,th,ox,oy);
 for(const key of Object.keys(E)){const u=E[key],[x,y]=key.split(',').map(Number),visual=u.visual||u,p=displayPosition(visual,x,y,rocks),style=displayUnitStyle(visual,undefined,tw,th),cx=(p.x-p.y)*tw/2+ox+style.x,cy=(p.x+p.y)*th/2+oy+style.y;g.save();g.globalAlpha=(u.a??1)*style.alpha;drawGroundShadow(g,cx,cy,tw,th,u.b?1.1:1);g.translate(cx,cy);g.scale(style.scale,style.scale);g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';g.fillText(u.e,0,-th*.3);g.restore();

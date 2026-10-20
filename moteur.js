@@ -1,7 +1,7 @@
 // MOTEUR : les règles du combat. Aucun affichage ici (réutilisable côté serveur plus tard).
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
 class Combat{
-constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,dmg:0,res:0,pm:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
+constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,dmg:0,res:0,pm:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.in=D.in;this.cells=D.cells;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
 this.S=[...(cfg.sorts||c.sorts),...cfg.lueurs.map(id=>D.lueurs[id].sort)];
 this.hero={x:D.heros.x,y:D.heros.y,hp:c.hp+8*(cfg.niv-1)+G.pv,max:c.hp+8*(cfg.niv-1)+G.pv,e:c.e,rage:false,mur:0,garde:0,etats:[]};
 this.foes=D.rencontres[cfg.renc].m.map(m=>({...m,sortCd:0,etats:[]}));this.bonus=cfg.niv-1+G.dmg;this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
@@ -31,8 +31,8 @@ escorted(f){return this.foes.some(g=>g!==f&&!g.boss&&!g.form&&g.hp>0&&this.dist(
 shield(f){if(!f.boss||f.hp<=0)return false;if(f.cendre)return this.ash.has(f.x+','+f.y);if(f.cycle)return this.nuit(f);if(f.escorte)return this.escorted(f);return this.foes.some(g=>g.form&&g.hp>0)}
 weak(f){return !!f.boss&&(this.vuln>0||(f.cycle&&!this.nuit(f)))}
 bossInv(){return this.foes.some(f=>this.shield(f))}
-zone(i){const s=this.S[i],r=[];for(let x=0;x<this.N;x++)for(let y=0;y<this.N;y++){const m=this.dist(this.hero,{x,y});if(m>=s.r[0]&&m<=s.r[1]&&this.ok(x,y))r.push([x,y])}return r}
-ok(x,y){return x>=0&&y>=0&&x<this.N&&y<this.N&&!this.rocks.has(x+','+y)}
+zone(i){const s=this.S[i],r=[];for(const [x,y] of this.cells){const m=this.dist(this.hero,{x,y});if(m>=s.r[0]&&m<=s.r[1]&&this.ok(x,y))r.push([x,y])}return r}
+ok(x,y){return this.in(x,y)&&!this.rocks.has(x+','+y)}
 at(x,y){const h=this.hero;return x==h.x&&y==h.y?h:this.foes.find(f=>f.hp>0&&f.x==x&&f.y==y)}
 free(x,y){return this.ok(x,y)&&!this.at(x,y)}
 dist(a,b){return Math.abs(a.x-b.x)+Math.abs(a.y-b.y)}
@@ -43,7 +43,7 @@ los(a,b){let x=a.x,y=a.y;const dx=Math.abs(b.x-x),dy=Math.abs(b.y-y),sx=x<b.x?1:
 while(x!=b.x||y!=b.y){const e2=2*e;if(e2>-dy){e-=dy;x+=sx}if(e2<dx){e+=dx;y+=sy}
 if((x!=b.x||y!=b.y)&&this.rocks.has(x+','+y))return false}return true}
 ranged(i){const s=this.S[i],h=this.hero,r=[];
-for(let x=0;x<this.N;x++)for(let y=0;y<this.N;y++){const m=this.dist(h,{x,y}),u=this.at(x,y);
+for(const [x,y] of this.cells){const m=this.dist(h,{x,y}),u=this.at(x,y);
 if(m<s.r[0]||m>s.r[1]||!this.ok(x,y)||(s.los&&!this.los(h,{x,y})))continue;
 if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge||(s.etats&&s.etats.length&&s.aoe==null))&&!(u&&u!==h))continue;
 if(s.charge&&!DIRS.some(([dx,dy])=>this.free(u.x+dx,u.y+dy)))continue;r.push([x,y])}return r}
@@ -59,7 +59,7 @@ const dm=this.damageFrom(h,(s.dmg+this.bonus)*m),alive=new Set(T.filter(f=>f.hp>
 for(const f of r.hit)if(f.hp>0)this.applyEtats(f,s.etats,r.events);for(const k of [...this.ash]){const [ax,ay]=k.split(',').map(Number);if(this.dist({x:ax,y:ay},{x,y})<=(s.aoe??0)){this.ash.delete(k);r.ashCleared=1}}if(r.ashCleared){const bc=this.foes.find(f=>f.cendre&&f.hp>0);if(bc&&!this.ash.has(bc.x+','+bc.y))this.vuln=2}
 for(const f of T)if(alive.has(f)&&f.hp<=0&&f.mort&&this.dist(f,h)<=f.mort.r){const hit=this.applyDamage(h,f.mort.dmg,false),amount=hit.damage;r.mortEvents=r.mortEvents||[];r.mortEvents.push({text:f.n+' explose : -'+amount+' PV.',dmg:amount});if(amount)r.effects.push({cible:h,texte:'-'+amount,couleur:'#e5564a'});if(hit.absorbed)this.event(r.events,h,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
 if(s.push)for(const f of T){if(f.boss||f.hp<=0)continue;const ax=f.x-h.x,ay=f.y-h.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay);
-for(let i=0;i<s.push;i++){const nx=f.x+dx,ny=f.y+dy;if(nx<0||ny<0||nx>=this.N||ny>=this.N){if(f.form){f.hp=0;r.out=1}break}if(this.free(nx,ny)){f.x=nx;f.y=ny}else break}}}
+for(let i=0;i<s.push;i++){const nx=f.x+dx,ny=f.y+dy;if(!this.in(nx,ny)){if(f.form){f.hp=0;r.out=1}break}if(this.free(nx,ny)){f.x=nx;f.y=ny}else break}}}
 if(!s.dmg&&s.etats)for(const f of targets){if(!f||f.hp<=0)continue;if(sh.has(f)){r.blocked=1;this.applyEtats(f,s.etats.filter(e=>e.id=='etourdi'),r.events);continue}this.applyEtats(f,s.etats,r.events)}
 if(s.drain)this.heal(h,Math.round(s.dmg*(1-h.hp/h.max))+2);
 if(s.heal)this.heal(h,s.heal);
@@ -102,7 +102,7 @@ c.sort((p,q)=>Math.abs(this.dist(p,h)-db)-Math.abs(this.dist(q,h)-db));fm.x=c[0]
 foeTurn(f){const h=this.hero;if(f.form||f.hp<=0)return{skip:true,text:'',effects:[],events:[]};const tick=this.tickEtats(f),events=tick.events;if(f.hp<=0){this.resolveTickDeath(f,events);return{skip:true,text:events.map(e=>e.text).filter(Boolean).join(' '),effects:events,events}}
 if(tick.blocked){this.checkWin();return{skip:true,text:events.map(e=>e.text).filter(Boolean).join(' '),effects:events,events}}
 if(f.alerte){const A=f.alerte;if(f.pre){const hit=f.pre.some(c=>c.x==h.x&&c.y==h.y);f.pre=null;this.warn=new Set();if(hit){const d=this.applyDamage(h,Math.round(f.d*A.mult),false).damage;return{dmg:d,text:f.n+' : '+A.n+' ! -'+d+' PV.',tag:'contact',cible:h,effects:d?[{cible:h,texte:'-'+d,couleur:'#e5564a'}]:[],events}}if(A.vul)this.vuln=Math.max(this.vuln,2);this.checkWin();return{skip:true,text:f.n+' rate son coup'+(A.vul?' et se fatigue : vulnérable !':'.'),effects:events,events}}
-if(this.turn%A.every==0){const cs=[];for(let dx=-A.r;dx<=A.r;dx++)for(let dy=-A.r;dy<=A.r;dy++){const x=h.x+dx,y=h.y+dy;if(x>=0&&y>=0&&x<this.N&&y<this.N)cs.push({x,y})}f.pre=cs;this.warn=new Set(cs.map(c=>c.x+','+c.y));this.checkWin();return{skip:true,text:f.n+' prépare « '+A.n+' » ! Quitte les cases rouges.',effects:events,events}}}
+if(this.turn%A.every==0){const cs=[];for(let dx=-A.r;dx<=A.r;dx++)for(let dy=-A.r;dy<=A.r;dy++){const x=h.x+dx,y=h.y+dy;if(this.in(x,y))cs.push({x,y})}f.pre=cs;this.warn=new Set(cs.map(c=>c.x+','+c.y));this.checkWin();return{skip:true,text:f.n+' prépare « '+A.n+' » ! Quitte les cases rouges.',effects:events,events}}}
 f.pmActif=Math.max(1,f.pm-tick.slow);if(f.sortCd>0)f.sortCd--;if(f.sleep){f.sleep=false;return{sleep:true,text:f.n+' dort et passe son tour.'+(events.length?' '+events.map(e=>e.text).filter(Boolean).join(' '):''),effects:[...events,{cible:f,texte:'Zzz',couleur:'#9ecbff'}],events}}
 let ally=f.ia=='soin'?this.injuredAlly(f):null;
 if(f.ia=='dist'&&f.sort){const low=Math.max(f.garde?.[0]??f.sort.r[0],f.sort.r[0]),high=Math.min(f.garde?.[1]??f.sort.r[1],f.sort.r[1]);if(!this.moveToRange(f,h,low<=high?[low,high]:f.sort.r,{los:!!f.sort.los}))this.moveToRange(f,h,[1,1])}

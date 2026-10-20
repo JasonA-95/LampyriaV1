@@ -790,6 +790,9 @@ t3:{n:'La Crypte du Gardien',desc:'Pénètre dans la Crypte, au fond du Jardin, 
 })();
 
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
+// Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
+DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
+DATA.cells=[];for(let s=0;s<=24;s++)for(let x=-8;x<=20;x++){const y=s-x;if(DATA.in(x,y))DATA.cells.push([x,y])}
 (()=>{const C=DATA.cartes,L={quartier:[-1,0],village:[0,0],poste:[0,-1],foret:[1,0],collines:[1,1],manoir:[1,2],marais:[0,2],roseliere:[-1,2],serre:[-2,2],dunes:[-2,1],oasis:[-2,0],camp:[-2,-1],chemin:[-2,-2],parvis:[-1,-2],temple:[0,-2],cour:[1,-2],salle:[2,-2],trone:[2,-1],
 sentier:[2,0],clairiere:[3,0],terrier1:[4,0],terrier2:[5,0],terrier3:[6,0],
 paturage:[2,1],bergerie:[3,1],enclos1:[4,1],enclos2:[5,1],enclos3:[6,1],
@@ -799,15 +802,19 @@ mirage:[-3,1],puits:[-4,1],pyr1:[-5,1],pyr2:[-6,1],pyr3:[-7,1],
 cloitre:[-1,-3],jardin:[-1,-4],crypte1:[-1,-5],crypte2:[-1,-6],crypte3:[-1,-7]};
 DATA.monde=L;
 const dir=(a,b)=>{const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'S':'N'},
-side=e=>e.x==0?'W':e.x>=12?'E':e.y==0?'N':'S',def={E:[12,6],W:[0,6],N:[6,0],S:[6,12]},inn={E:[-1,0],W:[1,0],N:[0,1],S:[0,-1]},opp={E:'W',W:'E',N:'S',S:'N'},P={};
+side=e=>e.x==0?'W':e.x>=12?'E':e.y==0?'N':'S',def={E:[14,-1],W:[-1,14],N:[0,0],S:[12,12]},inn={E:[-1,0],W:[1,0],N:[0,1],S:[0,-1]},opp={E:'W',W:'E',N:'S',S:'N'},P={};
 for(const k in C)P[k]={};
-for(const k in C)for(const e of C[k].exits){const d=dir(k,e.to);P[k][e.to]=side(e)==d?[e.x,e.y]:def[d]}
-for(const k in C)C[k].exits=C[k].exits.map(e=>{const d=dir(k,e.to),q=P[e.to][k],a=opp[d],p=P[k][e.to];return{x:p[0],y:p[1],to:e.to,tx:q[0]+inn[a][0],ty:q[1]+inn[a][1]}});
+for(const k in C)for(const e of C[k].exits){const d=dir(k,e.to);P[k][e.to]=def[d]}
+for(const k in C)C[k].exits=C[k].exits.map(e=>{const d=dir(k,e.to),q=P[e.to][k],a=opp[d],p=P[k][e.to];return{x:p[0],y:p[1],d:d,to:e.to,tx:q[0]+inn[a][0],ty:q[1]+inn[a][1]}});
 const arr={};for(const k in C)for(const e of C[k].exits)(arr[e.to]=arr[e.to]||[]).push([e.tx,e.ty]);
 for(const k in C){const m=C[k],ents=['npcs','picks','groups','nodes','coffres','hides'].flatMap(q=>m[q]||[]),bl=[...m.exits.map(e=>[e.x,e.y]),...(arr[k]||[])],is=(c,x,y)=>c[0]==x&&c[1]==y;
 for(const o of ents)if(bl.some(c=>is(c,o.x,o.y)))for(const [a,b] of [[-1,0],[0,-1],[1,0],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[0,-2]]){const x=o.x+a,y=o.y+b;
-if(x<1||y<1||x>11||y>11||(m.rocks||[]).some(r=>is(r,x,y))||ents.some(u=>u.x==x&&u.y==y)||bl.some(c=>is(c,x,y)))continue;o.x=x;o.y=y;break}}
+if(!DATA.in(x,y)||(m.rocks||[]).some(r=>is(r,x,y))||ents.some(u=>u.x==x&&u.y==y)||bl.some(c=>is(c,x,y)))continue;o.x=x;o.y=y;break}}
 for(const k in C){const m=C[k],cells=[...m.exits.map(e=>[e.x,e.y]),...m.exits.map(e=>[e.tx,e.ty])];m.rocks=(m.rocks||[]).filter(r=>!cells.some(c=>c[0]==r[0]&&c[1]==r[1]))}
+// Décor naturel dans les nouvelles zones : rochers épars (sans bloquer les sorties)
+const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+31)*73856093)^((y+57)*19349663)^(k*83492791))>>>0,out=(x,y)=>x<0||y<0||x>12||y>12;
+for(const k in C){const m=C[k],key=hs(k),keep=[...m.exits.map(e=>[e.x,e.y]),...(arr[k]||[])];for(const [x,y] of DATA.cells)if(out(x,y)&&hx(x,y,key)%100<13&&!keep.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<=2))m.rocks.push([x,y])}
+{const key=hs('arene');for(const [x,y] of DATA.cells)if(out(x,y)&&hx(x,y,key)%100<13)DATA.rochers.push([x,y])}
 // Donjons : entrée visible depuis une carte de la zone, avec nom et niveau
 const D=[['clairiere','terrier','Terrier de la Mère'],['bergerie','enclos','Enclos du Troupeau'],['bureaux','archives','Archives du Greffier'],['ile','reves','Rêves de la Baronne'],['puits','pyr','Pyramide du Sphinx'],['jardin','crypte','Crypte du Gardien']];
 for(const [hub,p,nom] of D){const ns=[1,2,3].map(i=>C[p+i]),nv=[];ns.forEach(m=>(m.groups||[]).forEach(g=>nv.push(DATA.rencontres[g.renc].niv)));

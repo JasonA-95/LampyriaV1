@@ -51,7 +51,7 @@ function leaveFight(){combatLive=false;if(EX.group){const q=EX.group;EX.group=nu
 let TW0=1,LAND=false;const V={z:1,px:0,py:0};
 function applyZoom(){tw=TW0*V.z;th=tw/2}
 function clampPan(){const N=DATA.taille;if(V.z<=1.01){V.px=V.py=0;return}const mx=N*tw/2+W/2-50,my=N*th/2+H/2-50;V.px=Math.max(-mx,Math.min(mx,V.px));V.py=Math.max(-my,Math.min(my,V.py))}
-function fillOuter(biome,N){const R=24;for(let s=-2*R;s<=2*N+2*R;s++)for(let x=-R;x<N+R;x++){const y=s-x;if(y<-R||y>=N+R||(x>=0&&x<N&&y>=0&&y<N))continue;const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=.16*((x+y)%2?.9:1);if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,Math.abs(x),Math.abs(y),l);dia(cx,cy,'rgba(0,0,0,.35)')}}
+function fillOuter(biome,N){const R=40;for(let s=-2*R;s<=2*N+2*R;s++)for(let x=-R;x<N+R;x++){const y=s-x;if(y<-R||y>=N+R||(x>=0&&x<N&&y>=0&&y<N))continue;const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=.3*((x+y)%2?.9:1);if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,Math.abs(x),Math.abs(y),l);dia(cx,cy,'rgba(0,0,0,.18)')}}
 function cam(){const N=DATA.taille;clampPan();ox=W/2+V.px;oy=H/2-(N-1)*th/2+th*.35+V.py}
 let ambRAF=0,ambTimer=0,ambLast=0;const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
 function ambienceActive(){return ambienceShouldRun(OPT.fx,document.hidden,$('game').classList.contains('hide'),motionQuery.matches)}
@@ -62,7 +62,7 @@ if(ambienceFrameDue(ambLast,time,OPT.fx)){ambLast=time;const biome=EX.on?DATA.ca
 scheduleAmbience(Math.max(0,1000/fps-(performance.now()-time)))}
 function syncAmbience(){if(!ambienceActive()){if(ambRAF||ambTimer||ambCv.style.visibility!='hidden')stopAmbience();return}ambCv.style.visibility='visible';scheduleAmbience(0)}
 function size(){const N=DATA.taille,S=$('stage');LAND=matchMedia('(orientation:landscape) and (min-width:700px)').matches||matchMedia('(orientation:landscape) and (max-height:600px)').matches;
-W=S.clientWidth||innerWidth;H=S.clientHeight||innerHeight*.55;TW0=Math.min(W/N,H/((N+1.3)/2));applyZoom();const d=devicePixelRatio||1;
+W=S.clientWidth||innerWidth;H=S.clientHeight||innerHeight*.55;TW0=Math.min(2*W/32,H/6.5);applyZoom();const d=devicePixelRatio||1;
 cv.width=Math.round(W*d);cv.height=Math.round(H*d);cv.style.width=ambCv.style.width=W+'px';cv.style.height=ambCv.style.height=H+'px';ambCv.width=cv.width;ambCv.height=cv.height;g.setTransform(d,0,0,d,0,0);ag.setTransform(d,0,0,d,0,0);cam();syncAmbience()}
 function resetView(){V.z=1;V.px=V.py=0;applyZoom();cam()}
 function setZoom(z2,fx,fy){const N=DATA.taille;cam();const u=(fx-ox)/tw,v=(fy-oy)/tw;V.z=Math.max(1,Math.min(3.5,z2));applyZoom();V.px=fx-u*tw-W/2;V.py=fy-v*tw-(H/2-(N-1)*th/2+th*.35);cam()}
@@ -84,7 +84,7 @@ function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().
 hideBubble();say(DATA.rencontres[cfg.renc].say||'debut');$('tip').textContent='Maintiens un sort pour lire sa description.';
 msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw()}
 cv.onclick=e=>{if(moved){moved=false;return}if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);
-const x=Math.round((a+b)/2),y=Math.round((b-a)/2);if(x<0||y<0||x>=DATA.taille||y>=DATA.taille)return;act(x,y)};
+const x=Math.round((a+b)/2),y=Math.round((b-a)/2);if(!DATA.in(x,y))return;act(x,y)};
 
 // ---------- actions ----------
 function spellColor(spell){if(spell&&spell.heal)return'#7fd18b';if(spell&&spell.say){return{rage:'#ffb454',fuite:'#9ecbff',soin:'#7fd18b',sommeil:'#c9b8ff',mur:'#c9b8ff',farce:'#ffe08a',ombre:'#8c85c7'}[spell.say]||'#ffe08a'}return{porte:'#ffb454',archer:'#6fb7ff',mage:'#c58bff'}[cfg.classe]||'#ffb454'}
@@ -156,14 +156,14 @@ function dia(cx,cy,f){g.beginPath();g.moveTo(cx,cy-th/2);g.lineTo(cx+tw/2,cy);g.
 function draw(){if(EX.on)return EX.draw();if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);
 const pp={},zone=new Set();if(pend&&!C.result){if(mode=='move')C.path(pend.x,pend.y).forEach(t=>pp[t.join(',')]=1);
-else{const s=C.S[mode];for(let x=0;x<N;x++)for(let y=0;y<N;y++)if(C.ok(x,y)&&C.dist({x,y},pend)<=(s.aoe??0))zone.add(x+','+y)}}
+else{const s=C.S[mode];for(const [x,y] of DATA.cells)if(C.ok(x,y)&&C.dist({x,y},pend)<=(s.aoe??0))zone.add(x+','+y)}}
 g.textAlign='center';g.textBaseline='middle';g.font=Math.round(tw*.7)+'px serif';
 const biome=DATA.rencontres[cfg.renc].biome,occupied=new Set(C.rocks);
 for(const u of [h,...C.foes])if(u.hp>0)occupied.add(u.x+','+u.y);
 const decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,null,DATA.decor[biome]),decorAt=new Map(decor.map(item=>[item.x+','+item.y,item]));
-fillOuter(biome,N);for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-hp.x,y-hp.y)/6.5)*((x+y)%2?.9:1);
+fillOuter(biome,N);for(const [x,y] of DATA.cells){const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-hp.x,y-hp.y)/6.5)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
-for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
+for(const [x,y] of DATA.cells){const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
 if(C.ash.has(k))dia(cx,cy,'rgba(190,180,185,.5)');if(C.warn&&C.warn.has(k))dia(cx,cy,'rgba(229,86,74,.5)');if(rc[k]>0)dia(cx,cy,'rgba(255,180,84,.32)');if(rz.has(k))dia(cx,cy,'rgba(106,169,255,.2)');if(rs.has(k))dia(cx,cy,'rgba(106,169,255,.45)');if(pp[k])dia(cx,cy,'rgba(255,240,170,.6)');if(zone.has(k))dia(cx,cy,'rgba(229,86,74,.6)');
 if(C.rocks.has(k)){if(OPT.fx=='off'){g.fillStyle='#fff';g.fillText('🪨',cx,cy-th*.15)}else drawTerrainObstacle(g,cx,cy,tw,th,biome,x,y)}}
 const hx=(hp.x-hp.y)*tw/2+ox,hy=(hp.x+hp.y)*th/2+oy,gr=g.createRadialGradient(hx,hy,0,hx,hy,tw*3);
