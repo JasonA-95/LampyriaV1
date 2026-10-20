@@ -100,7 +100,7 @@ const occupied=new Set(rocks);Object.keys(E).forEach(k=>occupied.add(k));d.npcs.
 (d.picks||[]).forEach(p=>occupied.add(exK(p.x,p.y)));(d.hides||[]).forEach(p=>occupied.add(exK(p.x,p.y)));
 const excluded=new Set([exK(d.start[0],d.start[1]),...d.exits.map(e=>exK(e.x,e.y))]),biome=d.biome,
 decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,excluded,DATA.decor[biome]),decorAt=new Map(decor.map(item=>[exK(item.x,item.y),item]));
-for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);
+fillOuter(biome,N);for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
 for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
 if(d.tint)dia(cx,cy,d.tint);if(ex[k])dia(cx,cy,exLock(ex[k])?'rgba(120,120,140,.45)':'rgba(255,180,84,.45)');

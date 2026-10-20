@@ -51,6 +51,7 @@ function leaveFight(){combatLive=false;if(EX.group){const q=EX.group;EX.group=nu
 let TW0=1,LAND=false;const V={z:1,px:0,py:0};
 function applyZoom(){tw=TW0*V.z;th=tw/2}
 function clampPan(){const N=DATA.taille;if(V.z<=1.01){V.px=V.py=0;return}const mx=N*tw/2+W/2-50,my=N*th/2+H/2-50;V.px=Math.max(-mx,Math.min(mx,V.px));V.py=Math.max(-my,Math.min(my,V.py))}
+function fillOuter(biome,N){const R=24;for(let s=-2*R;s<=2*N+2*R;s++)for(let x=-R;x<N+R;x++){const y=s-x;if(y<-R||y>=N+R||(x>=0&&x<N&&y>=0&&y<N))continue;const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=.16*((x+y)%2?.9:1);if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,Math.abs(x),Math.abs(y),l);dia(cx,cy,'rgba(0,0,0,.35)')}}
 function cam(){const N=DATA.taille;clampPan();ox=W/2+V.px;oy=H/2-(N-1)*th/2+th*.35+V.py}
 let ambRAF=0,ambTimer=0,ambLast=0;const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
 function ambienceActive(){return ambienceShouldRun(OPT.fx,document.hidden,$('game').classList.contains('hide'),motionQuery.matches)}
@@ -160,7 +161,7 @@ g.textAlign='center';g.textBaseline='middle';g.font=Math.round(tw*.7)+'px serif'
 const biome=DATA.rencontres[cfg.renc].biome,occupied=new Set(C.rocks);
 for(const u of [h,...C.foes])if(u.hp>0)occupied.add(u.x+','+u.y);
 const decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,null,DATA.decor[biome]),decorAt=new Map(decor.map(item=>[item.x+','+item.y,item]));
-for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-hp.x,y-hp.y)/6.5)*((x+y)%2?.9:1);
+fillOuter(biome,N);for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-hp.x,y-hp.y)/6.5)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
 for(let s=0;s<=2*N-2;s++)for(let x=0;x<N;x++){const y=s-x;if(y<0||y>=N)continue;const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
 if(C.ash.has(k))dia(cx,cy,'rgba(190,180,185,.5)');if(C.warn&&C.warn.has(k))dia(cx,cy,'rgba(229,86,74,.5)');if(rc[k]>0)dia(cx,cy,'rgba(255,180,84,.32)');if(rz.has(k))dia(cx,cy,'rgba(106,169,255,.2)');if(rs.has(k))dia(cx,cy,'rgba(106,169,255,.45)');if(pp[k])dia(cx,cy,'rgba(255,240,170,.6)');if(zone.has(k))dia(cx,cy,'rgba(229,86,74,.6)');
