@@ -25,6 +25,7 @@ sv.sp.eq=[...new Set(sv.sp.eq.filter(id=>ALL_SORT_IDS.has(id)))];
 sv.sp.seen=[...new Set(sv.sp.seen.filter(id=>ALL_SORT_IDS.has(id)))];
 for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg[id]!='number')delete sv.sp.rg[id];else sv.sp.rg[id]=Math.max(1,Math.min(3,Math.floor(sv.sp.rg[id])))}
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
+if(typeof DJ!='undefined')DJ.norm();
 for(const k of ['pv','dmg','res'])if(typeof sv.tal[k]!='number')sv.tal[k]=0;
 if(!DATA.classes[sv.classe])sv.classe='porte';
 const store=()=>{try{sv.maj=Date.now();localStorage.setItem(slotKey(SLOT),JSON.stringify(sv))}catch(e){}};

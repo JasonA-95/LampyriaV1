@@ -29,13 +29,14 @@ const type=e.type||(e.m.some(m=>m.boss)?'boss':'normal'),gain=XP.rencontre({niv:
 r.lv=XP.add(sv,gain);if(r.lv&&typeof playSound=='function')playSound('level');
 if((DATA.rencontres[cfg.renc].base??cfg.renc)==sv.renc&&sv.renc<DATA.rencontres.length-1)sv.renc++;
 if(e.unlock&&!sv.deb.includes(e.unlock)){sv.deb.push(e.unlock);r.lueur=e.unlock}
-r.items=rollDrops(cfg.renc);r.eq=r.items.map(autoEquip);store();return r}
+r.rel=DJ.roll();r.items=rollDrops(cfg.renc);r.eq=r.items.map(autoEquip);store();return r}
 function endFight(res,r){combatLive=false;const win=res=='win',n=el('div','');if(typeof playSound=='function')playSound(win?'victory':'defeat');
 if(win){say(DATA.rencontres[cfg.renc].vic||'victoire');let h='<h2>Victoire !</h2>';
 if(r.test)h+='<p>Mode test : aucun gain.</p>';
 else{h+='<p>+'+r.xp+' XP'+(r.lv?' · <b style="color:var(--ember)">Niveau '+sv.niv+' !</b> (+'+r.lv+' point'+(r.lv>1?'s':'')+' de talent)':'')+'</p>';
 const L=Object.keys(r.loot);if(L.length)h+='<p><span class="chips">'+L.map(k=>'<span class="chip ok">'+rn(k)+' +'+r.loot[k]+'</span>').join('')+'</span></p>';
 if(r.lueur)h+='<p>✨ Nouvelle Lueur : <b>'+DATA.lueurs[r.lueur].n+'</b></p>';
+if(r.rel)h+='<p>'+DJ.D[r.rel].e+' <b>'+DJ.D[r.rel].rel+'</b> obtenue ! Elle ouvre le donjon « '+DJ.D[r.rel].n+' ».</p>';
 r.items.forEach((id,i)=>{const o=DATA.objets[id];h+='<p>'+o.e+' <b style="color:'+RC[o.r]+'">'+o.n+'</b> <span class="sp">('+RAR[o.r]+', '+fmtSt(o.st)+')'+(r.eq[i]?' · équipé':' · dans ton sac')+'</span></p>'})}
 n.innerHTML=h}
 else{say('defaite');n.innerHTML='<h2>Défaite</h2><p>'+(EX.group?'Tu te réveilles au village, sans rien avoir perdu.':'Aucune perte : réessaie avec un autre équipement ou d\'autres Lueurs.')+'</p>'}
