@@ -43,3 +43,8 @@ roll(){if(!EX.group||DJ.of(EX.map))return null;const id=DJ.zone(EX.map);if(!id)r
 sv.relPity=(sv.relPity||0)+1;if(sv.relPity<6&&Math.random()>=.2)return null;if(DJ.rel(id)>=3)return null;
 sv.relPity=0;sv.rel[id]=DJ.rel(id)+1;return id},
 chips(){return Object.keys(DJ.D).filter(id=>DJ.rel(id)>0).map(id=>'<span class="chip" title="'+DJ.D[id].rel+'">'+DJ.D[id].e+' ×'+DJ.rel(id)+'</span>').join('')}};
+// Un seul groupe de monstres par salle : le premier dans les salles 1 et 2, le boss dans la dernière.
+(()=>{const R=DATA.rencontres,isB=g=>R[g.renc].n.includes('boss');
+for(const id in DJ.D){const d=DJ.D[id],nv=[];
+d.salles.forEach((s,i)=>{const m=DATA.cartes[s],gs=m.groups||[];if(gs.length>1){const keep=i==d.salles.length-1?(gs.find(isB)||gs[gs.length-1]):gs[0];m.groups=[keep]}(m.groups||[]).forEach(g=>nv.push(R[g.renc].niv))});
+const e=DATA.cartes[d.hub].exits.find(e=>e.to==d.salles[0]);if(e&&nv.length){const a=Math.min(...nv),b=Math.max(...nv);e.nv='niv '+(a==b?a:a+'-'+b)}}})();
