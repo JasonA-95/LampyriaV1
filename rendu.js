@@ -125,8 +125,8 @@ const DISPLAY_MOVES=new Map(),DISPLAY_TARGETS=new WeakMap(),DISPLAY_EFFECTS=[],D
 let displayRAF=0;
 function displayNow(){return typeof performance!='undefined'?performance.now():Date.now()}
 function displayDuration(ms){return OPT.fx=='reduit'?Math.max(60,Math.round(ms*.65)):ms}
-function displayPath(from,to,blocked){const size=typeof DATA!='undefined'?DATA.taille:13,sx=Math.max(0,Math.min(size-1,Math.round(from.x))),sy=Math.max(0,Math.min(size-1,Math.round(from.y))),tx=to.x,ty=to.y,key=(x,y)=>x+','+y,start=key(sx,sy),target=key(tx,ty),queue=[[sx,sy]],previous=new Map([[start,null]]);let found=start===target;
-while(queue.length&&!found){const [x,y]=queue.shift();for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(nx<0||ny<0||nx>=size||ny>=size||previous.has(k)||(blocked&&blocked.has(k)&&k!==target))continue;previous.set(k,key(x,y));if(k===target){found=true;break}queue.push([nx,ny])}}
+function displayPath(from,to,blocked,anchor){const size=typeof DATA!='undefined'?DATA.taille:13,inb=(x,y)=>typeof DATA!='undefined'&&typeof DATA.in=='function'?!!DATA.in(x,y):(x>=0&&y>=0&&x<size&&y<size),sx=anchor?anchor.x:Math.round(from.x),sy=anchor?anchor.y:Math.round(from.y),tx=to.x,ty=to.y,key=(x,y)=>x+','+y,start=key(sx,sy),target=key(tx,ty),queue=[[sx,sy]],previous=new Map([[start,null]]);let found=start===target;
+while(queue.length&&!found){const [x,y]=queue.shift();for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(!inb(nx,ny)||previous.has(k)||(blocked&&blocked.has(k)&&k!==target))continue;previous.set(k,key(x,y));if(k===target){found=true;break}queue.push([nx,ny])}}
 let cells=[];if(found){let k=target;while(k){const [x,y]=k.split(',').map(Number);cells.unshift({x,y});k=previous.get(k)}}else{let x=sx,y=sy;while(x!==tx){x+=Math.sign(tx-x);cells.push({x,y})}while(y!==ty){y+=Math.sign(ty-y);cells.push({x,y})}}
 const points=[{x:from.x,y:from.y}];if(sx!==from.x||sy!==from.y)points.push({x:sx,y:sy});for(const cell of cells)if(cell.x!==points.at(-1).x||cell.y!==points.at(-1).y)points.push(cell);return points}
 function sampleDisplayMove(move,time){if(time>=move.end)return{x:move.to.x,y:move.to.y};let elapsed=time-move.start;
@@ -140,7 +140,7 @@ function displayFrame(time){displayRAF=0;pruneDisplay(time);if(typeof draw=='fun
 function requestDisplayFrame(){if(!displayRAF&&typeof requestAnimationFrame=='function')displayRAF=requestAnimationFrame(displayFrame)}
 function animateUnitMove(unit,from,to,blocked,kind='move'){if(!unit)return false;const time=displayNow(),active=DISPLAY_MOVES.get(unit),start=active?sampleDisplayMove(active,time):{x:from.x,y:from.y};DISPLAY_TARGETS.set(unit,{x:to.x,y:to.y});
 if(OPT.fx=='off'){DISPLAY_MOVES.delete(unit);pruneDisplay(time);finishDisplayWaiters();return false}
-const points=displayPath(start,to,blocked),stepMs=OPT.fx=='reduit'?70:120,segments=[];let duration=0;
+const points=displayPath(start,to,blocked,active&&time<active.end?active.to:null),stepMs=OPT.fx=='reduit'?70:120,segments=[];let duration=0;
 for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],length=Math.abs(b.x-a.x)+Math.abs(b.y-a.y);if(!length)continue;const part=stepMs*length;segments.push({from:a,to:b,duration:part});duration+=part}
 if(!segments.length)return false;DISPLAY_MOVES.set(unit,{from:start,to:{x:to.x,y:to.y},segments,start:time,end:time+duration,kind});requestDisplayFrame();return true}
 function displayPosition(unit,x=unit.x,y=unit.y,blocked){const time=displayNow(),target=DISPLAY_TARGETS.get(unit);if(!target){DISPLAY_TARGETS.set(unit,{x,y});return{x,y}}
