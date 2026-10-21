@@ -16,16 +16,16 @@ function titleSparks(T){if(OPT.fx=='off')return;const box=el('div','sparks');box
 for(let i=0;i<(OPT.fx=='eleve'?16:7);i++){const s=el('i');s.style.cssText='left:'+(5+Math.random()*90).toFixed(1)+'%;top:'+(10+Math.random()*80).toFixed(1)+'%;animation-delay:'+(-Math.random()*8).toFixed(1)+'s;animation-duration:'+(5+Math.random()*6).toFixed(1)+'s';box.appendChild(s)}T.appendChild(box)}
 function renderTitle(){const T=$('titre');T.className='';T.replaceChildren();titleSparks(T);
 const main=el('div','tmain'),infos=[1,2,3].map(slotInfo),any=infos.some(Boolean);
-main.appendChild(el('div','tlamp','🏮'));main.appendChild(el('h1','','Lampyria'));main.appendChild(el('p','tsub','Les Sept Lueurs'));
+const left=el('div','tleft'),right=el('div','tright');left.appendChild(el('div','tlamp','🏮'));left.appendChild(el('h1','','Lampyria'));left.appendChild(el('p','tsub','Les Sept Lueurs'));
 const list=el('div','tslots');
 infos.forEach((info,i)=>{const n=i+1,b=el('button','slot'+(info?'':' vide'));
 b.innerHTML=info?'<span class="em">'+escHtml(info.asp)+'</span><span class="tx"><span class="nm">'+escHtml(info.nom)+'</span><span class="mt">'+escHtml(info.classe.n)+' · Niveau '+info.niv+' · '+escHtml(info.carte)+(info.maj?' · '+dateCourte(info.maj):'')+'</span></span><span class="chip">'+n+'</span>':'<span class="em">＋</span><span class="tx"><span class="nm">Emplacement '+n+'</span><span class="mt">Vide : touche pour créer un héros</span></span>';
 b.onclick=()=>{if(typeof playSound=='function')playSound('click');info?slotMenu(n,info):renderCreate(n)};list.appendChild(b)});
-main.appendChild(list);
+right.appendChild(list);
 const act=el('div','tact');
 if(any){const best=[1,2,3].filter(n=>infos[n-1]).sort((a,b)=>(infos[b-1].maj-infos[a-1].maj)||(a==SLOT?-1:b==SLOT?1:0))[0];act.appendChild(btn('Continuer',escHtml(infos[best-1].nom)+' · emplacement '+best,'pri',()=>playSlot(best)))}
 act.appendChild(btn('Nouvelle partie','','',()=>{const free=[1,2,3].find(n=>!infos[n-1]);if(free)renderCreate(free);else toast('Les 3 emplacements sont pris : efface-en un.')}));
-act.appendChild(btn('Options','','ghost',titleOptions));main.appendChild(act);main.appendChild(el('p','tver','Version '+VERSION));T.appendChild(main)}
+act.appendChild(btn('Options','','ghost',titleOptions));right.appendChild(act);left.appendChild(el('p','tver','Version '+VERSION));main.appendChild(left);main.appendChild(right);T.appendChild(main)}
 function slotMenu(n,info){const b=el('div','pick','<h2>Emplacement '+n+'</h2><p><b>'+escHtml(info.nom)+'</b> · '+escHtml(info.classe.n)+' · Niveau '+info.niv+'<br>'+escHtml(info.carte)+'</p>');
 modal(b,[['Annuler'],['Effacer',()=>eraseSlot(n),'danger'],['Jouer',()=>playSlot(n),'pri']])}
 function eraseSlot(n){modal(el('div','','<h2>Effacer l\'emplacement '+n+' ?</h2><p>Cette progression sera perdue. Cette action est définitive.</p>'),[['Annuler'],['Effacer',()=>{try{localStorage.removeItem(slotKey(n))}catch(e){}goSlot(SLOT,null)},'danger']])}
