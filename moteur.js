@@ -14,13 +14,13 @@ event(events,u,texte,couleur,text){events.push({cible:u,texte,couleur,text})}
 applyEtats(u,list,events){for(const e of list||[]){if(e.id=='etourdi'&&u&&u.boss){this.event(events,u,'Résiste','#c9b8ff',u.n+' résiste à l’étourdissement.');continue}
 if(this.addEtat(u,e)){const d=DATA.etats[e.id],value=e.v==null?'':' '+e.v,label=e.id=='bouclier'?'+bouclier':d.e+' '+d.n;this.event(events,u,label,'#ffe08a',u.n+' reçoit '+d.n.toLowerCase()+(value?' ('+e.v+')':'')+' pour '+e.t+' tour(s).')}}}
 applyDamage(u,raw,bypassDefense){if(raw<=0)return{damage:0,absorbed:0};let amount=Math.round(raw);
-if(u===this.hero&&!bypassDefense){const h=this.hero;amount=Math.max(1,Math.round((h.mur>0||h.garde>0?Math.ceil(amount/2):amount)*(1-this.res/100)))}
+if(u===this.hero&&!bypassDefense){const h=this.hero;amount=Math.max(1,Math.round(amount*(1-Math.min(.6,(h.mur>0||h.garde>0?.4:0)+this.res/100))))}
 const shield=u.etats&&u.etats.find(e=>e.id=='bouclier'&&e.t>0),absorbed=shield?Math.min(shield.v,amount):0;if(shield){shield.v-=absorbed;amount-=absorbed;if(shield.v<=0)u.etats=u.etats.filter(e=>e!==shield)}
 u.hp=Math.max(0,u.hp-amount);if(u===this.hero&&u.hp<=0)this.result='lose';return{damage:amount,absorbed}}
 damageFrom(u,raw){const weak=u.etats&&u.etats.find(e=>e.id=='affaibli'&&e.t>0);return weak?Math.max(1,Math.round(raw*(1-weak.v/100))):raw}
 heal(u,raw){let amount=Math.max(0,Math.round(raw));if(this.hasEtat(u,'poison'))amount=Math.max(1,Math.ceil(amount/2));const actual=Math.min(amount,u.max-u.hp);u.hp+=actual;return actual}
 tickEtats(u){const events=[],result={events,blocked:false,slow:0};if(!u||u.hp<=0||u.form)return result;
-for(const id of ['brule','poison']){const e=u.etats&&u.etats.find(s=>s.id==id&&s.t>0);if(!e)continue;const hit=this.applyDamage(u,e.v,true),d=DATA.etats[id];this.event(events,u,d.e+' -'+e.v,d.couleur,u.n+' subit '+hit.damage+' dégâts de '+d.n.toLowerCase()+'.');
+for(const id of ['brule','poison']){const e=u.etats&&u.etats.find(s=>s.id==id&&s.t>0);if(!e)continue;const hit=this.applyDamage(u,e.v,true),d=DATA.etats[id];this.event(events,u,d.e+' -'+hit.damage,d.couleur,hit.damage>0?u.n+' subit '+hit.damage+' dégâts de '+d.n.toLowerCase()+'.':u.n+' : la '+d.n.toLowerCase()+' est entièrement absorbée.');
 if(hit.absorbed)this.event(events,u,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.');if(u.hp<=0)return result}
 result.blocked=this.hasEtat(u,'etourdi');const slow=u.etats&&u.etats.find(e=>e.id=='ralenti'&&e.t>0);if(slow)result.slow=slow.v||0;
 for(const e of [...(u.etats||[])]){e.t--;if(e.t<=0){u.etats=u.etats.filter(s=>s!==e);if(e.id=='bouclier')this.event(events,u,'Bouclier expiré','#9ecbff','Le bouclier disparaît.')}}
@@ -41,8 +41,10 @@ dist(a,b){return Math.abs(a.x-b.x)+Math.abs(a.y-b.y)}
 reach(){const h=this.hero,d={[h.x+','+h.y]:0},q=[[h.x,h.y]],fs=this.foes.filter(f=>f.hp>0&&!f.form&&!f.sleep&&!this.hasEtat(f,'etourdi')),tk=(x,y)=>fs.filter(f=>Math.abs(f.x-x)+Math.abs(f.y-y)==1);
 while(q.length){q.sort((a,b)=>d[a[0]+','+a[1]]-d[b[0]+','+b[1]]);const [x,y]=q.shift(),k=d[x+','+y];if(k>=this.pm)continue;const t0=tk(x,y);
 for(const [a,b] of DIRS){const nx=x+a,ny=y+b;if(!this.free(nx,ny))continue;const t1=tk(nx,ny),c=k+1+(t0.some(f=>!t1.includes(f))?1:0),n=nx+','+ny;if(c<=this.pm&&(d[n]==null||c<d[n])){d[n]=c;q.push([nx,ny])}}}return d}
-los(a,b){let x=a.x,y=a.y;const dx=Math.abs(b.x-x),dy=Math.abs(b.y-y),sx=x<b.x?1:-1,sy=y<b.y?1:-1;let e=dx-dy;
-while(x!=b.x||y!=b.y){const e2=2*e;if(e2>-dy){e-=dy;x+=sx}if(e2<dx){e+=dx;y+=sy}
+los(a,b){if(a.x>b.x||(a.x==b.x&&a.y>b.y)){const t=a;a=b;b=t}   // symétrique : mêmes cases dans les deux sens
+let x=a.x,y=a.y;const dx=Math.abs(b.x-x),dy=Math.abs(b.y-y),sx=x<b.x?1:-1,sy=y<b.y?1:-1;let e=dx-dy;
+while(x!=b.x||y!=b.y){const px=x,py=y,e2=2*e;if(e2>-dy){e-=dy;x+=sx}if(e2<dx){e+=dx;y+=sy}
+if(x!=px&&y!=py&&this.rocks.has(x+','+py)&&this.rocks.has(px+','+y))return false;   // pas de tir entre deux rochers en diagonale
 if((x!=b.x||y!=b.y)&&this.rocks.has(x+','+y))return false}return true}
 ranged(i){const s=this.S[i],h=this.hero,r=[];
 for(const [x,y] of this.cells){const m=this.dist(h,{x,y}),u=this.at(x,y);
