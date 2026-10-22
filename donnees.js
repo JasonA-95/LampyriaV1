@@ -675,7 +675,7 @@ DATA.rencontres.push(
 {n:'Pyramide : couloir',biome:'desert',niv:35,loot:{fil:4,sable:3},m:[mom(9,3),vtr(10,9),cob(11,6)]},
 {n:'Pyramide : salle des momies',biome:'desert',niv:36,type:'elite',loot:{chaussette:5,fil:4},m:[mom(10,3),chs(11,6),vtr(10,9),cob(9,6)]},
 {n:'Sphinx Dépareillé (boss)',biome:'desert',niv:37,say:'sphinx',loot:{sable:10,fil:6,chaussette:6},m:[sph(11,7),vtr(9,3),cob(10,10)]});
-[3.9,4.0,4.2,4.4,3.6].forEach((k,j)=>{const kd=Math.pow(k,.7);DATA.rencontres[B+j].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+[3.9,3.0,4.2,4.4,3.6].forEach((k,j)=>{const kd=Math.pow(k,.7);DATA.rencontres[B+j].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
 if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
 if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)};
 if(m.renfort){const rm=m.renfort.m,sm=Math.round(rm.max*k);m.renfort={...m.renfort,m:{...rm,hp:sm,max:sm,d:Math.round(rm.d*kd),...(rm.mort?{mort:{...rm.mort,dmg:Math.round(rm.mort.dmg*kd)}}:{})}}}})});

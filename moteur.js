@@ -53,7 +53,7 @@ move(x,y){const d=this.reach()[x+','+y];if(!(d>0))return{ok:false,tag:'loin'};
 this.pm-=d;this.hero.x=x;this.hero.y=y;return{ok:true,tag:''}}
 cast(i,x,y){const s=this.S[i],h=this.hero;if(this.pa<s.pa||this.cd[i]>0)return{ok:false,tag:'cout'};
 if(!this.ranged(i).some(t=>t[0]==x&&t[1]==y))return{ok:false,tag:'cible'};
-this.pa-=s.pa;this.cd[i]=s.cd||0;const target=this.at(x,y),r={ok:true,tag:s.say||'',dmg:0,hit:[],effects:[],events:[]},inv0=this.foes.some(g=>g.form&&g.hp>0),sh=new Set(this.foes.filter(f=>this.shield(f))),targets=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[target];
+this.pa-=s.pa;this.cd[i]=s.cd||0;if(this.cd[i]>0)(this.fresh=this.fresh||new Set()).add(i);const target=this.at(x,y),r={ok:true,tag:s.say||'',dmg:0,hit:[],effects:[],events:[]},inv0=this.foes.some(g=>g.form&&g.hp>0),sh=new Set(this.foes.filter(f=>this.shield(f))),targets=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[target];
 if(s.charge){const cells=DIRS.map(([dx,dy])=>({x:target.x+dx,y:target.y+dy})).filter(p=>this.free(p.x,p.y));cells.sort((a,b)=>this.dist(h,a)-this.dist(h,b));if(!cells.length)return{ok:false,tag:'cible'};h.x=cells[0].x;h.y=cells[0].y;r.charge=1}
 if(s.dmg){const m=h.rage?2:1;h.rage=false;
 const T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[this.at(x,y)];
@@ -121,5 +121,5 @@ const rb=this.foes.find(f=>f.boss&&f.renfort&&f.hp>0);if(rb&&this.turn%rb.renfor
 {const bb=this.foes.find(f=>f.boss&&f.hp>0),f2=this.foes.find(f=>f.form&&f.hp>0);if(bb&&f2&&!this.p2&&bb.hp<=bb.max/2){this.p2=true;this.notice=bb.n+' s’énerve : sa protection se reforme plus vite !'}if(f2&&f2.regen&&f2.hp<f2.max&&!(this.vuln>0))f2.hp=Math.min(f2.max,f2.hp+Math.ceil(f2.max*f2.regen*(this.p2?2:1)))}
 if(this.vuln>0&&--this.vuln==0){const b=this.foes.find(f=>f.boss&&f.hp>0),fm=this.foes.find(f=>f.form);
 if(b&&fm)for(const [a,c] of DIRS)if(this.free(b.x+a,b.y+c)){fm.x=b.x+a;fm.y=b.y+c;fm.hp=Math.ceil(fm.max*(this.p2?.8:.6));break}}
-if(this.noMove>0)this.noMove--;h.mur=Math.max(0,h.mur-1);this.cd=this.cd.map(c=>Math.max(0,c-1));if(tick.blocked){this.pa=0;this.pm=0}return tick}
+if(this.noMove>0)this.noMove--;h.mur=Math.max(0,h.mur-1);this.cd=this.cd.map((c,i)=>this.fresh&&this.fresh.has(i)?c:Math.max(0,c-1));this.fresh=new Set();if(tick.blocked){this.pa=0;this.pm=0}return tick}
 }
