@@ -1,10 +1,11 @@
 // MOTEUR : les règles du combat. Aucun affichage ici (réutilisable côté serveur plus tard).
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+const DF0=()=>(typeof XP!='undefined'&&XP.diff)||{};   // réglages de difficulté (voir XP.diff dans xp.js)
 class Combat{
 constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,dmg:0,res:0,pm:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.in=D.in;this.cells=D.cells;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
 this.S=[...(cfg.sorts||c.sorts),...cfg.lueurs.map(id=>D.lueurs[id].sort)];
 this.hero={x:D.heros.x,y:D.heros.y,hp:c.hp+8*(cfg.niv-1)+G.pv,max:c.hp+8*(cfg.niv-1)+G.pv,e:c.e,rage:false,mur:0,garde:0,etats:[]};
-this.foes=D.rencontres[cfg.renc].m.map(m=>({...m,sortCd:0,etats:[]}));this.bonus=cfg.niv-1+G.dmg;this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
+const DF=DF0();this.foes=D.rencontres[cfg.renc].m.map(m=>{const f={...m,sortCd:0,etats:[]};if(!f.form){const big=!!f.boss,kh=big?DF.bossHp||1:DF.hp||1,kd=big?DF.bossD||1:DF.d||1;f.hp=Math.round(f.hp*kh);f.max=Math.round(f.max*kh);f.d=Math.round(f.d*kd)}return f});this.bonus=cfg.niv-1+G.dmg;this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
 this.ash=new Set(this.foes.filter(f=>f.cendre).map(f=>f.x+','+f.y));this.turn=1;this.cd=this.S.map(()=>0);this.result=null;this.noMove=0;this.malus=0;this.vuln=0;this.warn=new Set()}
 addEtat(u,e){if(!u||u.form||!e||!DATA.etats[e.id]||(e.id=='etourdi'&&u.boss))return false;
 u.etats=u.etats||[];const old=u.etats.find(x=>x.id==e.id);if(old){old.t=Math.max(old.t,e.t||0);if(e.v!=null)old.v=Math.max(old.v||0,e.v)}else u.etats.push({id:e.id,t:e.t||0,...(e.v==null?{}:{v:e.v})});return true}
@@ -36,9 +37,10 @@ ok(x,y){return this.in(x,y)&&!this.rocks.has(x+','+y)}
 at(x,y){const h=this.hero;return x==h.x&&y==h.y?h:this.foes.find(f=>f.hp>0&&f.x==x&&f.y==y)}
 free(x,y){return this.ok(x,y)&&!this.at(x,y)}
 dist(a,b){return Math.abs(a.x-b.x)+Math.abs(a.y-b.y)}
-reach(){const h=this.hero,d={[h.x+','+h.y]:0},q=[[h.x,h.y]];
-while(q.length){const [x,y]=q.shift(),k=d[x+','+y];if(k>=this.pm)continue;
-for(const [a,b] of DIRS){const nx=x+a,ny=y+b;if(this.free(nx,ny)&&d[nx+','+ny]==null){d[nx+','+ny]=k+1;q.push([nx,ny])}}}return d}
+// Tacle : quitter une case voisine d'un monstre éveillé coûte 1 PM de plus (on ne se dégage plus d'un monstre en courant).
+reach(){const h=this.hero,d={[h.x+','+h.y]:0},q=[[h.x,h.y]],fs=this.foes.filter(f=>f.hp>0&&!f.form&&!f.sleep&&!this.hasEtat(f,'etourdi')),tk=(x,y)=>fs.filter(f=>Math.abs(f.x-x)+Math.abs(f.y-y)==1);
+while(q.length){q.sort((a,b)=>d[a[0]+','+a[1]]-d[b[0]+','+b[1]]);const [x,y]=q.shift(),k=d[x+','+y];if(k>=this.pm)continue;const t0=tk(x,y);
+for(const [a,b] of DIRS){const nx=x+a,ny=y+b;if(!this.free(nx,ny))continue;const t1=tk(nx,ny),c=k+1+(t0.some(f=>!t1.includes(f))?1:0),n=nx+','+ny;if(c<=this.pm&&(d[n]==null||c<d[n])){d[n]=c;q.push([nx,ny])}}}return d}
 los(a,b){let x=a.x,y=a.y;const dx=Math.abs(b.x-x),dy=Math.abs(b.y-y),sx=x<b.x?1:-1,sy=y<b.y?1:-1;let e=dx-dy;
 while(x!=b.x||y!=b.y){const e2=2*e;if(e2>-dy){e-=dy;x+=sx}if(e2<dx){e+=dx;y+=sy}
 if((x!=b.x||y!=b.y)&&this.rocks.has(x+','+y))return false}return true}
@@ -103,7 +105,7 @@ foeTurn(f){const h=this.hero;if(f.form||f.hp<=0)return{skip:true,text:'',effects
 if(tick.blocked){this.checkWin();return{skip:true,text:events.map(e=>e.text).filter(Boolean).join(' '),effects:events,events}}
 if(f.alerte){const A=f.alerte;if(f.pre){const hit=f.pre.some(c=>c.x==h.x&&c.y==h.y);f.pre=null;this.warn=new Set();if(hit){const d=this.applyDamage(h,Math.round(f.d*A.mult),false).damage;return{dmg:d,text:f.n+' : '+A.n+' ! -'+d+' PV.',tag:'contact',cible:h,effects:d?[{cible:h,texte:'-'+d,couleur:'#e5564a'}]:[],events}}if(A.vul)this.vuln=Math.max(this.vuln,2);this.checkWin();return{skip:true,text:f.n+' rate son coup'+(A.vul?' et se fatigue : vulnérable !':'.'),effects:events,events}}
 if(this.turn%A.every==0){const cs=[];for(let dx=-A.r;dx<=A.r;dx++)for(let dy=-A.r;dy<=A.r;dy++){const x=h.x+dx,y=h.y+dy;if(this.in(x,y))cs.push({x,y})}f.pre=cs;this.warn=new Set(cs.map(c=>c.x+','+c.y));this.checkWin();return{skip:true,text:f.n+' prépare « '+A.n+' » ! Quitte les cases rouges.',effects:events,events}}}
-f.pmActif=Math.max(1,f.pm-tick.slow);if(f.sortCd>0)f.sortCd--;if(f.sleep){f.sleep=false;return{sleep:true,text:f.n+' dort et passe son tour.'+(events.length?' '+events.map(e=>e.text).filter(Boolean).join(' '):''),effects:[...events,{cible:f,texte:'Zzz',couleur:'#9ecbff'}],events}}
+f.pmActif=Math.max(1,f.pm+((DF0().pmMelee&&!f.ia&&!f.boss)?DF0().pmMelee:0)-tick.slow);if(f.sortCd>0)f.sortCd--;if(f.sleep){f.sleep=false;return{sleep:true,text:f.n+' dort et passe son tour.'+(events.length?' '+events.map(e=>e.text).filter(Boolean).join(' '):''),effects:[...events,{cible:f,texte:'Zzz',couleur:'#9ecbff'}],events}}
 let ally=f.ia=='soin'?this.injuredAlly(f):null;
 if(f.ia=='dist'&&f.sort){const low=Math.max(f.garde?.[0]??f.sort.r[0],f.sort.r[0]),high=Math.min(f.garde?.[1]??f.sort.r[1],f.sort.r[1]);if(!this.moveToRange(f,h,low<=high?[low,high]:f.sort.r,{los:!!f.sort.los}))this.moveToRange(f,h,[1,1])}
 else if(f.ia=='soin'&&ally){const ready=f.sort&&f.sortCd===0&&this.inSpellRange(f,ally,f.sort),safe=this.dist(f,h)>=3;if(!ready||!safe){const toSafe=this.moveToRange(f,ally,f.sort.r,{los:!!f.sort.los,safeHero:3});if(!toSafe&&!this.moveToRange(f,ally,f.sort.r,{los:!!f.sort.los}))this.moveToRange(f,h,[1,1])}}

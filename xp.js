@@ -13,19 +13,22 @@ suiv:[70,105,145,190,245,305,370,445,530,610,       // niveaux 1 à 10
 3800,3900,4000,4050,4150,4250,4350,4450,4500],      // 51 à 59  (fin de l'acte 3 au niveau 60)
 // Anti-farm : multiplicateur selon l'écart d = niveau du héros - niveau de la rencontre.
 // Moins de 4 niveaux d'avance = plein tarif ; au-delà l'XP chute vite (plancher 10 %).
-ecart:[[-4,1.2],[-1,1.1],[2,1],[3,.8],[4,.6],[5,.4],[6,.25],[99,.1]],   // [écart maximal inclus, multiplicateur]
-entrainement:.7,        // les combats d'entraînement (menu) donnent 70 % de l'XP
+ecart:[[-4,1.2],[-1,1.1],[1,1],[2,.6],[3,.35],[4,.2],[5,.1],[99,.05]],   // [écart maximal inclus, multiplicateur]
+entrainement:.4,        // les combats d'entraînement (menu) donnent 40 % de l'XP
+gain:3,               // réglage global du rythme : multiplie l'XP des combats et des quêtes (anti-farm plus strict, donc moins de grind)
 // Valeurs de référence des gains (m = coefficient de la rencontre, k = coefficient de la quête)
 m:{normal:1,elite:1.3,mini:3,boss:5},
 k:{courte:3,normale:5,longue:8,lueur:12},
+// Difficulté des monstres : hp/d = multiplicateurs de PV et de dégâts (monstres ordinaires), bossHp/bossD (boss), pmMelee = PM en plus pour les monstres de mêlée
+diff:{hp:1,d:1.05,bossHp:1,bossD:1,pmMelee:0},
 // ----- fonctions -----
 next(n){return n>=XP.max?Infinity:XP.suiv[Math.max(1,n)-1]},
 cmb(n){return 12+3*Math.max(1,n)},                                  // XP d'un combat standard de niveau n
 mult(d){for(const [e,v] of XP.ecart)if(d<=e)return v;return .1},
 // XP d'une rencontre : r = {niv, m} (m facultatif, 1 par défaut) ; heroNiv = niveau actuel du héros
-rencontre(r,heroNiv,entrainement){const base=XP.cmb(r.niv)*(r.m||1)*XP.mult(heroNiv-r.niv)*(entrainement?XP.entrainement:1);return Math.max(1,Math.round(base))},
+rencontre(r,heroNiv,entrainement){const base=XP.gain*XP.cmb(r.niv)*(r.m||1)*XP.mult(heroNiv-r.niv)*(entrainement?XP.entrainement:1);return Math.max(1,Math.round(base))},
 // XP d'une quête : niv = niveau de la zone, k = coefficient (XP.k.*)
-quete(niv,k){return Math.round(XP.cmb(niv)*k)},
+quete(niv,k){return Math.round(XP.gain*XP.cmb(niv)*k)},
 // Ajoute de l'XP à la sauvegarde s (s.niv, s.xp) ; renvoie le nombre de niveaux gagnés. Plafonne au niveau max.
 add(s,gain){let up=0;if(s.niv>=XP.max){s.niv=XP.max;s.xp=0;return 0}
 s.xp+=Math.max(0,Math.round(gain));
