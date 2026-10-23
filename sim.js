@@ -2,7 +2,7 @@
 // Usage (depuis la racine du jeu) : node outils/sim.js   — affiche, pour chaque rencontre et chaque classe, victoires, PV perdus et durée.
 // Limites : le robot ne sait pas bien jouer le boss de la Serre (cendre) avec l'Archer ; vérifier ces cas à la main.
 const fs=require('fs'),vm=require('vm');
-const G=require('path').join(__dirname,'..')+'/';
+const G=__dirname+'/';
 function load(dir){const ctx={console,Math};vm.createContext(ctx);
 for(const f of ['donnees','histoire','xp','moteur'])try{vm.runInContext(fs.readFileSync(dir+f+'.js','utf8').replace(/^const /gm,'var ').replace(/^class Combat/m,'var Combat=class Combat'),ctx)}catch(e){}
 return ctx}

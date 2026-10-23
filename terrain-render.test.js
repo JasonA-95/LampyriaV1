@@ -4,7 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
-const root = path.join(__dirname, '..');
+const root = __dirname;
 const source = file => fs.readFileSync(path.join(root, file), 'utf8');
 
 function canvasContext() {

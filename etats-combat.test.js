@@ -4,7 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
-const root = path.join(__dirname, '..');
+const root = __dirname;
 const context = vm.createContext({});
 for (const file of ['donnees.js', 'moteur.js']) {
   vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
