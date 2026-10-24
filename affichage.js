@@ -101,8 +101,10 @@ if(typeof playSound=='function')playSound(spell?(spell.heal||spell.drain?'heal':
 function act(x,y){if(busy||C.result||displayPending())return;const ok=mode=='move'?C.reach()[x+','+y]>0:C.ranged(mode).some(t=>t[0]==x&&t[1]==y);
 if(!ok){pend=null;msg(mode=='move'?MSG.loin:MSG.cible);draw();return}
 if(!pend||pend.x!=x||pend.y!=y){pend={x,y};msg(mode=='move'?'Déplacement : '+C.reach()[x+','+y]+' PM. Touche encore la case pour confirmer.':'Zone affichée. Touche encore la même case pour lancer le sort.');draw();return}
-pend=null;const before=unitSnapshots([C.hero,...C.foes]),spell=Number.isInteger(mode)?C.S[mode]:null,hp0=C.hero.hp;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
+pend=null;const before=unitSnapshots([C.hero,...C.foes]),spell=Number.isInteger(mode)?C.S[mode]:null,hp0=C.hero.hp,pth=mode=='move'?C.path(x,y):null;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
 if(!r.ok){msg(MSG[r.tag]);return}
+// Sens de marche : le héros se tourne vers son dernier pas ; un sort le retourne vers sa cible (voir SPR.draw).
+if(pth&&pth.length){const a=pth.length>1?pth[1]:[before[0].x,before[0].y],b=pth[0];C.hero.face={right:(b[0]-b[1])>(a[0]-a[1]),back:(b[0]+b[1])<(a[0]+a[1])}}else if(spell)C.hero.face=null;
 animateActionResult(before,spell,x,y,r);
 if(r.tag)say(r.tag);
 if(r.blocked)pop(C.foes.find(f=>f.boss&&f.hp>0),'Protégé','#c9b8ff');const dh=C.hero.hp-hp0;if(dh>0)pop(C.hero,'+'+dh,'#7fd18b');

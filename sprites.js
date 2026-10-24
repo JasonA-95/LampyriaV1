@@ -156,7 +156,8 @@ g.save();if(!right)g.scale(-1,1);g.drawImage(im.bmp||im,-ax,-ay,w,hh);g.restore(
 // Combat : l'unité u se tourne vers sa cible (le héros vise le monstre le plus proche, les monstres visent le héros).
 function draw(g,u,hero,foes,tw,th){const key=keyOf(u,hero);if(!key)return false;
 let tgt=hero;if(u===hero){let best=1e9;for(const f of foes){if(f.hp<=0)continue;const d=Math.abs(f.x-u.x)+Math.abs(f.y-u.y);if(d<best){best=d;tgt=f}}}
-const right=tgt===u?true:(tgt.x-tgt.y)>=(u.x-u.y),back=tgt!==u&&(tgt.x+tgt.y)<(u.x+u.y);
+let right=tgt===u?true:(tgt.x-tgt.y)>=(u.x-u.y),back=tgt!==u&&(tgt.x+tgt.y)<(u.x+u.y);
+if(u===hero&&hero.face){right=hero.face.right;back=hero.face.back}
 return drawKey(g,key,right,back,tw,th)}
 const has=(u,hero)=>{const k=keyOf(u,hero);return !!k};
 const lift=(u,hero,th)=>{const k=keyOf(u,hero);return k?th*1.3*(SC[k]||1):0};
