@@ -47,3 +47,13 @@ test('chaque sprite produit un SVG bien forme', () => {
     assert.equal((svg.match(/<g[ >]/g) || []).length, (svg.match(/<\/g>/g) || []).length, 'balises g : ' + cle);
   }
 });
+
+test('chaque degrade ou filtre utilise par un sprite est defini (sinon le sprite est vide)', () => {
+  const context = load();
+  for (const cle of vm.runInContext('SPR.keys', context)) {
+    const svg = vm.runInContext('SPR.raw(' + JSON.stringify(cle) + ',false)', context);
+    const definis = new Set([...svg.matchAll(/id="([A-Za-z0-9_]+)"/g)].map(m => m[1]));
+    const utilises = [...svg.matchAll(/url\(#([A-Za-z0-9_]+)\)/g)].map(m => m[1]);
+    for (const id of utilises) assert.ok(definis.has(id), cle + ' : #' + id + ' non defini');
+  }
+});
