@@ -124,13 +124,15 @@ function img(key,back){const k=key+(back?'D':'F');if(cache[k])return cache[k];co
 const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+VB+'" width="'+IW+'" height="'+IH+'"><defs>'+DEFS+'</defs>'+fn()+'</svg>';
 const im=new Image();im.onload=()=>{im.ready=true;setTimeout(()=>{try{if(typeof C!='undefined'&&C&&typeof combatLive!='undefined'&&combatLive)draw()}catch(e){}},0)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);return cache[k]=im}
 function keyOf(u,hero){if(u===hero)return make[cfg.classe]?cfg.classe:null;return MON[u.e]||null}
-// Dessine le sprite de l'unité u (g est déjà translaté sur la case). Renvoie false si aucun sprite n'est prêt.
-function draw(g,u,hero,foes,tw,th){const key=keyOf(u,hero);if(!key)return false;
-let tgt=hero;if(u===hero){let best=1e9;for(const f of foes){if(f.hp<=0)continue;const d=Math.abs(f.x-u.x)+Math.abs(f.y-u.y);if(d<best){best=d;tgt=f}}}
-const right=u===hero&&tgt===u?true:(tgt.x-tgt.y)>=(u.x-u.y),back=tgt!==u&&(tgt.x+tgt.y)<(u.x+u.y);
-const im=img(key,back);if(!im.ready)return false;
+function drawKey(g,key,right,back,tw,th){const im=img(key,back);if(!im.ready)return false;
 const s=tw/100,w=130*s,hh=180*s,A=AN[key]||[48,128],ax=(A[0]+16)*s,ay=(A[1]+36)*s;
 g.save();if(!right)g.scale(-1,1);g.drawImage(im,-ax,-ay,w,hh);g.restore();return true}
+// Combat : l'unité u se tourne vers sa cible (le héros vise le monstre le plus proche, les monstres visent le héros).
+function draw(g,u,hero,foes,tw,th){const key=keyOf(u,hero);if(!key)return false;
+let tgt=hero;if(u===hero){let best=1e9;for(const f of foes){if(f.hp<=0)continue;const d=Math.abs(f.x-u.x)+Math.abs(f.y-u.y);if(d<best){best=d;tgt=f}}}
+const right=tgt===u?true:(tgt.x-tgt.y)>=(u.x-u.y),back=tgt!==u&&(tgt.x+tgt.y)<(u.x+u.y);
+return drawKey(g,key,right,back,tw,th)}
 const has=(u,hero)=>{const k=keyOf(u,hero);return !!k};
 for(const k in make){img(k,false);img(k,true)}
-return{draw,has}})();
+const heroKey=()=>make[cfg.classe]?cfg.classe:null,monKey=e=>MON[e]||null;
+return{draw,drawKey,has,heroKey,monKey}})();
