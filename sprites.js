@@ -147,11 +147,11 @@ const SC={mycelium:1.55};
 const cache={};
 function img(key,back){const k=key+(back?'D':'F');if(cache[k])return cache[k];const fn=make[key][back?1:0];
 const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+VB+'" width="'+IW+'" height="'+IH+'"><defs>'+DEFS+'</defs>'+fn()+'</svg>';
-const im=new Image();im.onload=()=>{im.ready=true;setTimeout(()=>{try{if(typeof C!='undefined'&&C&&typeof combatLive!='undefined'&&combatLive)draw()}catch(e){}},0)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);return cache[k]=im}
+const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=IW;c.height=IH;c.getContext('2d').drawImage(im,0,0,IW,IH);im.bmp=c}catch(e){im.bmp=null}im.ready=true;setTimeout(()=>{try{if(typeof C!='undefined'&&C&&typeof combatLive!='undefined'&&combatLive)draw()}catch(e){}},0)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);return cache[k]=im}
 function keyOf(u,hero){if(u===hero)return make[cfg.classe]?cfg.classe:null;return MON[u.n]||null}
-function drawKey(g,key,right,back,tw,th){const im=img(key,back);if(!im.ready)return false;
+function drawKey(g,key,right,back,tw,th){let im=img(key,back);if(!im.ready){const alt=img(key,!back);if(!alt.ready)return false;im=alt}
 const s=tw/100*(SC[key]||1),w=130*s,hh=180*s,A=AN[key]||[48,128],ax=(A[0]+16)*s,ay=(A[1]+36)*s;
-g.save();if(!right)g.scale(-1,1);g.drawImage(im,-ax,-ay,w,hh);g.restore();return true}
+g.save();if(!right)g.scale(-1,1);g.drawImage(im.bmp||im,-ax,-ay,w,hh);g.restore();return true}
 // Combat : l'unité u se tourne vers sa cible (le héros vise le monstre le plus proche, les monstres visent le héros).
 function draw(g,u,hero,foes,tw,th){const key=keyOf(u,hero);if(!key)return false;
 let tgt=hero;if(u===hero){let best=1e9;for(const f of foes){if(f.hp<=0)continue;const d=Math.abs(f.x-u.x)+Math.abs(f.y-u.y);if(d<best){best=d;tgt=f}}}
