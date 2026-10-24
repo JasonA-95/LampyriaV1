@@ -42,8 +42,8 @@ function archer(){return `<g>${sh(48,128,24,6,34)}
   <path d="M32 58Q34 26 49 24Q66 26 66 58Q58 50 49 52Q40 50 32 58Z" fill="url(#grnh)" ${O}/>
   <path d="M38 34Q46 26 58 30" stroke="#d0f0a0" stroke-opacity=".5" stroke-width="2" fill="none"/>
   <path d="M44 42Q56 30 72 32Q66 42 50 46Z" fill="#8a3a24" ${O}/><path d="M48 42Q60 34 70 33" stroke="#e8b080" stroke-width="1.2" fill="none"/><path d="M44 42L40 46" stroke="#3a2a18" stroke-width="1.4"/><path d="M34 50Q49 44 64 50" stroke="#1a2c14" stroke-opacity=".6" stroke-width="2.4" fill="none"/><path d="M34 54Q49 48 64 54" stroke="#d0f0a0" stroke-opacity=".35" stroke-width="1" fill="none" stroke-dasharray="3 3"/>
-  <path d="M62 58 Q74 66 84 60" stroke="#3a5a2a" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M62 58 Q74 66 84 60" stroke="#8ab85a" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" fill="none"/>
-  <circle cx="86" cy="60" r="4.4" fill="#5a3a22" ${O}/>
+  <path d="M63 68 Q74 72 84 65" stroke="#3a5a2a" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M63 68 Q74 72 84 65" stroke="#8ab85a" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <circle cx="86" cy="65" r="4.4" fill="#5a3a22" ${O}/>
   <path d="M82 22 Q104 66 82 112" stroke="#6a4420" stroke-width="4.4" fill="none" stroke-linecap="round"/><path d="M82 22 Q104 66 82 112" stroke="#d8a860" stroke-opacity=".6" stroke-width="1.6" fill="none"/><path d="M82 22L82 112" stroke="#e8e0c8" stroke-width="1.2" opacity=".9"/><path d="M90 66h-8" stroke="#e8e0c8" stroke-width="1.6"/><path d="M86 62l-8 4 8 4" fill="#d8c890" stroke="none"/></g>`}
 function mage(){return `<g>${sh(48,128,26,6,34)}
   <circle cx="86" cy="62" r="40" fill="url(#glow)" opacity=".0"/><circle cx="88" cy="28" r="48" fill="#9af0ff" opacity=".18" filter="url(#b8)"/>
