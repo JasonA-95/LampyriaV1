@@ -27,8 +27,18 @@ for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 if(typeof DJ!='undefined')DJ.norm();
 for(const k of ['pv','dmg','res'])if(typeof sv.tal[k]!='number')sv.tal[k]=0;
+// Nettoyage défensif (code importé ou sauvegarde abîmée) : nombres finis et identifiants connus uniquement, sans quoi l'interface plante ou affiche du texte injecté.
+const knownId=(table,id)=>typeof id=='string'&&Object.prototype.hasOwnProperty.call(table,id);
+for(const k of ['niv','xp','cap','renc','pity'])if(!Number.isFinite(sv[k]))sv[k]=SV0[k];
+sv.inv=[...new Set((Array.isArray(sv.inv)?sv.inv:[]).filter(id=>knownId(DATA.objets,id)))];
+if(!sv.eq||typeof sv.eq!='object'||Array.isArray(sv.eq))sv.eq={};
+for(const s of Object.keys(sv.eq))if(!knownId(DATA.objets,sv.eq[s]))delete sv.eq[s];
+for(const k of ['deb','lueurs'])sv[k]=(Array.isArray(sv[k])?sv[k]:[]).filter(id=>knownId(DATA.lueurs,id));
+if(sv.map!=null&&!knownId(DATA.cartes,sv.map))delete sv.map;
 if(!DATA.classes[sv.classe])sv.classe='porte';
-const store=()=>{try{sv.maj=Date.now();localStorage.setItem(slotKey(SLOT),JSON.stringify(sv))}catch(e){}};
+// Si l'écriture échoue (stockage plein ou bloqué), le joueur est prévenu une fois. `tto` est déclaré ici car toast() peut être appelé dès le chargement (migration d'ancienne sauvegarde).
+let saveWarned=false,tto;
+const store=()=>{try{sv.maj=Date.now();localStorage.setItem(slotKey(SLOT),JSON.stringify(sv))}catch(e){if(!saveWarned){saveWarned=true;toast('Sauvegarde impossible : stockage du navigateur plein ou bloqué. Exporte ta sauvegarde depuis le menu Jouer.')}}};
 const heroEmoji=()=>(sv.hero&&sv.hero.asp)||DATA.classes[cfg.classe].e;
 if(savedData&&!hadStoryHistory)store();
 const cfg={classe:sv.classe,renc:0,test:false,lueurs:sv.lueurs.filter(k=>DATA.lueurs[k])};
@@ -52,7 +62,7 @@ function normL(){const av=avail(),cap=capNow();cfg.lueurs=cfg.lueurs.filter(k=>a
 // ---------- petits outils d'interface ----------
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.innerHTML=x;return e};
 function btn(t,sub,cls,fn,dis){const b=el('button',cls||'','<span class="nm">'+t+'</span>'+(sub?'<span class="mt">'+sub+'</span>':''));b.disabled=!!dis;if(fn)b.onclick=e=>{if(typeof playSound=='function')playSound('click');fn(e)};return b}
-let tto;function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(tto);tto=setTimeout(()=>e.classList.add('hide'),2600)}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(tto);tto=setTimeout(()=>e.classList.add('hide'),2600)}
 const closeModal=()=>$('modal').classList.add('hide');
 function modal(node,btns){const c=$('mcard');c.innerHTML='';c.appendChild(node);const f=el('div','mbtns');
 (btns||[]).forEach(([t,fn,cls])=>f.appendChild(btn(t,'',cls||'',()=>{closeModal();if(fn)fn()})));c.appendChild(f);$('modal').classList.remove('hide')}
