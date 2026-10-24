@@ -3,7 +3,7 @@
 const SPR=(()=>{
 const O='stroke="#1a1218" stroke-opacity=".6" stroke-width="1.1" stroke-linejoin="round"';
 const sh=()=>'';
-const DEFS=`
+const DEFS=`<linearGradient id="cap" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b04a9a"/><stop offset="1" stop-color="#4a1c5a"/></linearGradient>
 <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .45 0"/></filter>
 <filter id="b2"><feGaussianBlur stdDeviation="2"/></filter>
 <filter id="bump" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".05 .08" numOctaves="4" seed="3" result="n"/><feDiffuseLighting in="n" lighting-color="#ffffff" surfaceScale="2.4" result="l"><feDistantLight azimuth="225" elevation="52"/></feDiffuseLighting><feComposite in="SourceGraphic" in2="l" operator="arithmetic" k1="1.25" k2="0" k3="0" k4="0"/></filter>
@@ -116,16 +116,41 @@ function champignon(){return `<g>${sh(48,90,30,7,26)}
   <circle cx="30" cy="30" r="5" fill="#ecdcff"/><circle cx="58" cy="24" r="3.5" fill="#ecdcff"/><circle cx="72" cy="38" r="4" fill="#ecdcff"/>
   <path d="M14 54q6 10 10 2q4 10 10 2M60 58q6 10 10 2q4 8 10 0" fill="#f0e6cc" stroke="#1a1218" stroke-width="1.4"/>
   <ellipse cx="42" cy="64" rx="3" ry="4.5" fill="#1a1218"/><ellipse cx="54" cy="64" rx="3" ry="4.5" fill="#1a1218"/><circle cx="42" cy="63" r="1.2" fill="#9aff9a"/><circle cx="54" cy="63" r="1.2" fill="#9aff9a"/><path d="M40 74Q48 80 56 74" stroke="#1a1218" stroke-width="2" fill="none"/></g>`}
-const VB='-16 -36 130 180',IW=260,IH=360,AN={mouche:[48,100],champignon:[48,90]};
-const make={porte:[porte,porteD],archer:[archer,archerD],mage:[mage,mageD],mouche:[mouche,mouche],champignon:[champignon,champignon]};
-const MON={'🪰':'mouche','🍄':'champignon'};
+
+function mouton(){return `<g>
+  <ellipse cx="48" cy="60" rx="46" ry="38" fill="url(#glow)" opacity=".5"/>
+  <path d="M20 66Q10 50 24 42Q22 26 40 28Q48 16 62 26Q80 24 80 42Q92 52 78 66Q80 84 70 88Q62 80 56 90Q48 82 40 90Q34 80 26 88Q16 82 20 66Z" fill="#dfe8f4" fill-opacity=".92" ${O}/>
+  <path d="M24 44Q34 36 44 44M52 36Q62 30 72 40M26 62Q36 56 46 64M54 60Q66 54 76 62" stroke="#a8b8d4" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M60 30Q72 34 74 46Q74 58 62 62Q54 56 54 44Q54 34 60 30Z" fill="#46506a" ${O}/>
+  <path d="M60 30Q66 22 74 28" stroke="#8a96b4" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M56 40Q48 36 46 44" stroke="#46506a" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="63" cy="42" rx="3" ry="3.6" fill="#e8ffff"/><ellipse cx="72" cy="44" rx="2.6" ry="3.2" fill="#e8ffff"/><circle cx="63" cy="42" r="1.2" fill="#2a3048"/><circle cx="72" cy="44" r="1.1" fill="#2a3048"/>
+  <path d="M64 54Q69 57 73 53" stroke="#1a1c2c" stroke-width="1.6" fill="none"/>
+  <path d="M30 40Q36 34 46 36" stroke="#fff" stroke-opacity=".7" stroke-width="2.4" fill="none"/></g>`}
+function mycelium(){return `<g>
+  <ellipse cx="48" cy="78" rx="52" ry="14" fill="#06040a" opacity=".35" filter="url(#b2)"/>
+  <circle cx="48" cy="46" r="52" fill="#d8a0ff" opacity=".16" filter="url(#b8)"/>
+  <path d="M16 90Q4 84 2 74M24 92Q14 98 6 94M72 90Q84 84 94 76M66 92Q78 98 88 94" stroke="#6a4a38" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M30 90Q34 66 32 50L66 50Q62 66 68 90Z" fill="#e0d4b4" ${O}/><path d="M32 52Q34 70 32 90L44 90Q46 70 44 52Z" fill="#b8a888" opacity=".6"/>
+  <path d="M30 80Q40 86 48 80Q58 86 68 80" stroke="#5a7a3a" stroke-width="5" fill="none" stroke-linecap="round" opacity=".85"/>
+  <path d="M-2 52Q-6 4 48 2Q102 4 98 52Q76 62 48 58Q20 62 -2 52Z" fill="url(#cap)" ${O}/>
+  <path d="M6 44Q10 14 48 8" stroke="#d8a8ff" stroke-width="3" fill="none" opacity=".6" stroke-linecap="round"/>
+  <circle cx="22" cy="28" r="6" fill="#f0d8ff"/><circle cx="52" cy="16" r="5" fill="#f0d8ff"/><circle cx="76" cy="30" r="7" fill="#f0d8ff"/><circle cx="40" cy="38" r="3.4" fill="#f0d8ff"/><circle cx="64" cy="44" r="3" fill="#f0d8ff"/>
+  <path d="M6 54q8 12 14 2q6 12 14 2q6 10 14 2q8 10 14 0q8 12 14 2q8 10 14 -2q6 8 8-2" fill="#ece0c8" stroke="#1a1218" stroke-opacity=".6" stroke-width="1.1"/>
+  <path d="M38 66Q43 62 47 66M52 66Q57 62 62 66" stroke="#1a1218" stroke-width="2.4" fill="none"/><ellipse cx="42" cy="70" rx="2.6" ry="3.4" fill="#1a1218"/><ellipse cx="58" cy="70" rx="2.6" ry="3.4" fill="#1a1218"/><circle cx="42" cy="69" r="1" fill="#b8ff9a"/><circle cx="58" cy="69" r="1" fill="#b8ff9a"/>
+  <path d="M40 80Q50 86 60 80" stroke="#1a1218" stroke-width="2.4" fill="none"/>
+  <circle cx="14" cy="14" r="2.2" fill="#d8ffb8"/><circle cx="88" cy="12" r="2.6" fill="#d8ffb8"/><circle cx="98" cy="36" r="2" fill="#d8ffb8"/><circle cx="2" cy="34" r="2" fill="#d8ffb8"/></g>`}
+const VB='-16 -36 130 180',IW=260,IH=360,AN={mouche:[48,100],champignon:[48,90],mouton:[48,92],mycelium:[48,86]};
+const make={porte:[porte,porteD],archer:[archer,archerD],mage:[mage,mageD],mouche:[mouche,mouche],champignon:[champignon,champignon],mouton:[mouton,mouton],mycelium:[mycelium,mycelium]};
+// Registre : nom exact du monstre (DATA.rencontres[].m[].n) -> sprite. Ajouter un monstre = une ligne ici + une fonction de dessin.
+const MON={'La mouche à braise':'mouche','Le champignon bavard':'champignon','Le mouton-fantôme':'mouton','Mère Mycélium':'mycelium'};
+const SC={mycelium:1.55};
 const cache={};
 function img(key,back){const k=key+(back?'D':'F');if(cache[k])return cache[k];const fn=make[key][back?1:0];
 const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+VB+'" width="'+IW+'" height="'+IH+'"><defs>'+DEFS+'</defs>'+fn()+'</svg>';
 const im=new Image();im.onload=()=>{im.ready=true;setTimeout(()=>{try{if(typeof C!='undefined'&&C&&typeof combatLive!='undefined'&&combatLive)draw()}catch(e){}},0)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);return cache[k]=im}
-function keyOf(u,hero){if(u===hero)return make[cfg.classe]?cfg.classe:null;return MON[u.e]||null}
+function keyOf(u,hero){if(u===hero)return make[cfg.classe]?cfg.classe:null;return MON[u.n]||null}
 function drawKey(g,key,right,back,tw,th){const im=img(key,back);if(!im.ready)return false;
-const s=tw/100,w=130*s,hh=180*s,A=AN[key]||[48,128],ax=(A[0]+16)*s,ay=(A[1]+36)*s;
+const s=tw/100*(SC[key]||1),w=130*s,hh=180*s,A=AN[key]||[48,128],ax=(A[0]+16)*s,ay=(A[1]+36)*s;
 g.save();if(!right)g.scale(-1,1);g.drawImage(im,-ax,-ay,w,hh);g.restore();return true}
 // Combat : l'unité u se tourne vers sa cible (le héros vise le monstre le plus proche, les monstres visent le héros).
 function draw(g,u,hero,foes,tw,th){const key=keyOf(u,hero);if(!key)return false;
@@ -133,6 +158,7 @@ let tgt=hero;if(u===hero){let best=1e9;for(const f of foes){if(f.hp<=0)continue;
 const right=tgt===u?true:(tgt.x-tgt.y)>=(u.x-u.y),back=tgt!==u&&(tgt.x+tgt.y)<(u.x+u.y);
 return drawKey(g,key,right,back,tw,th)}
 const has=(u,hero)=>{const k=keyOf(u,hero);return !!k};
+const lift=(u,hero,th)=>{const k=keyOf(u,hero);return k?th*1.3*(SC[k]||1):0};
 for(const k in make){img(k,false);img(k,true)}
-const heroKey=()=>make[cfg.classe]?cfg.classe:null,monKey=e=>MON[e]||null;
-return{draw,drawKey,has,heroKey,monKey}})();
+const heroKey=()=>make[cfg.classe]?cfg.classe:null,monKey=n=>MON[n]||null;
+return{draw,drawKey,has,lift,heroKey,monKey,names:Object.keys(MON)}})();

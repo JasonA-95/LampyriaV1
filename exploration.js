@@ -90,7 +90,7 @@ EX.draw=()=>{const N=DATA.taille,d=DATA.cartes[EX.map],rocks=new Set(d.rocks.map
 const pp={},ex={},E={};
 if(EX.pend&&EX.pend.path)EX.pend.path.forEach(t=>pp[exK(t[0],t[1])]=1);
 d.exits.forEach(e=>ex[exK(e.x,e.y)]=e);
-EX.groups.forEach(q=>{if(!q.dead)E[exK(q.x,q.y)]=q.hide?{e:'🌿',b:'?',visual:q}:{e:DATA.rencontres[q.renc].m[0].e,b:'×'+DATA.rencontres[q.renc].m.length,visual:q}});
+EX.groups.forEach(q=>{if(!q.dead)E[exK(q.x,q.y)]=q.hide?{e:'🌿',b:'?',visual:q}:{e:DATA.rencontres[q.renc].m[0].e,n:DATA.rencontres[q.renc].m[0].n,b:'×'+DATA.rencontres[q.renc].m.length,visual:q}});
 EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?'🏮':n.coffre?'🎁':DATA.resE[n.res],a:n.until>EX.steps?.25:1,visual:n});
 d.npcs.forEach(n=>E[exK(n.x,n.y)]={e:n.e,visual:n});
 EX.storyActors.forEach(a=>E[exK(a.x,a.y)]={e:a.e,visual:a});
@@ -113,7 +113,7 @@ for(const exit of d.exits){const cx=(exit.x-exit.y)*tw/2+ox,cy=(exit.x+exit.y)*t
 if(exit.don){const f=Math.round(tw*.3),up=exit.d=='S'?1:0,y0=cy+(up?-th*1.15:th*.75);g.font='bold '+f+'px sans-serif';g.lineWidth=3;g.strokeStyle='#000';g.lineJoin='round';g.fillStyle=exit.don?'#ffd27a':'#e8e4f5';
 const ls=exit.don?[exit.lbl,exit.nv]:[exit.lbl];ls.forEach((t,i)=>{const yy=y0+(up?-(ls.length-1-i):i)*f*1.15;g.strokeText(t,cx,yy);g.fillText(t,cx,yy)})}}
 drawDisplayEffects(g,tw,th,ox,oy);
-for(const key of Object.keys(E)){const u=E[key],[x,y]=key.split(',').map(Number),visual=u.visual||u,p=displayPosition(visual,x,y,rocks),style=displayUnitStyle(visual,undefined,tw,th),cx=(p.x-p.y)*tw/2+ox+style.x,cy=(p.x+p.y)*th/2+oy+style.y;const isH=visual===EX.avatar,sk=isH?SPR.heroKey():(u.b&&u.b!='?'?SPR.monKey(u.e):null);let ok=false;g.save();g.globalAlpha=(u.a??1)*style.alpha;drawGroundShadow(g,cx,cy,tw,th,u.b?1.1:1);g.translate(cx,cy);g.scale(style.scale,style.scale);g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';if(sk){const f=isH?(EX.face||{right:true,back:false}):{right:(EX.x-EX.y)>=(x-y),back:(EX.x+EX.y)<(x+y)};ok=SPR.drawKey(g,sk,f.right,f.back,tw,th)}if(!ok)g.fillText(u.e,0,-th*.3);g.restore();
+for(const key of Object.keys(E)){const u=E[key],[x,y]=key.split(',').map(Number),visual=u.visual||u,p=displayPosition(visual,x,y,rocks),style=displayUnitStyle(visual,undefined,tw,th),cx=(p.x-p.y)*tw/2+ox+style.x,cy=(p.x+p.y)*th/2+oy+style.y;const isH=visual===EX.avatar,sk=isH?SPR.heroKey():(u.b&&u.b!='?'?SPR.monKey(u.n):null);let ok=false;g.save();g.globalAlpha=(u.a??1)*style.alpha;drawGroundShadow(g,cx,cy,tw,th,u.b?1.1:1);g.translate(cx,cy);g.scale(style.scale,style.scale);g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';if(sk){const f=isH?(EX.face||{right:true,back:false}):{right:(EX.x-EX.y)>=(x-y),back:(EX.x+EX.y)<(x+y)};ok=SPR.drawKey(g,sk,f.right,f.back,tw,th)}if(!ok)g.fillText(u.e,0,-th*.3);g.restore();
 if(u.b){g.font='bold '+Math.round(tw*.3)+'px Georgia,serif';g.lineWidth=3;g.strokeStyle='#120d1a';g.strokeText(u.b,cx+tw*.3,cy-th*(ok?1.8:.7));g.fillStyle='#ffb454';g.fillText(u.b,cx+tw*.3,cy-th*(ok?1.8:.7))}}
 drawDisplayTexts(g,tw,th,ox,oy);updateDisplayTransition();placeBubble();syncAmbience()};
 
