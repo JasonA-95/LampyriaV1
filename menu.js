@@ -66,7 +66,7 @@ if(part=='sorts'){const spellCard=card('Sorts','Emplacements : <b>'+(sv.sp.eq.le
 for(const base of current){const unlocked=cfg.test||base.niv<=sv.niv,rank=cfg.test?3:(sv.sp.rg[base.id]||1),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),entry=el('div','pick');
 const name=s.n+(rank>1?' ★'+rank:'')+(base.id==first?' 🔒':'');
 const status=!unlocked?'Niveau '+base.niv:base.id==first?'Toujours équipé':equipped?'Équipé · touche pour retirer':'Libre · touche pour équiper';
-const chips='<span class="chips"><span class="chip">'+s.pa+' PA</span><span class="chip">Recharge '+(s.cd||0)+'</span></span>';
+const E0=DATA.elements[base.elem||'neutre'],chips='<span class="chips"><span class="chip">'+E0.e+' '+E0.n+'</span><span class="chip">'+s.pa+' PA</span><span class="chip">Recharge '+(s.cd||0)+'</span></span>';
 const html='<span class="em">'+(unlocked?(equipped?'✨':'⚔️'):'🔒')+'</span><span class="tx"><span class="nm">'+name+'</span><span class="mt">'+(unlocked?descrBody(s):'Niveau '+base.niv)+'</span><span class="mt">'+status+'</span>'+chips+'</span>';
 const toggle=()=>{if(base.id==first){toast('Le premier sort est toujours équipé');return}if(equipped)sv.sp.eq=sv.sp.eq.filter(id=>id!=base.id);else if(sv.sp.eq.length+cfg.lueurs.length>=6){toast('Barre de sorts pleine');return}else sv.sp.eq.push(base.id);syncSorts();store();renderMenu()};
 entry.appendChild(row(html,unlocked?toggle:null,unlocked?(equipped?'on':''):'lock'));

@@ -94,3 +94,35 @@ test('plus aucun objet ni panoplie n\'utilise l\'ancienne stat dmg', () => {
   for (const o of Object.values(DC.objets)) assert.ok(!('dmg' in (o.st || {})), 'objet avec dmg : ' + o.n);
   for (const s of Object.values(DC.sets)) for (const b of Object.values(s.bonus)) assert.ok(!('dmg' in b), 'panoplie avec dmg : ' + s.n);
 });
+
+// ---------- sorts de classe par élément (étape 4) ----------
+test('chaque classe a 10 sorts : exactement 2 par élément, ids uniques, niveaux croissants, départ Neutre', () => {
+  const D = load(), ids = new Set();
+  for (const k of Object.keys(D.classes)) {
+    const S = D.classes[k].sorts, par = {};
+    assert.equal(S.length, 10, k);
+    S.forEach((s, i) => { assert.ok(!ids.has(s.id), 'id en double : ' + s.id); ids.add(s.id); par[s.elem || 'neutre'] = (par[s.elem || 'neutre'] || 0) + 1; if (i) assert.ok(s.niv >= S[i - 1].niv, 'ordre des niveaux : ' + s.id); assert.ok(!s.elem || D.elements[s.elem], 'élément inconnu : ' + s.id) });
+    for (const e of Object.keys(D.elements)) assert.equal(par[e], 2, k + ' : 2 sorts attendus en ' + e);
+    assert.ok(!S[0].elem && !S[1].elem && S[0].niv === 1 && S[1].niv === 1, k + ' : sorts de départ Neutres');
+  }
+});
+
+test('chaque sort de dégâts de chaque classe se lance et blesse un monstre (portée et ligne de vue valides)', () => {
+  for (const k of Object.keys(DC.classes)) for (const base of DC.classes[k].sorts) {
+    if (!base.dmg) continue;
+    let fait = false;
+    for (let x = 0; x < DC.taille && !fait; x++) for (let y = 0; y < DC.taille && !fait; y++) {
+      const g = new Combat(DC, { classe: k, renc: 0, niv: 60, lueurs: [], gear: {} });
+      const f = g.foes[0], h = g.hero;
+      if (!g.in(x, y) || !g.free(x, y)) continue;
+      const d = Math.abs(x - h.x) + Math.abs(y - h.y);
+      if (d < base.r[0] || d > base.r[1] || (!base.r[1] && d)) continue;
+      f.x = x; f.y = y; f.hp = f.max = 5000; g.foes.slice(1).forEach(o => { o.hp = 0 });
+      g.S = [{ ...base }]; g.pa = 20; g.cd = [0];
+      const r = g.cast(0, x, y);
+      if (r.ok) { fait = true; assert.ok(f.hp < 5000 || r.dmg > 0, base.id + ' ne blesse pas'); }
+    }
+    if (!base.r[1]) continue; // sorts sur soi : testés en jeu
+    assert.ok(fait, base.id + ' : aucun lancer valide trouvé');
+  }
+});

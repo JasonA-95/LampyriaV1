@@ -18,8 +18,11 @@ function build(D,classe,niv,zone){const pts=niv-1,t={pv:0,neutre:0,res:0};let le
 const caps={pv:10,neutre:6,res:6};while(left>0&&(t.pv<10||t.neutre<6||t.res<6)){for(const k of ['pv','neutre','res']){if(left>0&&t[k]<caps[k]){t[k]++;left--}}}
 const g=gearAt(D,zone);const gear={pv:g.pv+5*t.pv,neutre:g.neutre+t.neutre,res:Math.min(40,g.res+2*t.res),pm:g.pm};
 // sorts : points de sort = niv-1 ; rang 2 = 1 pt, rang 3 = 2 pts de plus, on monte d'abord les sorts qui font le plus de dégâts
-const base=D.classes[classe].sorts.filter(s=>s.niv<=niv),rg={};let sp=niv-1;
-const rank=s=>(s.dmg||0)*(s.aoe!=null?1.6:1)/s.pa;const ord=[...base].sort((a,b)=>rank(b)-rank(a));
+const rank=s=>(s.dmg||0)*(s.aoe!=null?1.6:1)/s.pa;
+// Élément principal du robot : celui dont les sorts (avec les sorts Neutres) ont le meilleur score ; il y met ses points restants.
+let main='neutre',bs=-1;for(const e of Object.keys(D.elements)){if(e=='neutre')continue;const sc=D.classes[classe].sorts.filter(s=>s.niv<=niv&&(!s.elem||s.elem==e)).reduce((a,s)=>a+rank(s),0);if(sc>bs){bs=sc;main=e}}
+if(left>0)gear[main]=(gear[main]||0)+Math.min(left,D.regleElem.cap);
+const base=D.classes[classe].sorts.filter(s=>s.niv<=niv&&(!s.elem||s.elem==main)),rg={};let sp=niv-1;const ord=[...base].sort((a,b)=>rank(b)-rank(a));
 for(const s of ord){if(sp>=1){rg[s.id]=2;sp-=1}}for(const s of ord){if(rg[s.id]==2&&sp>=2){rg[s.id]=3;sp-=2}}
 let sorts=base.map(s=>applyRang(s,rg[s.id]||1));
 // barre de 6 : la lanterne contient la Gourmande (3 de capacité) ; on garde les 5 meilleurs sorts de classe
