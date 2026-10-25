@@ -186,3 +186,38 @@ test('les coups de mêlée et les sorts d\'un monstre élémentaire sont de son 
   const sans = degats({}), avec = degats({ rvent: 30 });
   assert.ok(sans > 0 && avec < sans, 'la résistance au Vent doit réduire les dégâts du loup (' + sans + ' -> ' + avec + ')');
 });
+
+// ---------- panoplies élémentaires (étape 5) ----------
+test('chaque élément a au moins une panoplie, et une panoplie élémentaire ne donne que son élément', () => {
+  const par = {};
+  for (const [k, el] of Object.entries(DC.setElem)) {
+    assert.ok(DC.sets[k] && DC.elements[el], 'panoplie ou élément inconnu : ' + k);
+    (par[el] = par[el] || []).push(k);
+    const autres = Object.keys(DC.elements).filter(e => e !== el);
+    const stats = [...Object.values(DC.objets).filter(o => o.set === k).map(o => o.st), ...Object.values(DC.sets[k].bonus)];
+    for (const st of stats) for (const e of autres) { assert.ok(!(e in st), k + ' : point de ' + e + ' interdit'); if (e !== 'neutre') assert.ok(!('r' + e in st), k + ' : résistance ' + e + ' interdite'); }
+  }
+  for (const e of Object.keys(DC.elements)) assert.ok((par[e] || []).length >= 1, 'aucune panoplie pour ' + e);
+});
+
+test('toute panoplie élémentaire (hors Neutre) a un point d\'élément, des résistances à son élément, et plus aucun point de Neutre', () => {
+  for (const [k, el] of Object.entries(DC.setElem)) {
+    if (el === 'neutre') continue;
+    const pieces = Object.values(DC.objets).filter(o => o.set === k);
+    assert.ok(pieces.some(o => o.st[el] > 0), k + ' : aucun point ' + el);
+    assert.ok(pieces.filter(o => o.slot !== 'arme').every(o => o.st['r' + el] > 0), k + ' : résistance manquante sur une pièce');
+    assert.ok(pieces.every(o => !('neutre' in o.st)) && Object.values(DC.sets[k].bonus).every(b => !('neutre' in b)), k + ' : reste du Neutre');
+  }
+});
+
+test('la panoplie de l\'orage est complète (arme, tête, corps, bottes, accessoire) et fabricable avec des ressources qui existent', () => {
+  const pieces = Object.values(DC.objets).filter(o => o.set === 'orage');
+  assert.deepEqual(pieces.map(o => o.slot).sort(), ['acc', 'arme', 'bottes', 'corps', 'tete']);
+  for (const o of pieces) { assert.ok(o.cout, o.n + ' non fabricable'); for (const r of Object.keys(o.cout)) assert.ok(r in DC.res, 'ressource inconnue : ' + r); }
+});
+
+test('toute stat d\'objet ou de panoplie est connue du moteur (pv, res, pm, éléments et résistances élémentaires)', () => {
+  const ok = new Set(['pv', 'res', 'pm', ...Object.keys(DC.elements), ...Object.keys(DC.elements).filter(e => e !== 'neutre').map(e => 'r' + e)]);
+  for (const o of Object.values(DC.objets)) for (const k of Object.keys(o.st || {})) assert.ok(ok.has(k), o.n + ' : stat inconnue ' + k);
+  for (const s of Object.values(DC.sets)) for (const b of Object.values(s.bonus)) for (const k of Object.keys(b)) assert.ok(ok.has(k), s.n + ' : stat inconnue ' + k);
+});

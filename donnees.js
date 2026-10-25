@@ -859,6 +859,23 @@ const P=(pool[b.biome]||[]).filter(p=>Math.abs(p.niv-b.niv)<=4).flatMap(p=>p.ms)
 const v=JSON.parse(JSON.stringify(b)),j=Math.floor(rnd()*v.m.length),o=v.m[j],c=JSON.parse(JSON.stringify(P[Math.floor(rnd()*P.length)]));c.x=o.x;c.y=o.y;v.m[j]=c;v.base=g.renc;R.push(v);g.renc=R.length-1}}
 })();
 
+// Panoplies élémentaires (étape 5) : une panoplie = un élément. Les objets des panoplies Dunes, Soleil couchant et Marais
+// passent de Neutre à l'élément de leur panoplie ; la panoplie de l'orage (Foudre) est nouvelle, au niveau du marais.
+// Chaque pièce non-arme donne aussi de la résistance à son élément (RES_PIECE, accessoires RES_ACC) et la panoplie complète un bonus.
+DATA.objets.lame_orage={n:'Lame d’orage',e:'🗡️',slot:'arme',r:1,st:{foudre:3},cout:{roseau:6,braise:3}};
+DATA.objets.heaume_paratonnerre={n:'Heaume paratonnerre',e:'🎓',slot:'tete',r:1,st:{pv:14},cout:{braise:5,roseau:3}};
+DATA.objets.tunique_orage={n:'Tunique d’orage',e:'👘',slot:'corps',r:1,st:{pv:14,res:6},cout:{roseau:8,braise:3}};
+DATA.objets.bottes_etincelle={n:'Bottes d’étincelle',e:'👢',slot:'bottes',r:1,st:{pv:8,res:3},cout:{roseau:5}};
+DATA.objets.bracelet_eclair={n:'Bracelet d’éclair',e:'📿',slot:'acc',r:1,st:{pv:6,foudre:1},cout:{braise:5,cendre:3}};
+DATA.sets.orage={n:'Panoplie de l’orage',bonus:{2:{pv:10},4:{foudre:1,res:4}}};
+['lame_orage','heaume_paratonnerre','tunique_orage','bottes_etincelle','bracelet_eclair'].forEach(id=>{DATA.objets[id].set='orage'});
+DATA.setElem={livreur:'neutre',dunes:'vent',soleil:'lumiere',marais:'tenebres',orage:'foudre'};
+{const RES_PIECE=3,RES_ACC=2,RES_SET=5;
+for(const k in DATA.setElem){const el=DATA.setElem[k];if(el=='neutre')continue;const S=DATA.sets[k],top=Math.max(...Object.keys(S.bonus).map(Number));
+for(const id in DATA.objets){const o=DATA.objets[id];if(o.set!=k)continue;if(o.st.neutre){o.st[el]=(o.st[el]||0)+o.st.neutre;delete o.st.neutre}if(o.slot!='arme')o.st['r'+el]=o.slot=='acc'?RES_ACC:RES_PIECE}
+for(const n in S.bonus){const b=S.bonus[n];if(b.neutre){b[el]=(b[el]||0)+b.neutre;delete b.neutre}}
+S.bonus[top]['r'+el]=RES_SET}}
+
 // Éléments des monstres (étape 5) : un monstre d'un élément résiste à cet élément (+R %) et craint celui qui le bat (−R %) ;
 // R = 25 (ordinaire) ou 20 (boss). Sans élément = Neutre : aucune résistance. Ses coups et sorts sont de son élément (sauf `elem` propre au sort).
 DATA.monstreElem={'La mouche à braise':'foudre','Le champignon bavard':'lumiere','Le mouton-fantôme':'vent','Le berger-fantôme':'lumiere','Chambellan Poussière':'tenebres',
