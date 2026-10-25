@@ -152,7 +152,7 @@ mk('Se déplacer',C.PM+' PM par tour',mode=='move'?'on':'',()=>{if(off)return;mo
 C.S.forEach((s,i)=>{const no=C.pa<s.pa||C.cd[i]>0,name=s.n+(s.rang>1?' ★'+s.rang:'');
 const b=mk(name,s.pa+' PA'+(C.cd[i]?' · recharge '+C.cd[i]:''),mode===i?'on':'',()=>{if(off)return;$('tip').textContent=descr(s);
 if(no){msg(C.cd[i]>0?'En recharge : encore '+C.cd[i]+' tour(s).':'Pas assez de PA pour ce sort.');return}mode=i;pend=s.r[1]==0?{x:C.hero.x,y:C.hero.y}:null;msg(pend?'Zone affichée. Touche ton personnage pour confirmer.':'Touche une case bleue pour voir la zone, puis touche-la encore pour confirmer.');ui();draw()},false);
-b.title=descr(s);if(no||off)b.classList.add('dim');
+b.classList.add('esp','e-'+(s.elem||'neutre'));b.title=descr(s);if(no||off)b.classList.add('dim');
 b.onpointerdown=()=>{clearTimeout(tt);tt=setTimeout(()=>$('tip').textContent=descr(s),400)};b.onpointerup=b.onpointerleave=()=>clearTimeout(tt)});
 F.appendChild(btn('⚙️ Options','','',()=>openMenu('options'),busy));F.appendChild(btn('Fin du tour','','pri',endTurn,off))}
 

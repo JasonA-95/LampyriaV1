@@ -25,6 +25,14 @@ button.dim{opacity:.5}
 .chips{display:inline-flex;gap:4px;flex-wrap:wrap}
 .chip{font-size:12px;padding:1px 8px;border-radius:99px;background:#00000040;border:1px solid var(--line);color:var(--ink);white-space:nowrap}
 .chip.ok{border-color:#3f7a4a;color:#a8e8b2}.chip.no{border-color:#7a3a3a;color:#ffb0a6}
+/* ----- éléments ----- */
+.e-neutre{--c:#b9b4c7}.e-vent{--c:#5fd6a4}.e-foudre{--c:#ffd84a}.e-tenebres{--c:#a06bff}.e-lumiere{--c:#ffe9a8}
+button.esp{border:1px solid color-mix(in srgb,var(--c) 45%,var(--line));border-left:4px solid var(--c);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 32%,transparent),var(--panel2) 75%)}
+#bar button.esp.on{background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 70%,#000));border-color:var(--c);color:#161020;box-shadow:0 0 12px color-mix(in srgb,var(--c) 55%,transparent)}
+#bar button.esp.on .mt{color:#2a2038}
+.row.esp.on{color:var(--ink);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 45%,transparent),var(--panel2) 85%);border-color:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 40%,transparent)}
+.row.esp.on .mt{color:var(--dim)}
+.chip.el{border-color:var(--c);color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
 /* ----- menu ----- */
 #menu{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:720px;margin:0 auto}
 #mhead{padding:10px 14px 6px;display:flex;flex-direction:column;gap:6px}
