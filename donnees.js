@@ -2,6 +2,15 @@
 // XP : chaque rencontre a un niveau (niv) et chaque quête un xpq:[niveau,'courte|normale|longue|lueur'] ; les valeurs sont calculées par xp.js.
 const DATA={
 taille:13,
+// Éléments (étape B1, sans effet en jeu pour l'instant). Cycle : Vent > Foudre > Ténèbres > Lumière > Vent
+// (« X > Y » : X est fort contre Y). `faiblesse` = l'élément qui bat celui-ci ; le Neutre n'en a pas.
+// Un sort ou un monstre sans champ `elem` est Neutre.
+elements:{
+neutre:{n:'Neutre',e:'⚪',faiblesse:null},
+vent:{n:'Vent',e:'🌪️',faiblesse:'lumiere'},
+foudre:{n:'Foudre',e:'⚡',faiblesse:'vent'},
+tenebres:{n:'Ténèbres',e:'🌑',faiblesse:'foudre'},
+lumiere:{n:'Lumière',e:'☀️',faiblesse:'tenebres'}},
 etats:{
 brule:{n:'Brûlure',e:'🔥',d:'Inflige des dégâts au début du tour.',couleur:'#ff9a45'},
 poison:{n:'Poison',e:'🧪',d:'Inflige des dégâts et réduit les soins reçus de moitié.',couleur:'#477d45'},
@@ -22,20 +31,20 @@ porte:{n:'Porte-Lanterne',e:'🏮',hp:70,info:'mêlée, résistant',sorts:[
 {id:'charge',n:'Charge',niv:3,pa:3,r:[2,4],los:1,dmg:12,charge:1,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'garde',n:'Garde de lanterne',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
 {id:'boutoir',n:'Coup de boutoir',niv:10,pa:3,r:[1,1],dmg:18,push:2,cd:2,rg:[{dmg:4},{cd:-1}]},
-{id:'ardente',n:'Lanterne ardente',niv:14,pa:5,r:[0,0],aoe:2,dmg:14,etats:[{id:'brule',v:3,t:3}],cd:3,rg:[{dmg:4},{cd:-1}]}]},
+{id:'ardente',elem:'lumiere',n:'Lanterne ardente',niv:14,pa:5,r:[0,0],aoe:2,dmg:14,etats:[{id:'brule',v:3,t:3}],cd:3,rg:[{dmg:4},{cd:-1}]}]},
 archer:{n:'Archer Farceur',e:'🏹',hp:45,info:'distance, fragile',sorts:[
 {id:'tir',n:'Tir précis',niv:1,pa:2,r:[2,6],los:1,dmg:11,rg:[{dmg:3},{dmg:3}]},
 {id:'tir2',n:'Tir double',niv:1,pa:4,r:[2,5],los:1,dmg:24,rg:[{dmg:4},{rmax:1}]},
 {id:'retrait',n:'Tir en retrait',niv:3,pa:2,r:[2,5],los:1,dmg:8,recul:1,etats:[{id:'poison',v:3,t:3}],cd:2,rg:[{dmg:3},{cd:-1}]},
-{id:'repoussant',n:'Tir repoussant',niv:6,pa:3,r:[2,5],los:1,dmg:10,push:2,cd:2,rg:[{dmg:3},{rmax:1}]},
+{id:'repoussant',elem:'vent',n:'Tir repoussant',niv:6,pa:3,r:[2,5],los:1,dmg:10,push:2,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'perforant',n:'Tir perforant',niv:10,pa:4,r:[3,7],los:1,dmg:30,cd:2,rg:[{dmg:4},{cd:-1}]},
 {id:'pluie',n:'Pluie de flèches',niv:14,pa:5,r:[3,6],aoe:2,dmg:14,cd:3,rg:[{dmg:4},{cd:-1}]}]},
 mage:{n:'Mage Distrait',e:'🧙',hp:38,info:'zone, peu de vie',sorts:[
-{id:'eclair',n:'Éclair',niv:1,pa:2,r:[2,6],los:1,dmg:9,rg:[{dmg:3},{dmg:3}]},
+{id:'eclair',elem:'foudre',n:'Éclair',niv:1,pa:2,r:[2,6],los:1,dmg:9,rg:[{dmg:3},{dmg:3}]},
 {id:'cendres',n:'Cendres',niv:1,pa:4,r:[2,5],dmg:12,aoe:1,rg:[{dmg:3},{pa:-1}]},
 {id:'flaque',n:'Flaque enflammée',niv:3,pa:3,r:[2,5],aoe:1,dmg:15,etats:[{id:'brule',v:3,t:3}],cd:2,rg:[{dmg:3},{cd:-1}]},
 {id:'fumee',n:'Bouclier de fumée',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
-{id:'rafale',n:'Rafale',niv:10,pa:3,r:[1,4],los:1,dmg:10,push:3,cd:2,rg:[{dmg:3},{rmax:1}]},
+{id:'rafale',elem:'vent',n:'Rafale',niv:10,pa:3,r:[1,4],los:1,dmg:10,push:3,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'tempete',n:'Tempête de cendres',niv:14,pa:6,r:[2,5],aoe:2,dmg:26,etats:[{id:'etourdi',t:1}],cd:4,rg:[{dmg:5},{cd:-1}]}]}},
 lueurs:{
 colerique:{n:'Colérique',t:5,sort:{n:'Accès de rage',pa:1,r:[0,0],rage:1,cd:3,say:'rage'}},
