@@ -11,13 +11,12 @@ for(let i=0;i<rank-1;i++){const b=(sort.rg||[])[i]||{};if(b.dmg)s.dmg=(s.dmg||0)
 // équipement typique : meilleurs objets déjà obtenus à l'étape i (zone vaincue)
 const ZONES=[['tisonnier','chaussons','echarpe'],['chapeau','amulette','clochette','capuche','manteau','gilet','epee_braise'],['bague','sceptre','cape','casquette','veste_liv','bottes_liv'],['plume','bottes_cha','lanterne_cha'],['lame_roseau','capuchon_cendre','tunique_roseau','sandales_roseau','bracelet_cendre','voile_brume','perle_marais','bottes_vase'],['lance_libellule','manteau_brume'],['baguette_duchesse','couronne_cendre','robe_duchesse','eventail_cendre'],['turban_sable','tunique_fil','sandales_dunes','bracelet_chaussette','amulette_grain'],[],[],['pancarte_general','casque_negociateur']];
 function gearAt(D,zone){const have=new Set();for(let z=0;z<=Math.min(zone,ZONES.length-1);z++)ZONES[z].forEach(i=>have.add(i));
-const sc=o=>(o.st.pv||0)+5*(o.st.dmg||0)*2+2*(o.st.res||0)+(o.st.pm||0)*20,by={arme:[],tete:[],corps:[],bottes:[],acc:[]};
+const sc=o=>(o.st.pv||0)+5*(o.st.neutre||0)*2+2*(o.st.res||0)+(o.st.pm||0)*20,by={arme:[],tete:[],corps:[],bottes:[],acc:[]};
 for(const id of have){const o=D.objets[id];if(o)by[o.slot].push(o)}
-const t={pv:0,dmg:0,res:0,pm:0};for(const s in by){by[s].sort((a,b)=>sc(b)-sc(a));for(const o of by[s].slice(0,s=='acc'?2:1))for(const k in o.st)t[k]+=o.st[k]}return t}
-function build(D,classe,niv,zone){const pts=niv-1,t={pv:0,dmg:0,res:0};let left=pts;
-for(const [k,max] of [['pv',10],['dmg',6],['res',6]]){}
-const order=['pv','dmg','res','pv','dmg','res'];const caps={pv:10,dmg:6,res:6};while(left>0&&(t.pv<10||t.dmg<6||t.res<6)){for(const k of ['pv','dmg','res']){if(left>0&&t[k]<caps[k]){t[k]++;left--}}}
-const g=gearAt(D,zone);const gear={pv:g.pv+5*t.pv,dmg:g.dmg+t.dmg,res:Math.min(40,g.res+2*t.res),pm:g.pm};
+const t={pv:0,neutre:0,res:0,pm:0};for(const s in by){by[s].sort((a,b)=>sc(b)-sc(a));for(const o of by[s].slice(0,s=='acc'?2:1))for(const k in o.st)t[k]+=o.st[k]}return t}
+function build(D,classe,niv,zone){const pts=niv-1,t={pv:0,neutre:0,res:0};let left=pts;
+const caps={pv:10,neutre:6,res:6};while(left>0&&(t.pv<10||t.neutre<6||t.res<6)){for(const k of ['pv','neutre','res']){if(left>0&&t[k]<caps[k]){t[k]++;left--}}}
+const g=gearAt(D,zone);const gear={pv:g.pv+5*t.pv,neutre:g.neutre+t.neutre,res:Math.min(40,g.res+2*t.res),pm:g.pm};
 // sorts : points de sort = niv-1 ; rang 2 = 1 pt, rang 3 = 2 pts de plus, on monte d'abord les sorts qui font le plus de dégâts
 const base=D.classes[classe].sorts.filter(s=>s.niv<=niv),rg={};let sp=niv-1;
 const rank=s=>(s.dmg||0)*(s.aoe!=null?1.6:1)/s.pa;const ord=[...base].sort((a,b)=>rank(b)-rank(a));
@@ -29,11 +28,11 @@ return{gear,sorts,lueurs}}
 function rand(seed){let s=seed>>>0;return()=>{s=(s+0x6d2b79f5)>>>0;let n=s;n=Math.imul(n^(n>>>15),n|1);n^=n+Math.imul(n^(n>>>7),n|61);return((n^(n>>>14))>>>0)/4294967296}}
 function foeScale(m,kh,kd){m.hp=m.max=Math.max(1,Math.round(m.max*kh));m.d=Math.round(m.d*kd);if(m.sort){m.sort=JSON.parse(JSON.stringify(m.sort));if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}if(m.mort){m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)}}}
 // un combat complet joué par le robot ; renvoie {win,hpLoss,turns}
-function fight(ctx,classe,niv,renc,kh,kd,opts={}){if(!ctx.DATA0)ctx.DATA0=ctx.DATA;const S0=ctx.DATA0,D=JSON.parse(JSON.stringify({classes:S0.classes,lueurs:S0.lueurs,rencontres:S0.rencontres,rochers:S0.rochers,heros:S0.heros,taille:S0.taille,objets:S0.objets,etats:S0.etats}));D.cells=S0.cells;D.in=S0.in;
+function fight(ctx,classe,niv,renc,kh,kd,opts={}){if(!ctx.DATA0)ctx.DATA0=ctx.DATA;const S0=ctx.DATA0,D=JSON.parse(JSON.stringify({classes:S0.classes,lueurs:S0.lueurs,rencontres:S0.rencontres,rochers:S0.rochers,heros:S0.heros,taille:S0.taille,objets:S0.objets,etats:S0.etats,elements:S0.elements,regleElem:S0.regleElem}));D.cells=S0.cells;D.in=S0.in;
 D.rencontres[renc].m.forEach(m=>{if(!m.form)foeScale(m,kh,kd)});
 const b=build(D,classe,niv,opts.zone??renc),cfg={classe,renc,niv,gear:b.gear,sorts:b.sorts,lueurs:b.lueurs};
 ctx.DATA=D;const C=new ctx.Combat(D,cfg);
-const dmgOf=(s)=>((s.dmg||0)+C.bonus);
+const dmgOf=(s)=>((s.dmg||0)+C.bonus)*C.spellMult(s);
 let guard=0;
 while(!C.result&&C.turn<=40&&guard++<4000){
  let acted=true,iter=0;

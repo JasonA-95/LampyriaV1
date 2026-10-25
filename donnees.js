@@ -11,6 +11,9 @@ vent:{n:'Vent',e:'🌪️',faiblesse:'lumiere'},
 foudre:{n:'Foudre',e:'⚡',faiblesse:'vent'},
 tenebres:{n:'Ténèbres',e:'🌑',faiblesse:'foudre'},
 lumiere:{n:'Lumière',e:'☀️',faiblesse:'tenebres'}},
+// Règle des éléments (valeurs provisoires, à caler avec le simulateur) : 1 point dans un élément = +pct % de dégâts
+// sur les sorts de cet élément ; cap = maximum de points de talent par élément. Résistance d'un monstre (`rs`) bornée à resMax %.
+regleElem:{pct:2.5,cap:20,resMax:80},
 etats:{
 brule:{n:'Brûlure',e:'🔥',d:'Inflige des dégâts au début du tour.',couleur:'#ff9a45'},
 poison:{n:'Poison',e:'🧪',d:'Inflige des dégâts et réduit les soins reçus de moitié.',couleur:'#477d45'},
@@ -31,20 +34,20 @@ porte:{n:'Porte-Lanterne',e:'🏮',hp:70,info:'mêlée, résistant',sorts:[
 {id:'charge',n:'Charge',niv:3,pa:3,r:[2,4],los:1,dmg:12,charge:1,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'garde',n:'Garde de lanterne',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
 {id:'boutoir',n:'Coup de boutoir',niv:10,pa:3,r:[1,1],dmg:18,push:2,cd:2,rg:[{dmg:4},{cd:-1}]},
-{id:'ardente',elem:'lumiere',n:'Lanterne ardente',niv:14,pa:5,r:[0,0],aoe:2,dmg:14,etats:[{id:'brule',v:3,t:3}],cd:3,rg:[{dmg:4},{cd:-1}]}]},
+{id:'ardente',n:'Lanterne ardente',niv:14,pa:5,r:[0,0],aoe:2,dmg:14,etats:[{id:'brule',v:3,t:3}],cd:3,rg:[{dmg:4},{cd:-1}]}]},
 archer:{n:'Archer Farceur',e:'🏹',hp:45,info:'distance, fragile',sorts:[
 {id:'tir',n:'Tir précis',niv:1,pa:2,r:[2,6],los:1,dmg:11,rg:[{dmg:3},{dmg:3}]},
 {id:'tir2',n:'Tir double',niv:1,pa:4,r:[2,5],los:1,dmg:24,rg:[{dmg:4},{rmax:1}]},
 {id:'retrait',n:'Tir en retrait',niv:3,pa:2,r:[2,5],los:1,dmg:8,recul:1,etats:[{id:'poison',v:3,t:3}],cd:2,rg:[{dmg:3},{cd:-1}]},
-{id:'repoussant',elem:'vent',n:'Tir repoussant',niv:6,pa:3,r:[2,5],los:1,dmg:10,push:2,cd:2,rg:[{dmg:3},{rmax:1}]},
+{id:'repoussant',n:'Tir repoussant',niv:6,pa:3,r:[2,5],los:1,dmg:10,push:2,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'perforant',n:'Tir perforant',niv:10,pa:4,r:[3,7],los:1,dmg:30,cd:2,rg:[{dmg:4},{cd:-1}]},
 {id:'pluie',n:'Pluie de flèches',niv:14,pa:5,r:[3,6],aoe:2,dmg:14,cd:3,rg:[{dmg:4},{cd:-1}]}]},
 mage:{n:'Mage Distrait',e:'🧙',hp:38,info:'zone, peu de vie',sorts:[
-{id:'eclair',elem:'foudre',n:'Éclair',niv:1,pa:2,r:[2,6],los:1,dmg:9,rg:[{dmg:3},{dmg:3}]},
+{id:'eclair',n:'Éclair',niv:1,pa:2,r:[2,6],los:1,dmg:9,rg:[{dmg:3},{dmg:3}]},
 {id:'cendres',n:'Cendres',niv:1,pa:4,r:[2,5],dmg:12,aoe:1,rg:[{dmg:3},{pa:-1}]},
 {id:'flaque',n:'Flaque enflammée',niv:3,pa:3,r:[2,5],aoe:1,dmg:15,etats:[{id:'brule',v:3,t:3}],cd:2,rg:[{dmg:3},{cd:-1}]},
 {id:'fumee',n:'Bouclier de fumée',niv:6,pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1}]},
-{id:'rafale',elem:'vent',n:'Rafale',niv:10,pa:3,r:[1,4],los:1,dmg:10,push:3,cd:2,rg:[{dmg:3},{rmax:1}]},
+{id:'rafale',n:'Rafale',niv:10,pa:3,r:[1,4],los:1,dmg:10,push:3,cd:2,rg:[{dmg:3},{rmax:1}]},
 {id:'tempete',n:'Tempête de cendres',niv:14,pa:6,r:[2,5],aoe:2,dmg:26,etats:[{id:'etourdi',t:1}],cd:4,rg:[{dmg:5},{cd:-1}]}]}},
 lueurs:{
 colerique:{n:'Colérique',t:5,sort:{n:'Accès de rage',pa:1,r:[0,0],rage:1,cd:3,say:'rage'}},
@@ -115,10 +118,10 @@ q3:{n:"La Lueur qui s'enfuit",desc:'Trouve les 3 cachettes (🌿) de la Peureuse
 
 // ÉQUIPEMENT : slots arme / tête / corps / bottes / 2 accessoires. st = bonus (pv, dmg, res en %, pm). cout = recette d'atelier.
 DATA.objets={
-tisonnier:{n:'Tisonnier',e:'🔥',slot:'arme',r:0,st:{dmg:1},cout:{braise:4}},
-epee_braise:{n:'Épée de braise',e:'⚔️',slot:'arme',r:1,st:{dmg:2},cout:{braise:8,laine:2}},
-sceptre:{n:'Sceptre-champignon',e:'🍄',slot:'arme',r:2,st:{dmg:3}},
-plume:{n:'Plume du Chambellan',e:'🪶',slot:'arme',r:3,st:{dmg:4}},
+tisonnier:{n:'Tisonnier',e:'🔥',slot:'arme',r:0,st:{neutre:1},cout:{braise:4}},
+epee_braise:{n:'Épée de braise',e:'⚔️',slot:'arme',r:1,st:{neutre:2},cout:{braise:8,laine:2}},
+sceptre:{n:'Sceptre-champignon',e:'🍄',slot:'arme',r:2,st:{neutre:3}},
+plume:{n:'Plume du Chambellan',e:'🪶',slot:'arme',r:3,st:{neutre:4}},
 chapeau:{n:'Chapeau-champi',e:'🍄',slot:'tete',r:0,st:{pv:6},cout:{champi:3}},
 capuche:{n:'Capuche luminescente',e:'🧙',slot:'tete',r:1,st:{pv:10},cout:{champi:6,laine:2}},
 casquette:{n:'Casquette du livreur',e:'🧢',slot:'tete',r:1,st:{pv:6},set:'livreur',cout:{champi:4,laine:3,braise:2}},
@@ -131,10 +134,10 @@ bottes_liv:{n:'Bottes du livreur',e:'👢',slot:'bottes',r:1,st:{pv:6},set:'livr
 bottes_cha:{n:'Bottes du Chambellan',e:'🥾',slot:'bottes',r:3,st:{pv:8,pm:1}},
 amulette:{n:'Amulette de champi',e:'📿',slot:'acc',r:0,st:{pv:8},cout:{champi:5}},
 echarpe:{n:'Écharpe de laine',e:'🧣',slot:'acc',r:0,st:{res:5},cout:{laine:5}},
-bague:{n:'Bague de braise',e:'💍',slot:'acc',r:1,st:{dmg:1},cout:{braise:5,champi:2}},
-clochette:{n:'Clochette du berger',e:'🔔',slot:'acc',r:2,st:{pv:8,dmg:1}},
-lanterne_cha:{n:'Lanterne du Chambellan',e:'🏮',slot:'acc',r:3,st:{pv:10,dmg:1,res:5}}};
-DATA.sets={livreur:{n:'Panoplie du livreur',bonus:{2:{pv:10},3:{dmg:1,res:5}}}};
+bague:{n:'Bague de braise',e:'💍',slot:'acc',r:1,st:{neutre:1},cout:{braise:5,champi:2}},
+clochette:{n:'Clochette du berger',e:'🔔',slot:'acc',r:2,st:{pv:8,neutre:1}},
+lanterne_cha:{n:'Lanterne du Chambellan',e:'🏮',slot:'acc',r:3,st:{pv:10,neutre:1,res:5}}};
+DATA.sets={livreur:{n:'Panoplie du livreur',bonus:{2:{pv:10},3:{neutre:1,res:5}}}};
 DATA.rencontres[0].drops=[{id:'chaussons',p:25},{id:'echarpe',p:15}];
 DATA.rencontres[1].drops=[{id:'chapeau',p:25},{id:'amulette',p:15},{id:'clochette',p:8}];
 DATA.rencontres[2].drops=[{id:'gilet',p:20},{id:'bague',p:10},{id:'sceptre',p:10},{id:'cape',p:8}];
@@ -176,20 +179,20 @@ fin:"Elle s'est assise, a regardé le banc, et a dit : « Bon. D'accord. » C'es
 DATA.quetes.q5={n:'Les rêves de la roselière',desc:'Trouve les 3 bulles de rêve (🌿) dans la roselière, puis offre un oreiller de roseaux (4 🌾) à la Rêveuse.',need:3,kind:'hide',req:5,cost:{roseau:4},
 say:"Dans la roselière, quelqu'un rêve si fort que les roseaux s'endorment. Cherche les bulles de rêve, et apporte de quoi faire un oreiller.",
 fin:"Elle s'est allongée sur l'oreiller en trois secondes. « Je rêvais justement de toi », dit-elle. Elle te suit.",rew:{xpq:[27,'lueur'],lueur:'reveuse'}};
-DATA.objets.lame_roseau={n:'Lame de roseau',e:'🗡️',slot:'arme',r:1,st:{dmg:3},cout:{roseau:6,cendre:3}};
+DATA.objets.lame_roseau={n:'Lame de roseau',e:'🗡️',slot:'arme',r:1,st:{neutre:3},cout:{roseau:6,cendre:3}};
 DATA.objets.capuchon_cendre={n:'Capuchon de cendre',e:'🎓',slot:'tete',r:1,st:{pv:14},cout:{cendre:5,roseau:3}};
 DATA.objets.tunique_roseau={n:'Tunique de roseau',e:'👘',slot:'corps',r:1,st:{pv:14,res:6},cout:{roseau:8,cendre:3}};
 DATA.objets.sandales_roseau={n:'Sandales de roseau',e:'🩴',slot:'bottes',r:1,st:{pv:8,res:3},cout:{roseau:5}};
-DATA.objets.bracelet_cendre={n:'Bracelet de cendre',e:'📿',slot:'acc',r:1,st:{pv:6,dmg:1},cout:{cendre:5,braise:3}};
+DATA.objets.bracelet_cendre={n:'Bracelet de cendre',e:'📿',slot:'acc',r:1,st:{pv:6,neutre:1},cout:{cendre:5,braise:3}};
 DATA.objets.voile_brume={n:'Voile de brume',e:'🌫️',slot:'tete',r:2,st:{pv:16,res:4}};
-DATA.objets.perle_marais={n:'Perle du marais',e:'🔮',slot:'acc',r:2,st:{dmg:1,res:5}};
-DATA.objets.lance_libellule={n:'Lance de libellule',e:'🔱',slot:'arme',r:2,st:{dmg:4}};
+DATA.objets.perle_marais={n:'Perle du marais',e:'🔮',slot:'acc',r:2,st:{neutre:1,res:5}};
+DATA.objets.lance_libellule={n:'Lance de libellule',e:'🔱',slot:'arme',r:2,st:{neutre:4}};
 DATA.objets.manteau_brume={n:'Manteau de brume',e:'🧥',slot:'corps',r:2,st:{pv:20,res:8}};
 DATA.objets.bottes_vase={n:'Bottes de vase',e:'🥾',slot:'bottes',r:2,st:{pv:10,res:5}};
-DATA.objets.baguette_duchesse={n:'Baguette de la Duchesse',e:'🪄',slot:'arme',r:3,st:{dmg:5}};
+DATA.objets.baguette_duchesse={n:'Baguette de la Duchesse',e:'🪄',slot:'arme',r:3,st:{neutre:5}};
 DATA.objets.couronne_cendre={n:'Couronne de cendre',e:'👑',slot:'tete',r:3,st:{pv:16,res:6}};
 DATA.objets.robe_duchesse={n:'Robe de la Duchesse',e:'👗',slot:'corps',r:3,st:{pv:18,res:8}};
-DATA.objets.eventail_cendre={n:'Éventail de cendre',e:'🪭',slot:'acc',r:3,st:{pv:8,dmg:1,res:6}};
+DATA.objets.eventail_cendre={n:'Éventail de cendre',e:'🪭',slot:'acc',r:3,st:{pv:8,neutre:1,res:6}};
 DATA.rencontres[4].drops=[{id:'voile_brume',p:25},{id:'perle_marais',p:12},{id:'bottes_vase',p:15}];
 DATA.rencontres[5].drops=[{id:'lance_libellule',p:12},{id:'manteau_brume',p:14}];
 DATA.rencontres[6].drops=[{id:'baguette_duchesse',p:35},{id:'couronne_cendre',p:35},{id:'robe_duchesse',p:35},{id:'eventail_cendre',p:35}];
@@ -251,11 +254,11 @@ DATA.rencontres.push(
 DATA.objets.turban_sable={n:'Turban de sable',e:'🧕',slot:'tete',r:1,st:{pv:20},set:'dunes',cout:{sable:6,fil:3}};
 DATA.objets.tunique_fil={n:'Tunique de fil',e:'👘',slot:'corps',r:1,st:{pv:20,res:6},set:'dunes',cout:{fil:8,sable:4,chaussette:2}};
 DATA.objets.sandales_dunes={n:'Sandales des dunes',e:'🩴',slot:'bottes',r:1,st:{pv:12,res:4},set:'dunes',cout:{sable:5,chaussette:3}};
-DATA.objets.bracelet_chaussette={n:'Bracelet de chaussette',e:'🧦',slot:'acc',r:1,st:{pv:10,dmg:1},set:'dunes',cout:{chaussette:5,fil:3}};
+DATA.objets.bracelet_chaussette={n:'Bracelet de chaussette',e:'🧦',slot:'acc',r:1,st:{pv:10,neutre:1},set:'dunes',cout:{chaussette:5,fil:3}};
 DATA.objets.amulette_grain={n:'Amulette de grain',e:'📿',slot:'acc',r:1,st:{res:6},set:'dunes',cout:{sable:6,chaussette:3}};
-DATA.objets.pancarte_general={n:'Pancarte du Général',e:'🪧',slot:'arme',r:3,st:{dmg:6}};
+DATA.objets.pancarte_general={n:'Pancarte du Général',e:'🪧',slot:'arme',r:3,st:{neutre:6}};
 DATA.objets.casque_negociateur={n:'Casque du Négociateur',e:'🪖',slot:'tete',r:3,st:{pv:22,res:6}};
-DATA.sets.dunes={n:'Panoplie des dunes',bonus:{2:{pv:12},4:{dmg:1,res:5}}};
+DATA.sets.dunes={n:'Panoplie des dunes',bonus:{2:{pv:12},4:{neutre:1,res:5}}};
 DATA.rencontres[10].drops=[{id:'pancarte_general',p:100}];
 DATA.cartes.serre.exits.push({x:12,y:6,to:'dunes',tx:1,ty:6});
 DATA.cartes.dunes={n:'Dunes des Chaussettes Perdues',biome:'desert',need:7,start:[1,6],tint:'rgba(220,170,90,.14)',
@@ -324,11 +327,11 @@ DATA.rencontres.push(
 DATA.objets.diademe_eclat={n:'Diadème d’éclats',e:'👑',slot:'tete',r:2,st:{pv:26},set:'soleil',cout:{eclat:6,gravat:3}};
 DATA.objets.cuirasse_aube={n:'Cuirasse d’aube',e:'🥋',slot:'corps',r:2,st:{pv:26,res:8},set:'soleil',cout:{eclat:8,gravat:4}};
 DATA.objets.bottes_crepuscule={n:'Bottes du crépuscule',e:'🥾',slot:'bottes',r:2,st:{pv:16,res:5},set:'soleil',cout:{eclat:5,gravat:3}};
-DATA.objets.anneau_eclat={n:'Anneau d’éclat',e:'💍',slot:'acc',r:2,st:{pv:12,dmg:2},set:'soleil',cout:{eclat:5,gravat:2}};
+DATA.objets.anneau_eclat={n:'Anneau d’éclat',e:'💍',slot:'acc',r:2,st:{pv:12,neutre:2},set:'soleil',cout:{eclat:5,gravat:2}};
 DATA.objets.medaille_gardien={n:'Médaille du Gardien',e:'🏅',slot:'acc',r:2,st:{res:8},set:'soleil',cout:{eclat:6,gravat:3}};
-DATA.objets.lame_eclipse={n:'Lame d’éclipse',e:'🗡️',slot:'arme',r:3,st:{dmg:8}};
+DATA.objets.lame_eclipse={n:'Lame d’éclipse',e:'🗡️',slot:'arme',r:3,st:{neutre:8}};
 DATA.objets.couronne_eteinte={n:'Couronne éteinte',e:'👑',slot:'tete',r:3,st:{pv:30,res:8}};
-DATA.sets.soleil={n:'Panoplie du soleil couchant',bonus:{2:{pv:14},4:{dmg:2,res:6}}};
+DATA.sets.soleil={n:'Panoplie du soleil couchant',bonus:{2:{pv:14},4:{neutre:2,res:6}}};
 DATA.rencontres[13].drops=[{id:'lame_eclipse',p:100}];
 DATA.rencontres[17].drops=[{id:'couronne_eteinte',p:100}];
 DATA.cartes.camp.exits.push({x:12,y:6,to:'chemin',tx:1,ty:6});
@@ -379,31 +382,31 @@ e2:{n:'Parvis en deuil',desc:'Repousse 2 groupes de monstres éplorés sur le Pa
 e3:{n:'Médailles de la Garde',desc:'Retrouve 3 médailles de la Garde royale dans la Cour de la Citadelle.',need:3,kind:'pick',req:14,donneur:'Capitaine fantôme',say:'Mes gardes ont perdu leurs médailles dans la cour. Trois. Sans elles, ils ne se souviennent plus d’être des gardes.',fin:'Les voilà ! Ils vont se souvenir. Ils vont être très fâchés.',rew:{xpq:[53,'longue'],res:{eclat:4,gravat:4}}}});
 
 // ============ ÉQUIPEMENT DES ACTES 2 ET 3 : nouveaux objets, panoplies et butins ============
-DATA.sets.marais={n:'Panoplie des marais',bonus:{2:{pv:10},4:{dmg:1,res:4}}};
+DATA.sets.marais={n:'Panoplie des marais',bonus:{2:{pv:10},4:{neutre:1,res:4}}};
 ['lame_roseau','capuchon_cendre','tunique_roseau','sandales_roseau','bracelet_cendre'].forEach(id=>{if(DATA.objets[id])DATA.objets[id].set='marais'});
 Object.assign(DATA.objets,{
-baton_sable:{n:'Bâton de sable',e:'🪄',slot:'arme',r:1,st:{dmg:3},set:'dunes',cout:{sable:6,fil:3}},
-cimeterre_dunes:{n:'Cimeterre des dunes',e:'🗡️',slot:'arme',r:2,st:{dmg:5}},
-amulette_mirage:{n:'Amulette du mirage',e:'🔮',slot:'acc',r:2,st:{pv:14,dmg:1}},
+baton_sable:{n:'Bâton de sable',e:'🪄',slot:'arme',r:1,st:{neutre:3},set:'dunes',cout:{sable:6,fil:3}},
+cimeterre_dunes:{n:'Cimeterre des dunes',e:'🗡️',slot:'arme',r:2,st:{neutre:5}},
+amulette_mirage:{n:'Amulette du mirage',e:'🔮',slot:'acc',r:2,st:{pv:14,neutre:1}},
 cape_marchand:{n:'Cape du marchand',e:'🧣',slot:'corps',r:2,st:{pv:24,res:6}},
 bottes_chameau:{n:'Bottes de chameau',e:'🥾',slot:'bottes',r:2,st:{pv:12,pm:1}},
 casque_piquet:{n:'Casque de piquet',e:'⛑️',slot:'tete',r:2,st:{pv:24,res:4}},
-brassard_greviste:{n:'Brassard de gréviste',e:'🎗️',slot:'acc',r:2,st:{dmg:2,res:4}},
-etendard_greve:{n:'Étendard de grève',e:'🚩',slot:'acc',r:3,st:{pv:20,dmg:2,res:6}},
-lame_aube:{n:'Lame d’aube',e:'⚔️',slot:'arme',r:2,st:{dmg:6},set:'soleil',cout:{eclat:8,gravat:5}},
-baton_pelerin:{n:'Bâton de pèlerin',e:'🦯',slot:'arme',r:2,st:{dmg:6}},
+brassard_greviste:{n:'Brassard de gréviste',e:'🎗️',slot:'acc',r:2,st:{neutre:2,res:4}},
+etendard_greve:{n:'Étendard de grève',e:'🚩',slot:'acc',r:3,st:{pv:20,neutre:2,res:6}},
+lame_aube:{n:'Lame d’aube',e:'⚔️',slot:'arme',r:2,st:{neutre:6},set:'soleil',cout:{eclat:8,gravat:5}},
+baton_pelerin:{n:'Bâton de pèlerin',e:'🦯',slot:'arme',r:2,st:{neutre:6}},
 sandales_pelerin:{n:'Sandales de pèlerin',e:'🩴',slot:'bottes',r:2,st:{pv:20,res:6}},
-collier_parvis:{n:'Collier du parvis',e:'📿',slot:'acc',r:2,st:{pv:18,dmg:1}},
+collier_parvis:{n:'Collier du parvis',e:'📿',slot:'acc',r:2,st:{pv:18,neutre:1}},
 tunique_pretre:{n:'Tunique de prêtre',e:'🥻',slot:'corps',r:2,st:{pv:28,res:8}},
 manteau_ombre:{n:'Manteau d’ombre',e:'🧥',slot:'corps',r:3,st:{pv:34,res:10}},
 bottes_eclipse:{n:'Bottes d’éclipse',e:'👢',slot:'bottes',r:3,st:{pv:22,res:6,pm:1}},
-epee_garde:{n:'Épée de la Garde',e:'🗡️',slot:'arme',r:2,st:{dmg:7}},
+epee_garde:{n:'Épée de la Garde',e:'🗡️',slot:'arme',r:2,st:{neutre:7}},
 heaume_garde:{n:'Heaume de la Garde',e:'🪖',slot:'tete',r:2,st:{pv:28,res:6}},
-tampon_chambellan:{n:'Tampon du Chambellan',e:'📎',slot:'acc',r:3,st:{dmg:3,res:8}},
-sceptre_cendres:{n:'Sceptre des cendres rallumées',e:'🪄',slot:'arme',r:3,st:{dmg:9}},
-masque_bouffon:{n:'Masque du Bouffon',e:'🎭',slot:'tete',r:3,st:{pv:30,dmg:2}},
-marotte_bouffon:{n:'Marotte du Bouffon',e:'🃏',slot:'arme',r:3,st:{dmg:10}},
-lanterne_gardien:{n:'Lanterne du Gardien',e:'🏮',slot:'acc',r:3,st:{pv:30,dmg:3,res:10}},
+tampon_chambellan:{n:'Tampon du Chambellan',e:'📎',slot:'acc',r:3,st:{neutre:3,res:8}},
+sceptre_cendres:{n:'Sceptre des cendres rallumées',e:'🪄',slot:'arme',r:3,st:{neutre:9}},
+masque_bouffon:{n:'Masque du Bouffon',e:'🎭',slot:'tete',r:3,st:{pv:30,neutre:2}},
+marotte_bouffon:{n:'Marotte du Bouffon',e:'🃏',slot:'arme',r:3,st:{neutre:10}},
+lanterne_gardien:{n:'Lanterne du Gardien',e:'🏮',slot:'acc',r:3,st:{pv:30,neutre:3,res:10}},
 armure_gardien:{n:'Armure du Gardien',e:'🛡️',slot:'corps',r:3,st:{pv:40,res:12}}});
 const DR=(i,l)=>{DATA.rencontres[i].drops=(DATA.rencontres[i].drops||[]).concat(l)};
 DR(7,[{id:'cimeterre_dunes',p:12},{id:'amulette_mirage',p:10}]);
@@ -428,10 +431,10 @@ DATA.rencontres.push(
 {n:'Mère Mycélium (boss)',biome:'foret',niv:12,say:'mere',loot:{champi:10,laine:5},m:[mer(11,7)]});
 DATA.repliques.mere=['Gourmande','Elle fait pousser des champignons à la chaîne ! Tue-la vite, avant qu’ils ne s’accumulent.'];
 Object.assign(DATA.objets,{
-bague_luciole:{n:'Bague de luciole',e:'💍',slot:'acc',r:1,st:{pv:6,dmg:1}},
+bague_luciole:{n:'Bague de luciole',e:'💍',slot:'acc',r:1,st:{pv:6,neutre:1}},
 bottes_sporees:{n:'Bottes sporées',e:'👢',slot:'bottes',r:1,st:{pv:8,res:3}},
 coiffe_mycelium:{n:'Coiffe de mycélium',e:'🍄',slot:'tete',r:2,st:{pv:16,res:3}},
-sceptre_mere:{n:'Sceptre de la Mère',e:'🪄',slot:'arme',r:2,st:{dmg:4}},
+sceptre_mere:{n:'Sceptre de la Mère',e:'🪄',slot:'arme',r:2,st:{neutre:4}},
 manteau_mycelium:{n:'Manteau de mycélium',e:'🧥',slot:'corps',r:2,st:{pv:16,res:4}}});
 DR(18,[{id:'bague_luciole',p:15}]);DR(19,[{id:'bottes_sporees',p:20}]);DR(21,[{id:'coiffe_mycelium',p:25}]);DR(22,[{id:'sceptre_mere',p:100},{id:'manteau_mycelium',p:40}]);
 DATA.cartes.foret.exits.push({x:6,y:0,to:'sentier',tx:6,ty:11});
@@ -504,7 +507,7 @@ Object.assign(DATA.objets,{
 clochette_brume:{n:'Clochette de brume',e:'🔔',slot:'acc',r:1,st:{pv:8,res:3}},
 guetres_berger:{n:'Guêtres de berger',e:'🥾',slot:'bottes',r:1,st:{pv:10,res:3}},
 bonnet_brume:{n:'Bonnet de brume',e:'🧢',slot:'tete',r:2,st:{pv:18,res:4}},
-houlette_recenseur:{n:'Houlette du Recenseur',e:'🪝',slot:'arme',r:2,st:{dmg:4}},
+houlette_recenseur:{n:'Houlette du Recenseur',e:'🪝',slot:'arme',r:2,st:{neutre:4}},
 pelisse_bouc:{n:'Pelisse du Bouc',e:'🧥',slot:'corps',r:2,st:{pv:20,res:6}}});
 DR(B,[{id:'clochette_brume',p:15}]);DR(B+1,[{id:'guetres_berger',p:20}]);DR(B+3,[{id:'bonnet_brume',p:25}]);DR(B+4,[{id:'houlette_recenseur',p:100},{id:'pelisse_bouc',p:40}]);
 DATA.cartes.collines.exits.push({x:6,y:0,to:'paturage',tx:6,ty:11});
@@ -567,7 +570,7 @@ Object.assign(DATA.objets,{
 encrier_noir:{n:'Encrier noir',e:'🖋️',slot:'acc',r:1,st:{pv:10,res:3}},
 chaussons_feutres:{n:'Chaussons feutrés',e:'🥿',slot:'bottes',r:1,st:{pv:12,res:3}},
 visiere_clerc:{n:'Visière de clerc',e:'🧢',slot:'tete',r:2,st:{pv:20,res:4}},
-regle_greffier:{n:'Règle du Greffier',e:'📏',slot:'arme',r:2,st:{dmg:4,pv:6}},
+regle_greffier:{n:'Règle du Greffier',e:'📏',slot:'arme',r:2,st:{neutre:4,pv:6}},
 robe_greffier:{n:'Robe du Greffier',e:'🥻',slot:'corps',r:2,st:{pv:22,res:6}}});
 DR(B,[{id:'encrier_noir',p:15}]);DR(B+1,[{id:'chaussons_feutres',p:20}]);DR(B+3,[{id:'visiere_clerc',p:25}]);DR(B+4,[{id:'regle_greffier',p:100},{id:'robe_greffier',p:40}]);
 DATA.cartes.manoir.exits.push({x:6,y:0,to:'hall',tx:6,ty:11});
@@ -626,10 +629,10 @@ if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.d
 if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)}})});
 DATA.repliques.insomnie=['Peureuse','Elle s’endort et se réveille ! Quand elle dort, elle est protégée. Attends qu’elle ouvre les yeux : là, frappe fort !'];
 Object.assign(DATA.objets,{
-amulette_dormeur:{n:'Amulette du dormeur',e:'📿',slot:'acc',r:1,st:{pv:10,dmg:1}},
+amulette_dormeur:{n:'Amulette du dormeur',e:'📿',slot:'acc',r:1,st:{pv:10,neutre:1}},
 pantoufles_reve:{n:'Pantoufles de rêve',e:'🥿',slot:'bottes',r:1,st:{pv:14,res:4}},
 bonnet_nuit:{n:'Bonnet de nuit',e:'🧢',slot:'tete',r:2,st:{pv:22,res:4}},
-plume_insomnie:{n:'Plume de l’Insomnie',e:'🪶',slot:'arme',r:2,st:{dmg:4,pv:8}},
+plume_insomnie:{n:'Plume de l’Insomnie',e:'🪶',slot:'arme',r:2,st:{neutre:4,pv:8}},
 robe_nuit:{n:'Robe de nuit',e:'👘',slot:'corps',r:2,st:{pv:24,res:7}}});
 DR(B,[{id:'amulette_dormeur',p:15}]);DR(B+1,[{id:'pantoufles_reve',p:20}]);DR(B+3,[{id:'bonnet_nuit',p:25}]);DR(B+4,[{id:'plume_insomnie',p:100},{id:'robe_nuit',p:40}]);
 DATA.cartes.marais.exits.push({x:6,y:0,to:'gue',tx:6,ty:11});
@@ -690,10 +693,10 @@ if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)};
 if(m.renfort){const rm=m.renfort.m,sm=Math.round(rm.max*k);m.renfort={...m.renfort,m:{...rm,hp:sm,max:sm,d:Math.round(rm.d*kd),...(rm.mort?{mort:{...rm.mort,dmg:Math.round(rm.mort.dmg*kd)}}:{})}}}})});
 DATA.repliques.sphinx=['Gourmande','Il appelle des chaussettes sales qui explosent ! Frappe-les de loin, ou fais-les éclater loin de toi.'];
 Object.assign(DATA.objets,{
-scarabee_dore:{n:'Scarabée doré',e:'🪲',slot:'acc',r:1,st:{pv:12,dmg:1}},
+scarabee_dore:{n:'Scarabée doré',e:'🪲',slot:'acc',r:1,st:{pv:12,neutre:1}},
 sandales_momie:{n:'Sandales de momie',e:'🩴',slot:'bottes',r:1,st:{pv:14,res:4}},
 coiffe_pharaon:{n:'Coiffe de pharaon',e:'👑',slot:'tete',r:2,st:{pv:26,res:5}},
-sceptre_sphinx:{n:'Sceptre du Sphinx',e:'🪄',slot:'arme',r:2,st:{dmg:5}},
+sceptre_sphinx:{n:'Sceptre du Sphinx',e:'🪄',slot:'arme',r:2,st:{neutre:5}},
 bandelettes_sable:{n:'Bandelettes de sable',e:'🥋',slot:'corps',r:2,st:{pv:28,res:8}}});
 DR(B,[{id:'scarabee_dore',p:15}]);DR(B+1,[{id:'sandales_momie',p:20}]);DR(B+3,[{id:'coiffe_pharaon',p:25}]);DR(B+4,[{id:'sceptre_sphinx',p:100},{id:'bandelettes_sable',p:40}]);
 DATA.cartes.dunes.exits.push({x:6,y:0,to:'mirage',tx:6,ty:11});
@@ -753,10 +756,10 @@ if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)};
 if(m.renfort){const rm=m.renfort.m,sm=Math.round(rm.max*k);m.renfort={...m.renfort,m:{...rm,hp:sm,max:sm,sortCd:0,d:Math.round(rm.d*kd),...(rm.sort?{sort:{...rm.sort,dmg:Math.round(rm.sort.dmg*kd)}}:{})}}}})});
 DATA.repliques.echo=['Gourmande','Il rappelle sa garde toutes les trois tours ! Abats les renforts vite, ou frappe-le avant qu’ils arrivent.'];
 Object.assign(DATA.objets,{
-cierge_poche:{n:'Cierge de poche',e:'🕯️',slot:'acc',r:1,st:{pv:14,dmg:1}},
+cierge_poche:{n:'Cierge de poche',e:'🕯️',slot:'acc',r:1,st:{pv:14,neutre:1}},
 sandales_cloitre:{n:'Sandales du cloître',e:'🩴',slot:'bottes',r:1,st:{pv:18,res:5}},
 capuche_veilleur:{n:'Capuche de veilleur',e:'🧕',slot:'tete',r:2,st:{pv:30,res:5}},
-veilleuse:{n:'Veilleuse du Gardien',e:'🏮',slot:'arme',r:2,st:{dmg:6}},
+veilleuse:{n:'Veilleuse du Gardien',e:'🏮',slot:'arme',r:2,st:{neutre:6}},
 habit_penitent:{n:'Habit de pénitent',e:'🥻',slot:'corps',r:2,st:{pv:32,res:9}}});
 DR(B,[{id:'cierge_poche',p:15}]);DR(B+1,[{id:'sandales_cloitre',p:20}]);DR(B+3,[{id:'capuche_veilleur',p:25}]);DR(B+4,[{id:'veilleuse',p:100},{id:'habit_penitent',p:40}]);
 DATA.cartes.parvis.exits.push({x:6,y:0,to:'cloitre',tx:6,ty:11});

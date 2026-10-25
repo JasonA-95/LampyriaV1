@@ -8,7 +8,7 @@ const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem(slotKey(SLOT));savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
 const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,dmg:0,res:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{},hist:{vus:[],flags:{}}};
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,res:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{},hist:{vus:[],flags:{}}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
 function normaliseStoryHistory(save,existed,hadHistory){if(!save.hist||typeof save.hist!='object'||Array.isArray(save.hist))save.hist={vus:[],flags:{}};
 if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save.hist.vus.filter(id=>typeof id=='string'))];
@@ -26,7 +26,10 @@ sv.sp.seen=[...new Set(sv.sp.seen.filter(id=>ALL_SORT_IDS.has(id)))];
 for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg[id]!='number')delete sv.sp.rg[id];else sv.sp.rg[id]=Math.max(1,Math.min(3,Math.floor(sv.sp.rg[id])))}
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 if(typeof DJ!='undefined')DJ.norm();
-for(const k of ['pv','dmg','res'])if(typeof sv.tal[k]!='number')sv.tal[k]=0;
+if(!sv.tal||typeof sv.tal!='object'||Array.isArray(sv.tal))sv.tal={};
+// Migration : l'ancien talent « Force » (dmg) devient l'élément Neutre.
+if(Number.isFinite(sv.tal.dmg)){sv.tal.neutre=(Number.isFinite(sv.tal.neutre)?sv.tal.neutre:0)+sv.tal.dmg}delete sv.tal.dmg;
+for(const k of ['pv','res','neutre','vent','foudre','tenebres','lumiere'])if(!Number.isFinite(sv.tal[k])||sv.tal[k]<0)sv.tal[k]=0;
 // Nettoyage défensif (code importé ou sauvegarde abîmée) : nombres finis et identifiants connus uniquement, sans quoi l'interface plante ou affiche du texte injecté.
 const knownId=(table,id)=>typeof id=='string'&&Object.prototype.hasOwnProperty.call(table,id);
 for(const k of ['niv','xp','cap','renc','pity'])if(!Number.isFinite(sv[k]))sv[k]=SV0[k];
@@ -101,14 +104,15 @@ if(s.swap)a.push('échange ta place avec la cible');if(s.cd)a.push('recharge '+s
 const descr=s=>s.n+' : '+descrBody(s);
 
 // ---------- talents : 1 point par niveau gagné ----------
-const TAL=[['pv','Vitalité','+5 PV par point',5,10,'❤️'],['dmg','Force','+1 dégât par point',1,6,'💪'],['res','Endurance','+2 % de résistance par point',2,6,'🛡️']];
+const EL_IDS=Object.keys(DATA.elements),RE=DATA.regleElem;
+const TAL=[['pv','Vitalité','+5 PV par point',5,10,'❤️'],['res','Endurance','+2 % de résistance par point',2,6,'🛡️']].concat(EL_IDS.map(k=>[k,DATA.elements[k].n,'+'+RE.pct+' % de dégâts des sorts '+DATA.elements[k].n+' par point',1,RE.cap,DATA.elements[k].e]));
 const talSpent=()=>TAL.reduce((a,t)=>a+(sv.tal[t[0]]||0),0),talLeft=()=>Math.max(0,sv.niv-1-talSpent());
 // ---------- équipement ----------
 const RAR=['Commun','Rare','Épique','Légendaire'],RC=['#c9c2d6','#6fb7ff','#c58bff','#ffb454'];
 const SLOTS=[['arme','Arme','⚔️'],['tete','Tête','🎩'],['corps','Corps','🧥'],['bottes','Bottes','👢'],['acc1','Accessoire 1','💍'],['acc2','Accessoire 2','💍']];
 const slotType=s=>s.startsWith('acc')?'acc':s;
-const fmtSt=st=>Object.keys(st).map(k=>'+'+st[k]+(k=='pv'?' PV':k=='dmg'?' dégâts':k=='res'?' % rés.':' PM')).join(' · ');
-function gear(){const t={pv:0,dmg:0,res:0,pm:0},cnt={};
+const fmtSt=st=>Object.keys(st).map(k=>'+'+st[k]+(k=='pv'?' PV':DATA.elements[k]?' '+DATA.elements[k].n:k=='res'?' % rés.':' PM')).join(' · ');
+function gear(){const t={pv:0,res:0,pm:0},cnt={};for(const k of EL_IDS)t[k]=0;
 for(const [s] of SLOTS){const id=sv.eq[s];if(!id||!sv.inv.includes(id))continue;const o=DATA.objets[id];for(const k in o.st)t[k]+=o.st[k];if(o.set)cnt[o.set]=(cnt[o.set]||0)+1}
 for(const k in cnt){const b=DATA.sets[k].bonus;for(const n in b)if(cnt[k]>=+n)for(const s in b[n])t[s]+=b[n][s]}
 for(const [k,,,v] of TAL)t[k]+=v*(sv.tal[k]||0);

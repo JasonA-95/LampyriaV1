@@ -2,10 +2,10 @@
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
 const DF0=()=>(typeof XP!='undefined'&&XP.diff)||{};   // réglages de difficulté (voir XP.diff dans xp.js)
 class Combat{
-constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,dmg:0,res:0,pm:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.in=D.in;this.cells=D.cells;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
+constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,res:0,pm:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.in=D.in;this.cells=D.cells;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
 this.S=[...(cfg.sorts||c.sorts),...cfg.lueurs.map(id=>D.lueurs[id].sort)];
 this.hero={x:D.heros.x,y:D.heros.y,hp:c.hp+8*(cfg.niv-1)+G.pv,max:c.hp+8*(cfg.niv-1)+G.pv,e:c.e,rage:false,mur:0,garde:0,etats:[]};
-const DF=DF0();this.foes=D.rencontres[cfg.renc].m.map(m=>{const f={...m,sortCd:0,etats:[]};if(!f.form){const big=!!f.boss,kh=big?DF.bossHp||1:DF.hp||1,kd=big?DF.bossD||1:DF.d||1;f.hp=Math.round(f.hp*kh);f.max=Math.round(f.max*kh);f.d=Math.round(f.d*kd)}return f});this.bonus=cfg.niv-1+G.dmg;this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
+const DF=DF0();this.foes=D.rencontres[cfg.renc].m.map(m=>{const f={...m,sortCd:0,etats:[]};if(!f.form){const big=!!f.boss,kh=big?DF.bossHp||1:DF.hp||1,kd=big?DF.bossD||1:DF.d||1;f.hp=Math.round(f.hp*kh);f.max=Math.round(f.max*kh);f.d=Math.round(f.d*kd)}return f});this.bonus=cfg.niv-1;this.RE=D.regleElem;this.elem={neutre:G.neutre,vent:G.vent,foudre:G.foudre,tenebres:G.tenebres,lumiere:G.lumiere};this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
 this.ash=new Set(this.foes.filter(f=>f.cendre).map(f=>f.x+','+f.y));this.turn=1;this.cd=this.S.map(()=>0);this.result=null;this.noMove=0;this.malus=0;this.vuln=0;this.warn=new Set()}
 addEtat(u,e){if(!u||u.form||!e||!DATA.etats[e.id]||(e.id=='etourdi'&&u.boss))return false;
 u.etats=u.etats||[];const old=u.etats.find(x=>x.id==e.id);if(old){old.t=Math.max(old.t,e.t||0);if(e.v!=null)old.v=Math.max(old.v||0,e.v)}else u.etats.push({id:e.id,t:e.t||0,...(e.v==null?{}:{v:e.v})});return true}
@@ -31,6 +31,9 @@ nuit(f){const a=f.cycle.a,b=f.cycle.b;return (this.turn-1)%(a+b)<a}
 escorted(f){return this.foes.some(g=>g!==f&&!g.boss&&!g.form&&g.hp>0&&this.dist(g,f)<=f.escorte)}
 shield(f){if(!f.boss||f.hp<=0)return false;if(f.cendre)return this.ash.has(f.x+','+f.y);if(f.cycle)return this.nuit(f);if(f.escorte)return this.escorted(f);return this.foes.some(g=>g.form&&g.hp>0)}
 weak(f){return !!f.boss&&(this.vuln>0||(f.cycle&&!this.nuit(f)))}
+// Éléments : un sort sans `elem` est Neutre. Chaque point dans l'élément ajoute RE.pct % ; la résistance du monstre `rs[élément]` (en %, négative = faiblesse) réduit le résultat.
+spellMult(s){const p=this.elem[s.elem||'neutre']||0;return p?1+p*this.RE.pct/100:1}
+resistK(f,el){const r=f.rs&&f.rs[el];return r?1-Math.max(-100,Math.min(this.RE.resMax,r))/100:1}
 bossInv(){return this.foes.some(f=>this.shield(f))}
 zone(i){const s=this.S[i],r=[];for(const [x,y] of this.cells){const m=this.dist(this.hero,{x,y});if(m>=s.r[0]&&m<=s.r[1]&&this.ok(x,y))r.push([x,y])}return r}
 ok(x,y){return this.in(x,y)&&!this.rocks.has(x+','+y)}
@@ -59,7 +62,7 @@ this.pa-=s.pa;this.cd[i]=s.cd||0;if(this.cd[i]>0)(this.fresh=this.fresh||new Set
 if(s.charge){const cells=DIRS.map(([dx,dy])=>({x:target.x+dx,y:target.y+dy})).filter(p=>this.free(p.x,p.y));cells.sort((a,b)=>this.dist(h,a)-this.dist(h,b));if(!cells.length)return{ok:false,tag:'cible'};h.x=cells[0].x;h.y=cells[0].y;r.charge=1}
 if(s.dmg){const m=h.rage?2:1;h.rage=false;
 const T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[this.at(x,y)];
-const dm=this.damageFrom(h,(s.dmg+this.bonus)*m),alive=new Set(T.filter(f=>f.hp>0));for(const f of T){if(sh.has(f)){r.blocked=1;this.applyEtats(f,(s.etats||[]).filter(e=>e.id=='etourdi'),r.events);continue}const hit=this.applyDamage(f,this.weak(f)?Math.round(dm*1.5):dm,false);f.sleep=false;r.hit.push(f);r.dmg+=hit.damage;if(hit.damage)r.effects.push({cible:f,texte:'-'+hit.damage,couleur:'#ff6b5e'});if(hit.absorbed)this.event(r.events,f,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
+const el=s.elem||'neutre',em=this.spellMult(s),dm=this.damageFrom(h,em===1?(s.dmg+this.bonus)*m:Math.round((s.dmg+this.bonus)*em*m)),alive=new Set(T.filter(f=>f.hp>0));for(const f of T){if(sh.has(f)){r.blocked=1;this.applyEtats(f,(s.etats||[]).filter(e=>e.id=='etourdi'),r.events);continue}const bd=this.weak(f)?Math.round(dm*1.5):dm,rk=this.resistK(f,el),hit=this.applyDamage(f,rk===1?bd:Math.max(1,Math.round(bd*rk)),false);f.sleep=false;r.hit.push(f);r.dmg+=hit.damage;if(hit.damage)r.effects.push({cible:f,texte:'-'+hit.damage,couleur:'#ff6b5e'});if(hit.absorbed)this.event(r.events,f,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
 for(const f of r.hit)if(f.hp>0)this.applyEtats(f,s.etats,r.events);for(const k of [...this.ash]){const [ax,ay]=k.split(',').map(Number);if(this.dist({x:ax,y:ay},{x,y})<=(s.aoe??0)){this.ash.delete(k);r.ashCleared=1}}if(r.ashCleared){const bc=this.foes.find(f=>f.cendre&&f.hp>0);if(bc&&!this.ash.has(bc.x+','+bc.y))this.vuln=2}
 for(const f of T)if(alive.has(f)&&f.hp<=0&&f.mort&&this.dist(f,h)<=f.mort.r){const hit=this.applyDamage(h,f.mort.dmg,false),amount=hit.damage;r.mortEvents=r.mortEvents||[];r.mortEvents.push({text:f.n+' explose : -'+amount+' PV.',dmg:amount});if(amount)r.effects.push({cible:h,texte:'-'+amount,couleur:'#e5564a'});if(hit.absorbed)this.event(r.events,h,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
 if(s.push)for(const f of T){if(f.boss||f.hp<=0)continue;const ax=f.x-h.x,ay=f.y-h.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay);

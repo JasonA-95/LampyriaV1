@@ -75,11 +75,11 @@ spellCard.appendChild(entry)}
 const hasRanks=Object.values(sv.sp.rg).some(rank=>rank>1);
 spellCard.appendChild(btn('Réinitialiser les sorts','Rend les points de rang dépensés.','ghost',()=>{sv.sp.rg={};store();renderMenu()},!hasRanks));B.appendChild(spellCard);}
 if(part!='sorts'){const G=gear().t,st=el('div','grid2');
-st.innerHTML=[[heroMax(),'PV'],['+'+(sv.niv-1+G.dmg),'Dégâts bonus'],[G.res+' %','Résistance'],[DATA.heros.pm+G.pm,'PM par tour']].map(([v,n])=>'<div class="stat"><b>'+v+'</b><span>'+n+'</span></div>').join('');
+st.innerHTML=[[heroMax(),'PV'],['+'+(sv.niv-1),'Dégâts de base'],[G.res+' %','Résistance'],[DATA.heros.pm+G.pm,'PM par tour']].concat(EL_IDS.filter(k=>G[k]>0).map(k=>['+'+Math.round(G[k]*RE.pct*10)/10+' %',DATA.elements[k].e+' '+DATA.elements[k].n+' ('+G[k]+' pts)'])).map(([v,n])=>'<div class="stat"><b>'+v+'</b><span>'+n+'</span></div>').join('');
 B.appendChild(card('Statistiques',st,combatLive?'Les changements d\'équipement s\'appliquent au prochain combat.':null));}
 if(part=='heros'){const tl=card('Talents','Points disponibles : <b style="color:var(--ember)">'+talLeft()+'</b> (1 par niveau gagné).');
 TAL.forEach(([k,n,d,v,max,ic])=>{const cur=sv.tal[k]||0,full=cur>=max;tl.appendChild(row('<span class="em">'+ic+'</span><span class="tx"><span class="nm">'+n+' '+cur+'/'+max+'</span><span class="mt">'+d+'</span></span><span class="chip '+(talLeft()>0&&!full?'ok':'')+'">'+(full?'max':'+1')+'</span>',()=>{if(full){toast('Déjà au maximum');return}if(talLeft()<1){toast('Aucun point disponible : monte de niveau');return}sv.tal[k]=cur+1;store();renderMenu()},talLeft()>0&&!full?'':'lock'))});
-if(talSpent())tl.appendChild(btn('Réinitialiser les talents','Récupère tous tes points, gratuit.','ghost',()=>{sv.tal={pv:0,dmg:0,res:0};store();renderMenu()}));
+if(talSpent())tl.appendChild(btn('Réinitialiser les talents','Récupère tous tes points, gratuit.','ghost',()=>{sv.tal=Object.fromEntries(TAL.map(t=>[t[0],0]));store();renderMenu()}));
 B.appendChild(tl);}
 if(part=='equip'){const eq=card('Équipement');
 SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,have=sv.inv.filter(i=>DATA.objets[i].slot==slotType(s)).length;

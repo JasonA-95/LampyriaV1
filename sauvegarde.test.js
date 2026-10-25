@@ -89,3 +89,20 @@ test('échec d’écriture dès le chargement : avertissement immédiat, une seu
   vm.runInContext('store()', context);
   assert.equal(toastEl.textContent, '');
 });
+
+test('migration : les points de l\'ancien talent Force (dmg) deviennent des points de Neutre, sans perte', () => {
+  const ctx = loadState(JSON.stringify({ niv: 12, xp: 0, res: {}, tal: { pv: 2, dmg: 3, res: 1 } }));
+  assert.equal(vm.runInContext('sv.tal.neutre', ctx), 3);
+  assert.equal(vm.runInContext("'dmg' in sv.tal", ctx), false);
+  assert.equal(vm.runInContext('talSpent()', ctx), 6);
+  assert.equal(vm.runInContext('talLeft()', ctx), 11 - 6);
+  assert.equal(vm.runInContext('gear().t.neutre', ctx), 3);
+});
+
+test('talents d\'éléments : valeurs falsifiées ramenées à 0 et points cumulés dans gear()', () => {
+  const ctx = loadState(JSON.stringify({ niv: 30, xp: 0, res: {}, tal: { vent: 4, foudre: '<img>', tenebres: -9, lumiere: 2 } }));
+  assert.equal(vm.runInContext('sv.tal.foudre', ctx), 0);
+  assert.equal(vm.runInContext('sv.tal.tenebres', ctx), 0);
+  assert.equal(vm.runInContext('gear().t.vent', ctx), 4);
+  assert.equal(vm.runInContext('gear().t.lumiere', ctx), 2);
+});
