@@ -83,7 +83,8 @@ if(talSpent())tl.appendChild(btn('Réinitialiser les talents','Récupère tous t
 B.appendChild(tl);}
 if(part=='equip')invPart(B);}
 // ---------- inventaire : emplacements du héros + sac par catégories, glisser-déposer ----------
-let invCat='equip',invSel=null;
+let invCat='equip',invSel=null,invFilt='tout';
+const INV_FILT=[['tout','Tout',''],['arme','Armes','⚔️'],['tete','Têtes','🎩'],['corps','Corps','🧥'],['bottes','Bottes','👢'],['acc','Acc.','💍']];
 const INV_CATS=[['equip','Équipements'],['conso','Consommables'],['res','Ressources'],['quete','Quête']],INV_AREA={acc1:'a',tete:'b',acc2:'c',arme:'d',corps:'e',bottes:'h'};
 function questItems(){const Q=sv.q||{},o=[];for(const id in Q){const q=DATA.quetes[id],s=Q[id];if(!q||s.s!=1||(q.kind!='pick'&&q.kind!='hide'))continue;o.push({e:q.kind=='hide'?'🌿':'🎒',n:q.n,m:(q.kind=='hide'?'Cachettes trouvées ':'Objets ramassés ')+Math.min(s.n||0,q.need)+'/'+q.need})}return o}
 function invDrag(node,id,from){const o=DATA.objets[id];let st=null,timer=null,D=null;
@@ -107,9 +108,10 @@ b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel=id?{id,slot:s}:{id:
 const tot=Object.fromEntries(Object.entries(gear().t).filter(([k,v])=>v));left.appendChild(el('p','mt','Total équipé : '+(Object.keys(tot).length?fmtSt(tot):'aucun bonus')));
 const gc=gear().cnt;for(const k in DATA.sets){const S=DATA.sets[k],n=gc[k]||0;if(!n)continue;const l=Object.keys(S.bonus).map(p=>'<span style="color:'+(n>=+p?'var(--ok)':'var(--dim)')+'">'+p+' pièces : '+fmtSt(S.bonus[p])+'</span>').join('<br>');left.appendChild(el('div','set','<b>'+S.n+' ('+n+'/'+Math.max(...Object.keys(S.bonus).map(Number))+')</b><br>'+l))}
 const cats=el('div','icats');INV_CATS.forEach(([k,n])=>cats.appendChild(btn(n,'',invCat==k?'on':'',()=>{invCat=k;renderMenu()})));right.appendChild(cats);
-if(invCat=='equip'){const own=sv.inv.filter(i=>DATA.objets[i]&&!eqIds.includes(i)).sort((a,b)=>SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[a].slot)-SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[b].slot)||DATA.objets[b].r-DATA.objets[a].r),g=el('div','igrid');
+if(invCat=='equip'){const ft=el('div','icats ifilt');INV_FILT.forEach(([k,n,ic])=>{const b=btn((ic?ic+' ':'')+n,'',invFilt==k?'on':'',()=>{invFilt=k;renderMenu()});b.setAttribute('aria-label',n);ft.appendChild(b)});right.appendChild(ft);
+const own=sv.inv.filter(i=>DATA.objets[i]&&!eqIds.includes(i)&&(invFilt=='tout'||DATA.objets[i].slot==invFilt)).sort((a,b)=>SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[a].slot)-SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[b].slot)||DATA.objets[b].r-DATA.objets[a].r),g=el('div','igrid');
 own.forEach(id=>{const o=DATA.objets[id],b=el('button','icell'+(sel&&sel.id==id&&!sel.slot?' sel':''),o.e);b.style.setProperty('--rc',RC[o.r]);b.title=o.n;b.setAttribute('aria-label',o.n);invDrag(b,id,null);b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel={id,slot:null};renderMenu()};g.appendChild(b)});
-right.appendChild(own.length?g:el('p','','Rien dans le sac. L\'atelier et les combats fournissent des objets.'));
+right.appendChild(own.length?g:el('p','',invFilt=='tout'?'Rien dans le sac. L\'atelier et les combats fournissent des objets.':'Aucun objet de ce type dans le sac.'));
 const d=el('div','idet');if(sel){d.innerHTML='<div class="row" style="pointer-events:none">'+itemRow(sel.id,sel.slot?'<span class="mt" style="color:var(--ok)">Équipé</span>':'')+'</div>';const o=DATA.objets[sel.id];
 if(sel.slot)d.appendChild(btn('Retirer','','',()=>{equip(sel.slot,null);invSel={id:sel.id,slot:null};renderMenu()}));
 else{const f=SLOTS.filter(s=>slotType(s[0])==o.slot).map(s=>s[0]),to=f.find(s=>!sv.eq[s])||f[0];d.appendChild(btn('Équiper','Ou glisse l\'objet sur un emplacement.','pri',()=>{equip(to,sel.id);invSel={id:sel.id,slot:to};renderMenu()}))}}
