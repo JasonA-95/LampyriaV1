@@ -14,9 +14,9 @@ function gearAt(D,zone){const have=new Set();for(let z=0;z<=Math.min(zone,ZONES.
 const sc=o=>(o.st.pv||0)+5*(['neutre','vent','foudre','tenebres','lumiere'].reduce((a,k)=>a+(o.st[k]||0),0))*2+2*(o.st.res||0)+(o.st.pm||0)*20,by={arme:[],tete:[],corps:[],bottes:[],acc:[]};
 for(const id of have){const o=D.objets[id];if(o)by[o.slot].push(o)}
 const t={pv:0,neutre:0,res:0,pm:0};for(const s in by){by[s].sort((a,b)=>sc(b)-sc(a));for(const o of by[s].slice(0,s=='acc'?2:1))for(const k in o.st)t[k]=(t[k]||0)+o.st[k]}return t}
-function build(D,classe,niv,zone){const pts=niv-1,t={pv:0,neutre:0,res:0};let left=pts;
-const caps={pv:10,neutre:6,res:6};while(left>0&&(t.pv<10||t.neutre<6||t.res<6)){for(const k of ['pv','neutre','res']){if(left>0&&t[k]<caps[k]){t[k]++;left--}}}
-const g=gearAt(D,zone);const gear={...g,pv:g.pv+5*t.pv,neutre:g.neutre+t.neutre,res:Math.min(40,g.res+2*t.res),pm:g.pm};
+function build(D,classe,niv,zone){const pts=niv-1,t={pv:0,neutre:0};let left=pts;
+const caps={pv:10,neutre:6};while(left>0&&(t.pv<10||t.neutre<6)){for(const k of ['pv','neutre']){if(left>0&&t[k]<caps[k]){t[k]++;left--}}}
+const g=gearAt(D,zone);const gear={...g,pv:g.pv+5*t.pv,neutre:g.neutre+t.neutre,res:Math.min(40,g.res),pm:g.pm};
 // sorts : points de sort = niv-1 ; rang 2 = 1 pt, rang 3 = 2 pts de plus, on monte d'abord les sorts qui font le plus de dégâts
 const rank=s=>(s.dmg||0)*(s.aoe!=null?1.6:1)/s.pa;
 // Élément principal du robot : celui dont les sorts (avec les sorts Neutres) ont le meilleur score ; il y met ses points restants.

@@ -94,8 +94,8 @@ test('migration : les points de l\'ancien talent Force (dmg) deviennent des poin
   const ctx = loadState(JSON.stringify({ niv: 12, xp: 0, res: {}, tal: { pv: 2, dmg: 3, res: 1 } }));
   assert.equal(vm.runInContext('sv.tal.neutre', ctx), 3);
   assert.equal(vm.runInContext("'dmg' in sv.tal", ctx), false);
-  assert.equal(vm.runInContext('talSpent()', ctx), 6);
-  assert.equal(vm.runInContext('talLeft()', ctx), 11 - 6);
+  assert.equal(vm.runInContext('talSpent()', ctx), 5);
+  assert.equal(vm.runInContext('talLeft()', ctx), 11 - 5);
   assert.equal(vm.runInContext('gear().t.neutre', ctx), 3);
 });
 
@@ -105,4 +105,13 @@ test('talents d\'éléments : valeurs falsifiées ramenées à 0 et points cumul
   assert.equal(vm.runInContext('sv.tal.tenebres', ctx), 0);
   assert.equal(vm.runInContext('gear().t.vent', ctx), 4);
   assert.equal(vm.runInContext('gear().t.lumiere', ctx), 2);
+});
+
+test('l\'ancien talent Endurance est supprimé : ses points sont rendus et la résistance ne vient plus que de l\'équipement', () => {
+  const ctx = loadState(JSON.stringify({ niv: 20, xp: 0, res: {}, tal: { pv: 4, res: 6 } }));
+  assert.equal(vm.runInContext("'res' in sv.tal", ctx), false);
+  assert.equal(vm.runInContext("TAL.some(t => t[0] === 'res')", ctx), false);
+  assert.equal(vm.runInContext('talSpent()', ctx), 4);
+  assert.equal(vm.runInContext('talLeft()', ctx), 19 - 4);
+  assert.equal(vm.runInContext('gear().t.res', ctx), 0);
 });

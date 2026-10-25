@@ -8,7 +8,7 @@ const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem(slotKey(SLOT));savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
 const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,res:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{},hist:{vus:[],flags:{}}};
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],q:{},hist:{vus:[],flags:{}}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
 function normaliseStoryHistory(save,existed,hadHistory){if(!save.hist||typeof save.hist!='object'||Array.isArray(save.hist))save.hist={vus:[],flags:{}};
 if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save.hist.vus.filter(id=>typeof id=='string'))];
@@ -29,7 +29,9 @@ if(typeof DJ!='undefined')DJ.norm();
 if(!sv.tal||typeof sv.tal!='object'||Array.isArray(sv.tal))sv.tal={};
 // Migration : l'ancien talent « Force » (dmg) devient l'élément Neutre.
 if(Number.isFinite(sv.tal.dmg)){sv.tal.neutre=(Number.isFinite(sv.tal.neutre)?sv.tal.neutre:0)+sv.tal.dmg}delete sv.tal.dmg;
-for(const k of ['pv','res','neutre','vent','foudre','tenebres','lumiere'])if(!Number.isFinite(sv.tal[k])||sv.tal[k]<0)sv.tal[k]=0;
+// L'ancien talent Endurance (res) n'existe plus : ses points sont rendus (talLeft les recompte). La résistance ne vient plus que de l'équipement.
+delete sv.tal.res;
+for(const k of ['pv','neutre','vent','foudre','tenebres','lumiere'])if(!Number.isFinite(sv.tal[k])||sv.tal[k]<0)sv.tal[k]=0;
 // Nettoyage défensif (code importé ou sauvegarde abîmée) : nombres finis et identifiants connus uniquement, sans quoi l'interface plante ou affiche du texte injecté.
 const knownId=(table,id)=>typeof id=='string'&&Object.prototype.hasOwnProperty.call(table,id);
 for(const k of ['niv','xp','cap','renc','pity'])if(!Number.isFinite(sv[k]))sv[k]=SV0[k];
@@ -105,7 +107,7 @@ const descr=s=>s.n+' : '+descrBody(s);
 
 // ---------- talents : 1 point par niveau gagné ----------
 const EL_IDS=Object.keys(DATA.elements),RE=DATA.regleElem;
-const TAL=[['pv','Vitalité','+5 PV par point',5,10,'❤️'],['res','Endurance','+2 % de résistance par point',2,6,'🛡️']].concat(EL_IDS.map(k=>[k,DATA.elements[k].n,'+'+RE.pct+' % de dégâts des sorts '+DATA.elements[k].n+' par point',1,RE.cap,DATA.elements[k].e]));
+const TAL=[['pv','Vitalité','+5 PV par point',5,10,'❤️']].concat(EL_IDS.map(k=>[k,DATA.elements[k].n,'+'+RE.pct+' % de dégâts des sorts '+DATA.elements[k].n+' par point',1,RE.cap,DATA.elements[k].e]));
 const talSpent=()=>TAL.reduce((a,t)=>a+(sv.tal[t[0]]||0),0),talLeft=()=>Math.max(0,sv.niv-1-talSpent());
 // ---------- équipement ----------
 const RAR=['Commun','Rare','Épique','Légendaire'],RC=['#c9c2d6','#6fb7ff','#c58bff','#ffb454'];
