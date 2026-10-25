@@ -167,7 +167,7 @@ if(ptr.size==1){view.x+=n[0]-o.p[0];view.y+=n[1]-o.p[1];o.moved+=Math.abs(n[0]-o
 else if(ptr.size==2){const q=[...ptr.entries()].find(([id])=>id!=ev.pointerId)[1].p,d0=Math.hypot(o.p[0]-q[0],o.p[1]-q[1]),d1=Math.hypot(n[0]-q[0],n[1]-q[1]);if(d0>0)zoomAt(d1/d0,(n[0]+q[0])/2,(n[1]+q[1])/2);o.moved+=9}
 o.p=n;if(reduce)draw(0)};
 cv2.onpointerup=cv2.onpointercancel=ev=>{const o=ptr.get(ev.pointerId);ptr.delete(ev.pointerId);cv2.style.cursor='grab';if(!o||o.moved>6||ev.type=='pointercancel')return;const[px,py]=pos(ev),wx=(px-view.x)/view.z,wy=(py-view.y)/view.z,k=ks.find(k=>{const c=P(k);return Math.abs(wx-c[0])<S/2&&Math.abs(wy-c[1])<S/2});if(k)say(k)};
-cv2.onwheel=ev=>{ev.preventDefault();const p=pos(ev);zoomAt(ev.deltaY<0?1.15:1/1.15,p[0],p[1])};
+['gesturestart','gesturechange','gestureend'].forEach(g=>cv2.addEventListener(g,e=>e.preventDefault()));cv2.onwheel=ev=>{ev.preventDefault();const p=pos(ev);zoomAt(ev.deltaY<0?1.15:1/1.15,p[0],p[1])};
 wr.append(cv2,zc);const box=el('div');box.style.flex='none';box.appendChild(wr);box.appendChild(info);box.appendChild(el('p','','🏠 village · 🕳️ donjon · 💀 boss · ❗ quête à prendre · 🎯 objectif de quête · 📍 toi. Touche une zone pour les détails ; glisse pour te déplacer, pince ou utilise + / − pour zoomer.'));say(EX.map);box.center=()=>{size();center();kick()};return box};
 
 
