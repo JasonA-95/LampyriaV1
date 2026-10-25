@@ -858,3 +858,13 @@ for(const k in C){const seen=new Set();for(const g of C[k].groups||[]){const b=R
 const P=(pool[b.biome]||[]).filter(p=>Math.abs(p.niv-b.niv)<=4).flatMap(p=>p.ms).filter(u=>!b.m.some(w=>w.n==u.n));if(!P.length)continue;
 const v=JSON.parse(JSON.stringify(b)),j=Math.floor(rnd()*v.m.length),o=v.m[j],c=JSON.parse(JSON.stringify(P[Math.floor(rnd()*P.length)]));c.x=o.x;c.y=o.y;v.m[j]=c;v.base=g.renc;R.push(v);g.renc=R.length-1}}
 })();
+
+// Éléments des monstres (étape 5) : un monstre d'un élément résiste à cet élément (+R %) et craint celui qui le bat (−R %) ;
+// R = 25 (ordinaire) ou 20 (boss). Sans élément = Neutre : aucune résistance. Ses coups et sorts sont de son élément (sauf `elem` propre au sort).
+DATA.monstreElem={'La mouche à braise':'foudre','Le champignon bavard':'lumiere','Le mouton-fantôme':'vent','Le berger-fantôme':'lumiere','Chambellan Poussière':'tenebres',
+'Le crapaud cendreux':'tenebres','Le grillon de cendre':'vent','La Duchesse des Cendres':'tenebres','Duchesse des Cendres':'tenebres','Scorpion de sable':'tenebres','Chaussette lanceuse':'vent',
+'Chameau-infirmier':'lumiere','Pèlerin éteint':'lumiere','Luciole terne':'foudre','Statue de soleil':'lumiere','Prêtre aveugle':'lumiere','Éclipse':'tenebres','Garde fantôme':'tenebres',
+'Bouffon Sans Rire':'foudre','Le Roi Éteint':'tenebres','Mère Mycélium':'lumiere','Le loup de brume':'vent','Le clerc fantôme':'tenebres','La plume vexée':'vent','Greffier Ratures':'tenebres',
+'Le papillon de nuit':'vent','Le chasseur de rêves':'tenebres','Baronne Insomnie':'tenebres','Le vautour affamé':'vent','Le cobra de sable':'foudre','Sphinx Dépareillé':'lumiere',
+'L’ombre errante':'tenebres','Le cierge vivant':'lumiere','Écho du Gardien':'lumiere'};
+DATA.rencontres.forEach(r=>r.m.forEach(m=>{const e=DATA.monstreElem[m.n];if(!e||m.form||m.elem)return;const R=m.boss?20:25;m.elem=e;m.rs={[e]:R,[DATA.elements[e].faiblesse]:-R}}));

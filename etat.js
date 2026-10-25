@@ -111,12 +111,12 @@ const talSpent=()=>TAL.reduce((a,t)=>a+(sv.tal[t[0]]||0),0),talLeft=()=>Math.max
 const RAR=['Commun','Rare','Épique','Légendaire'],RC=['#c9c2d6','#6fb7ff','#c58bff','#ffb454'];
 const SLOTS=[['arme','Arme','⚔️'],['tete','Tête','🎩'],['corps','Corps','🧥'],['bottes','Bottes','👢'],['acc1','Accessoire 1','💍'],['acc2','Accessoire 2','💍']];
 const slotType=s=>s.startsWith('acc')?'acc':s;
-const fmtSt=st=>Object.keys(st).map(k=>'+'+st[k]+(k=='pv'?' PV':DATA.elements[k]?' '+DATA.elements[k].n:k=='res'?' % rés.':' PM')).join(' · ');
-function gear(){const t={pv:0,res:0,pm:0},cnt={};for(const k of EL_IDS)t[k]=0;
+const fmtSt=st=>Object.keys(st).map(k=>'+'+st[k]+(k=='pv'?' PV':DATA.elements[k]?' '+DATA.elements[k].n:k[0]=='r'&&DATA.elements[k.slice(1)]?' % rés. '+DATA.elements[k.slice(1)].n:k=='res'?' % rés.':' PM')).join(' · ');
+function gear(){const t={pv:0,res:0,pm:0},cnt={};for(const k of EL_IDS){t[k]=0;if(k!='neutre')t['r'+k]=0}
 for(const [s] of SLOTS){const id=sv.eq[s];if(!id||!sv.inv.includes(id))continue;const o=DATA.objets[id];for(const k in o.st)t[k]+=o.st[k];if(o.set)cnt[o.set]=(cnt[o.set]||0)+1}
 for(const k in cnt){const b=DATA.sets[k].bonus;for(const n in b)if(cnt[k]>=+n)for(const s in b[n])t[s]+=b[n][s]}
 for(const [k,,,v] of TAL)t[k]+=v*(sv.tal[k]||0);
-t.res=Math.min(t.res,40);return{t,cnt}}
+t.res=Math.min(t.res,40);for(const k of EL_IDS)if(k!='neutre')t['r'+k]=Math.min(t['r'+k],40);return{t,cnt}}
 function equip(slot,id){if(id){for(const s in sv.eq)if(sv.eq[s]==id)delete sv.eq[s];sv.eq[slot]=id}else delete sv.eq[slot];store()}
 function autoEquip(id){const t=DATA.objets[id].slot,c=t=='acc'?['acc1','acc2']:[t],s=c.find(x=>!sv.eq[x]||!sv.inv.includes(sv.eq[x]));if(s){sv.eq[s]=id;return true}return false}
 // Butin : chaque objet a sa chance ; garantie anti-malchance (4 combats sans objet, 1 contre un boss).

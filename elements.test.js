@@ -126,3 +126,63 @@ test('chaque sort de dégâts de chaque classe se lance et blesse un monstre (po
     assert.ok(fait, base.id + ' : aucun lancer valide trouvé');
   }
 });
+
+// ---------- monstres élémentaires et résistances du héros (étape 5) ----------
+test('chaque monstre élémentaire résiste à son élément et craint celui qui le bat ; le Neutre n\'a aucune résistance', () => {
+  let vus = 0;
+  for (const r of DC.rencontres) for (const m of r.m) {
+    if (!m.elem) { assert.ok(!m.rs, 'monstre neutre avec résistances : ' + m.n); continue; }
+    vus++;
+    assert.ok(DC.elements[m.elem] && m.elem !== 'neutre', 'élément invalide : ' + m.n);
+    const R = m.boss ? 20 : 25, faible = DC.elements[m.elem].faiblesse;
+    assert.deepEqual(JSON.parse(JSON.stringify(m.rs)), { [m.elem]: R, [faible]: -R }, m.n);
+  }
+  assert.ok(vus > 100);
+});
+
+test('tout nom de la table des monstres existe dans une rencontre (pas de faute de frappe)', () => {
+  const noms = new Set(DC.rencontres.flatMap(r => r.m.map(m => m.n)));
+  for (const n of Object.keys(DC.monstreElem)) assert.ok(noms.has(n), 'monstre inconnu : ' + n);
+});
+
+test('un sort du même élément que le monstre fait moins de dégâts, celui de l\'élément qu\'il craint en fait plus', () => {
+  const loup = DC.rencontres.findIndex(r => r.m.some(m => m.n === 'Le loup de brume'));
+  const tire = elem => {
+    const g = new Combat(DC, { classe: 'porte', renc: loup, niv: 1, lueurs: [], gear: {} });
+    const f = g.foes.find(m => m.n === 'Le loup de brume'), h = g.hero;
+    g.foes.forEach(o => { if (o !== f) o.hp = 0 });
+    f.x = h.x + 1; f.y = h.y; f.hp = f.max = 5000;
+    if (elem) g.S[0].elem = elem; else delete g.S[0].elem;
+    const base = g.S[0].dmg + g.bonus; g.cast(0, f.x, f.y);
+    return { perdu: 5000 - f.hp, base };
+  };
+  const neutre = tire(null), vent = tire('vent'), lumiere = tire('lumiere'), foudre = tire('foudre');
+  assert.equal(neutre.perdu, neutre.base);
+  assert.equal(vent.perdu, Math.round(vent.base * 0.75));
+  assert.equal(lumiere.perdu, Math.round(lumiere.base * 1.25));
+  assert.equal(foudre.perdu, foudre.base);
+});
+
+test('la résistance élémentaire du héros réduit seulement les dégâts de cet élément, avec le plafond habituel de 60 %', () => {
+  const dégâts = (gear, el) => { const g = new Combat(DC, { classe: 'porte', renc: 0, niv: 1, lueurs: [], gear }); g.hero.hp = g.hero.max = 1000; return g.applyDamage(g.hero, 100, false, el).damage; };
+  assert.equal(dégâts({}, 'vent'), 100);
+  assert.equal(dégâts({ rvent: 20 }, 'vent'), 80);
+  assert.equal(dégâts({ rvent: 20 }, 'foudre'), 100);
+  assert.equal(dégâts({ rvent: 20 }, undefined), 100);
+  assert.equal(dégâts({ res: 10, rvent: 20 }, 'vent'), 70);
+  assert.equal(dégâts({ res: 40, rvent: 40 }, 'vent'), 40);
+});
+
+test('les coups de mêlée et les sorts d\'un monstre élémentaire sont de son élément (résistance du héros appliquée)', () => {
+  const loup = DC.rencontres.findIndex(r => r.m.some(m => m.n === 'Le loup de brume'));
+  const degats = gear => {
+    const g = new Combat(DC, { classe: 'porte', renc: loup, niv: 1, lueurs: [], gear });
+    const f = g.foes.find(m => m.n === 'Le loup de brume'), h = g.hero;
+    g.foes.forEach(o => { if (o !== f) o.hp = 0 });
+    f.x = h.x + 1; f.y = h.y; h.hp = h.max = 1000; g.noMove = 0;
+    g.foeTurn ? g.foeTurn(f) : g.foesPlay && g.foesPlay();
+    return 1000 - h.hp;
+  };
+  const sans = degats({}), avec = degats({ rvent: 30 });
+  assert.ok(sans > 0 && avec < sans, 'la résistance au Vent doit réduire les dégâts du loup (' + sans + ' -> ' + avec + ')');
+});
