@@ -871,9 +871,9 @@ DATA.sets.orage={n:'Panoplie de l’orage',bonus:{2:{pv:10},4:{foudre:1,res:4}}}
 ['lame_orage','heaume_paratonnerre','tunique_orage','bottes_etincelle','bracelet_eclair'].forEach(id=>{DATA.objets[id].set='orage'});
 DATA.setElem={livreur:'neutre',dunes:'vent',soleil:'lumiere',marais:'tenebres',orage:'foudre'};
 {const RES_PIECE=3,RES_ACC=2,RES_SET=5;
-for(const k in DATA.setElem){const el=DATA.setElem[k];if(el=='neutre')continue;const S=DATA.sets[k],top=Math.max(...Object.keys(S.bonus).map(Number));
-for(const id in DATA.objets){const o=DATA.objets[id];if(o.set!=k)continue;if(o.st.neutre){o.st[el]=(o.st[el]||0)+o.st.neutre;delete o.st.neutre}if(o.slot!='arme')o.st['r'+el]=o.slot=='acc'?RES_ACC:RES_PIECE}
-for(const n in S.bonus){const b=S.bonus[n];if(b.neutre){b[el]=(b[el]||0)+b.neutre;delete b.neutre}}
+for(const k in DATA.setElem){const el=DATA.setElem[k];const S=DATA.sets[k],top=Math.max(...Object.keys(S.bonus).map(Number));
+for(const id in DATA.objets){const o=DATA.objets[id];if(o.set!=k)continue;if(el!='neutre'&&o.st.neutre){o.st[el]=(o.st[el]||0)+o.st.neutre;delete o.st.neutre}if(o.slot!='arme')o.st['r'+el]=o.slot=='acc'?RES_ACC:RES_PIECE}
+for(const n in S.bonus){const b=S.bonus[n];if(el!='neutre'&&b.neutre){b[el]=(b[el]||0)+b.neutre;delete b.neutre}}
 S.bonus[top]['r'+el]=RES_SET}}
 
 // Éléments des monstres (étape 5) : un monstre d'un élément résiste à cet élément (+R %) et craint celui qui le bat (−R %) ;
@@ -884,4 +884,18 @@ DATA.monstreElem={'La mouche à braise':'foudre','Le champignon bavard':'lumiere
 'Bouffon Sans Rire':'foudre','Le Roi Éteint':'tenebres','Mère Mycélium':'lumiere','Le loup de brume':'vent','Le clerc fantôme':'tenebres','La plume vexée':'vent','Greffier Ratures':'tenebres',
 'Le papillon de nuit':'vent','Le chasseur de rêves':'tenebres','Baronne Insomnie':'tenebres','Le vautour affamé':'vent','Le cobra de sable':'foudre','Sphinx Dépareillé':'lumiere',
 'L’ombre errante':'tenebres','Le cierge vivant':'lumiere','Écho du Gardien':'lumiere'};
-DATA.rencontres.forEach(r=>r.m.forEach(m=>{const e=DATA.monstreElem[m.n];if(!e||m.form||m.elem)return;const R=m.boss?20:25;m.elem=e;m.rs={[e]:R,[DATA.elements[e].faiblesse]:-R}}));
+// Résistances en % (positif = résiste, négatif = vulnérable) : élément du monstre +R, celui qui le bat −R (R = 25, boss 20), et un profil secondaire
+// de ±10 sur les deux autres éléments (profils choisis pour que chaque élément soit, en moyenne sur toutes les rencontres, ni plus ni moins résisté) : 'A' = résiste à l'élément qu'il bat et craint l'opposé, 'B' = l'inverse. Un monstre Neutre reçoit ±15 (boss ±10)
+// sur deux éléments [résiste, craint]. Chaque profil est équilibré : la somme de ses résistances vaut 0, et rien n'est jamais en Neutre.
+DATA.monstreRs={'La mouche à braise':'A','Le champignon bavard':'B','Le mouton-fantôme':'B','Le berger-fantôme':'B','Chambellan Poussière':'B','Le crapaud cendreux':'B','Le grillon de cendre':'B',
+'Le sac de cendres':['lumiere','vent'],'La Duchesse des Cendres':'A','Duchesse des Cendres':'A','Squelette gréviste':['tenebres','lumiere'],'Scorpion de sable':'A','Chaussette lanceuse':'A','Chameau-infirmier':'B',
+'Chaussette sale':['vent','tenebres'],'Général Gréviste':['lumiere','foudre'],'Pèlerin éteint':'A','Luciole terne':'B','Statue de soleil':'B','Prêtre aveugle':'B','Éclipse':'A','Garde fantôme':'A',
+'Archer osseux':['foudre','vent'],'Chevalier brisé':['foudre','lumiere'],'Bouffon Sans Rire':'A','Le Roi Éteint':'A','Courtisan squelette':['tenebres','vent'],'Mère Mycélium':'A','Le loup de brume':'A',
+'La pelote enragée':['tenebres','lumiere'],'Bouc Recenseur':['tenebres','foudre'],'Le clerc fantôme':'A','La plume vexée':'A','Le classeur mordant':['lumiere','vent'],'Greffier Ratures':'A',
+'Le papillon de nuit':'A','Le chasseur de rêves':'A','L’oreiller hanté':['lumiere','vent'],'Baronne Insomnie':'A','Le vautour affamé':'A','Le cobra de sable':'A','La momie bandée':['tenebres','lumiere'],
+'Sphinx Dépareillé':'B','L’ombre errante':'A','Le cierge vivant':'B','Écho du Gardien':'B'};
+{const BAT={vent:'foudre',foudre:'tenebres',tenebres:'lumiere',lumiere:'vent'};
+DATA.rencontres.forEach(r=>r.m.forEach(m=>{if(m.form||m.elem||m.rs)return;const e=DATA.monstreElem[m.n],p=DATA.monstreRs[m.n],rs={};
+if(e){const R=m.boss?20:25,b=BAT[e],o=BAT[b];m.elem=e;rs[e]=R;rs[DATA.elements[e].faiblesse]=-R;rs[b]=p=='A'?10:-10;rs[o]=p=='A'?-10:10}
+else if(p){const v=m.boss?10:15;rs[p[0]]=v;rs[p[1]]=-v}
+if(Object.keys(rs).length)m.rs=rs}))}

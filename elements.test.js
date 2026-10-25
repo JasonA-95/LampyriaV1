@@ -128,16 +128,42 @@ test('chaque sort de dégâts de chaque classe se lance et blesse un monstre (po
 });
 
 // ---------- monstres élémentaires et résistances du héros (étape 5) ----------
-test('chaque monstre élémentaire résiste à son élément et craint celui qui le bat ; le Neutre n\'a aucune résistance', () => {
+test('chaque monstre élémentaire résiste à son élément (+R), craint celui qui le bat (−R), et a un profil secondaire de ±10 sur les deux autres', () => {
   let vus = 0;
   for (const r of DC.rencontres) for (const m of r.m) {
-    if (!m.elem) { assert.ok(!m.rs, 'monstre neutre avec résistances : ' + m.n); continue; }
+    if (!m.elem) continue;
     vus++;
     assert.ok(DC.elements[m.elem] && m.elem !== 'neutre', 'élément invalide : ' + m.n);
-    const R = m.boss ? 20 : 25, faible = DC.elements[m.elem].faiblesse;
-    assert.deepEqual(JSON.parse(JSON.stringify(m.rs)), { [m.elem]: R, [faible]: -R }, m.n);
+    const R = m.boss ? 20 : 25, faible = DC.elements[m.elem].faiblesse, rs = m.rs;
+    assert.equal(rs[m.elem], R, m.n); assert.equal(rs[faible], -R, m.n);
+    const autres = Object.keys(rs).filter(k => k !== m.elem && k !== faible);
+    assert.equal(autres.length, 2, m.n + ' : deux éléments secondaires attendus');
+    assert.deepEqual(autres.map(k => Math.abs(rs[k])), [10, 10], m.n);
   }
   assert.ok(vus > 100);
+});
+
+test('les profils de résistance sont équilibrés : somme nulle, jamais de résistance au Neutre, et chaque monstre a un point faible', () => {
+  let avec = 0;
+  for (const r of DC.rencontres) for (const m of r.m) {
+    if (!m.rs) { assert.ok(m.form, 'monstre sans profil : ' + m.n); continue; }
+    avec++;
+    const v = Object.values(m.rs);
+    assert.equal(v.reduce((a, b) => a + b, 0), 0, 'somme non nulle : ' + m.n);
+    assert.ok(!('neutre' in m.rs), 'résistance au Neutre interdite : ' + m.n);
+    assert.ok(v.some(x => x < 0) && v.some(x => x > 0), 'profil sans faiblesse ou sans résistance : ' + m.n);
+    assert.ok(v.every(x => Math.abs(x) <= 25), 'résistance trop forte : ' + m.n);
+  }
+  assert.ok(avec > 100);
+});
+
+test('le bestiaire est équilibré : la résistance moyenne rencontrée est nulle (±0,5 point) pour chaque élément, et aucun élément n\'est jamais ignoré', () => {
+  const somme = {}, faible = {}, resiste = {}; let n = 0;
+  for (const r of DC.rencontres) for (const m of r.m) { if (!m.rs) continue; n++; for (const [k, v] of Object.entries(m.rs)) { somme[k] = (somme[k] || 0) + v; (v < 0 ? faible : resiste)[k] = (v < 0 ? faible : resiste)[k] || 0; (v < 0 ? faible : resiste)[k]++; } }
+  for (const e of ['vent', 'foudre', 'tenebres', 'lumiere']) {
+    assert.ok(Math.abs(somme[e] / n) <= 0.5, e + ' : résistance moyenne ' + (somme[e] / n).toFixed(2));
+    assert.ok(faible[e] >= 0.2 * n && resiste[e] >= 0.2 * n, e + ' : trop rarement faible ou résisté');
+  }
 });
 
 test('tout nom de la table des monstres existe dans une rencontre (pas de faute de frappe)', () => {
@@ -156,11 +182,12 @@ test('un sort du même élément que le monstre fait moins de dégâts, celui de
     const base = g.S[0].dmg + g.bonus; g.cast(0, f.x, f.y);
     return { perdu: 5000 - f.hp, base };
   };
-  const neutre = tire(null), vent = tire('vent'), lumiere = tire('lumiere'), foudre = tire('foudre');
+  const loupM = DC.rencontres[loup].m.find(m => m.n === 'Le loup de brume');
+  const attendu = (el, x) => (loupM.rs[el] ? Math.max(1, Math.round(x.base * (1 - loupM.rs[el] / 100))) : x.base);
+  const neutre = tire(null);
   assert.equal(neutre.perdu, neutre.base);
-  assert.equal(vent.perdu, Math.round(vent.base * 0.75));
-  assert.equal(lumiere.perdu, Math.round(lumiere.base * 1.25));
-  assert.equal(foudre.perdu, foudre.base);
+  for (const el of ['vent', 'lumiere', 'foudre', 'tenebres']) { const x = tire(el); assert.equal(x.perdu, attendu(el, x), el); }
+  assert.ok(tire('vent').perdu < neutre.base && tire('lumiere').perdu > neutre.base);
 });
 
 test('la résistance élémentaire du héros réduit seulement les dégâts de cet élément, avec le plafond habituel de 60 %', () => {
@@ -195,15 +222,15 @@ test('chaque élément a au moins une panoplie, et une panoplie élémentaire ne
     (par[el] = par[el] || []).push(k);
     const autres = Object.keys(DC.elements).filter(e => e !== el);
     const stats = [...Object.values(DC.objets).filter(o => o.set === k).map(o => o.st), ...Object.values(DC.sets[k].bonus)];
-    for (const st of stats) for (const e of autres) { assert.ok(!(e in st), k + ' : point de ' + e + ' interdit'); if (e !== 'neutre') assert.ok(!('r' + e in st), k + ' : résistance ' + e + ' interdite'); }
+    for (const st of stats) for (const e of autres) { assert.ok(!(e in st), k + ' : point de ' + e + ' interdit'); assert.ok(!('r' + e in st), k + ' : résistance ' + e + ' interdite'); }
   }
   for (const e of Object.keys(DC.elements)) assert.ok((par[e] || []).length >= 1, 'aucune panoplie pour ' + e);
 });
 
-test('toute panoplie élémentaire (hors Neutre) a un point d\'élément, des résistances à son élément, et plus aucun point de Neutre', () => {
+test('toute panoplie a des résistances à son élément (Neutre compris) ; les élémentaires ont un point d\'élément et plus aucun point de Neutre', () => {
   for (const [k, el] of Object.entries(DC.setElem)) {
-    if (el === 'neutre') continue;
     const pieces = Object.values(DC.objets).filter(o => o.set === k);
+    if (el === 'neutre') { assert.ok(pieces.filter(o => o.slot !== 'arme').every(o => o.st.rneutre > 0), k + ' : résistance Neutre manquante'); continue; }
     assert.ok(pieces.some(o => o.st[el] > 0), k + ' : aucun point ' + el);
     assert.ok(pieces.filter(o => o.slot !== 'arme').every(o => o.st['r' + el] > 0), k + ' : résistance manquante sur une pièce');
     assert.ok(pieces.every(o => !('neutre' in o.st)) && Object.values(DC.sets[k].bonus).every(b => !('neutre' in b)), k + ' : reste du Neutre');
@@ -217,7 +244,16 @@ test('la panoplie de l\'orage est complète (arme, tête, corps, bottes, accesso
 });
 
 test('toute stat d\'objet ou de panoplie est connue du moteur (pv, res, pm, éléments et résistances élémentaires)', () => {
-  const ok = new Set(['pv', 'res', 'pm', ...Object.keys(DC.elements), ...Object.keys(DC.elements).filter(e => e !== 'neutre').map(e => 'r' + e)]);
+  const ok = new Set(['pv', 'res', 'pm', ...Object.keys(DC.elements), ...Object.keys(DC.elements).map(e => 'r' + e)]);
   for (const o of Object.values(DC.objets)) for (const k of Object.keys(o.st || {})) assert.ok(ok.has(k), o.n + ' : stat inconnue ' + k);
   for (const s of Object.values(DC.sets)) for (const b of Object.values(s.bonus)) for (const k of Object.keys(b)) assert.ok(ok.has(k), s.n + ' : stat inconnue ' + k);
+});
+
+test('le héros a 0 % de résistance de base à chaque élément (Neutre compris) et la résistance Neutre réduit les coups neutres', () => {
+  const g = new Combat(DC, { classe: 'porte', renc: 0, niv: 1, lueurs: [], gear: {} });
+  for (const e of Object.keys(DC.elements)) assert.equal(g.hres[e], 0, e);
+  const d = gear => { const c = new Combat(DC, { classe: 'porte', renc: 0, niv: 1, lueurs: [], gear }); c.hero.hp = c.hero.max = 1000; return c.applyDamage(c.hero, 100, false, 'neutre').damage; };
+  assert.equal(d({}), 100);
+  assert.equal(d({ rneutre: 25 }), 75);
+  assert.equal(d({ rvent: 25 }), 100);
 });
