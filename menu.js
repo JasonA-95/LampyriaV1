@@ -1,6 +1,6 @@
 // MENU : écran à onglets (Jouer, Héros, Lanterne, Atelier, Quêtes). Aucun dessin de grille ici.
 let tab='heros',resume=null,combatLive=false;
-const TABS=[['heros','Héros','🛡️'],['equip','Équip.','🎒'],['sorts','Sorts','✨'],['lanterne','Lanterne','🏮'],['atelier','Atelier','🔨'],['quetes','Quêtes','📜'],['carte','Carte','🗺️'],['options','Options','⚙️']];
+const TABS=[['heros','Héros','🛡️'],['equip','Inventaire','🎒'],['sorts','Sorts','✨'],['lanterne','Lanterne','🏮'],['atelier','Atelier','🔨'],['quetes','Quêtes','📜'],['carte','Carte','🗺️'],['options','Options','⚙️']];
 const craftables=()=>Object.keys(DATA.objets).filter(id=>DATA.objets[id].cout&&!sv.inv.includes(id));
 const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout));
 const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];return s&&s.s==1&&(s.n||0)>=DATA.quetes[id].need});
@@ -28,7 +28,7 @@ function hideMenu(){$('menu').classList.add('hide')}
 function showGame(){hideMenu();$('game').classList.remove('hide');size();if(EX.on)EX.draw();else if(C)draw()}
 function renderMenu(){const sc=$('mbody').scrollTop,need=XP.next(sv.niv);
 const cur=TABS.find(x=>x[0]==tab)||TABS[0],closeP=()=>{if(resume=='combat'&&combatLive)showGame();else EX.start()};
-$('mhead').innerHTML='<div class="top"><h1>'+cur[2]+' '+cur[1].replace('.','')+'</h1><span class="lv">'+(sv.hero&&sv.hero.nom?escHtml(sv.hero.nom)+' · ':'')+'Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+Object.keys(DATA.res).map(k=>'<span class="chip">'+rn(k)+' '+sv.res[k]+'</span>').join('')+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
+$('mhead').innerHTML='<div class="top"><h1>'+cur[2]+' '+cur[1].replace('.','')+'</h1><span class="lv">'+(sv.hero&&sv.hero.nom?escHtml(sv.hero.nom)+' · ':'')+'Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
 $('menu').onclick=e=>{if(e.target===$('menu'))closeP()};{const x=el('button','xbtn','✕');x.setAttribute('aria-label','Retour au jeu');x.onclick=closeP;$('mhead').querySelector('.top').appendChild(x)}
 const T=$('tabs');T.innerHTML='';TABS.forEach(([id,n,ic])=>{const b=el('button',id==tab?'sel':'','<span class="ic">'+ic+'</span><span class="nm">'+n+'</span>');
 if((id=='heros'&&talLeft()>0)||(id=='sorts'&&spLeft()>0)||(id=='atelier'&&canCraftAny())||(id=='quetes'&&questReady()))b.appendChild(el('span','dot'));b.onclick=()=>{tab=id;renderMenu();$('mbody').scrollTop=0};T.appendChild(b)});
@@ -74,24 +74,50 @@ if(unlocked){const upgrades=el('div','grid2');for(const next of [2,3]){const cos
 spellCard.appendChild(entry)}
 const hasRanks=Object.values(sv.sp.rg).some(rank=>rank>1);
 spellCard.appendChild(btn('Réinitialiser les sorts','Rend les points de rang dépensés.','ghost',()=>{sv.sp.rg={};store();renderMenu()},!hasRanks));B.appendChild(spellCard);}
-if(part!='sorts'){const G=gear().t,st=el('div','grid2');
+if(part=='heros'){const G=gear().t,st=el('div','grid2');
 st.innerHTML=[[heroMax(),'PV'],['+'+(sv.niv-1),'Dégâts de base'],[G.res+' %','Résistance'],[DATA.heros.pm+G.pm,'PM par tour']].concat(EL_IDS.map(k=>[G["r"+k]+" %",DATA.elements[k].e+" Résistance "+DATA.elements[k].n])).concat(EL_IDS.filter(k=>G[k]>0).map(k=>['+'+Math.round(G[k]*RE.pct*10)/10+' %',DATA.elements[k].e+' '+DATA.elements[k].n+' ('+G[k]+' pts)'])).map(([v,n])=>'<div class="stat"><b>'+v+'</b><span>'+n+'</span></div>').join('');
 B.appendChild(card('Statistiques',st,combatLive?'Les changements d\'équipement s\'appliquent au prochain combat.':null));}
 if(part=='heros'){const tl=card('Talents','Points disponibles : <b style="color:var(--ember)">'+talLeft()+'</b> (1 par niveau gagné).');
 TAL.forEach(([k,n,d,v,max,ic])=>{const cur=sv.tal[k]||0,full=cur>=max;tl.appendChild(row('<span class="em">'+ic+'</span><span class="tx"><span class="nm">'+n+' '+cur+'/'+max+'</span><span class="mt">'+d+'</span></span><span class="chip '+(talLeft()>0&&!full?'ok':'')+'">'+(full?'max':'+1')+'</span>',()=>{if(full){toast('Déjà au maximum');return}if(talLeft()<1){toast('Aucun point disponible : monte de niveau');return}sv.tal[k]=cur+1;store();renderMenu()},talLeft()>0&&!full?'':'lock'))});
 if(talSpent())tl.appendChild(btn('Réinitialiser les talents','Récupère tous tes points, gratuit.','ghost',()=>{sv.tal=Object.fromEntries(TAL.map(t=>[t[0],0]));store();renderMenu()}));
 B.appendChild(tl);}
-if(part=='equip'){const eq=card('Équipement');
-SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,have=sv.inv.filter(i=>DATA.objets[i].slot==slotType(s)).length;
-eq.appendChild(id?row(itemRow(id)+'<span class="mt">'+n+'</span>',()=>pickGear(s)):row('<span class="em">'+ic+'</span><span class="tx"><span class="nm">'+n+'</span><span class="mt">'+(have?'Vide : touche pour équiper ('+have+' disponible'+(have>1?'s':'')+')':'Vide : fabrique ou trouve un objet')+'</span></span>',()=>pickGear(s),'empty'))});
-const gc=gear().cnt;for(const k in DATA.sets){const S=DATA.sets[k],n=gc[k]||0,l=Object.keys(S.bonus).map(p=>'<span style="color:'+(n>=+p?'var(--ok)':'var(--dim)')+'">'+p+' pièces : '+fmtSt(S.bonus[p])+'</span>').join('<br>');
-eq.appendChild(el('div','set','<b>'+S.n+' ('+n+'/'+Math.max(...Object.keys(S.bonus).map(Number))+')</b><br>'+l))}
-B.appendChild(eq)}}
-function pickGear(slot,back){const t=slotType(slot),own=sv.inv.filter(i=>DATA.objets[i].slot==t),n=el('div','pick','<h2>'+SLOTS.find(s=>s[0]==slot)[1]+'</h2>');
-if(!own.length)n.appendChild(el('p','','Aucun objet de ce type pour l\'instant. L\'atelier et les combats en fournissent.'));
-own.forEach(id=>{const cur=sv.eq[slot]==id,r=row(itemRow(id,cur?'<span class="mt" style="color:var(--ok)">Équipé ici</span>':(Object.keys(sv.eq).find(s=>sv.eq[s]==id)?'<span class="mt">Équipé ailleurs : sera déplacé</span>':'')),()=>{equip(slot,id);closeModal();renderMenu();if(back)back()});n.appendChild(r)});
-if(sv.eq[slot])n.appendChild(row('<span class="em">✖️</span><span class="tx"><span class="nm">Retirer</span></span>',()=>{equip(slot,null);closeModal();renderMenu();if(back)back()}));
-modal(n,[['Fermer']])}
+if(part=='equip')invPart(B);}
+// ---------- inventaire : emplacements du héros + sac par catégories, glisser-déposer ----------
+let invCat='equip',invSel=null;
+const INV_CATS=[['equip','Équipements'],['conso','Consommables'],['res','Ressources'],['quete','Quête']],INV_AREA={acc1:'a',tete:'b',acc2:'c',arme:'d',corps:'e',bottes:'h'};
+function questItems(){const Q=sv.q||{},o=[];for(const id in Q){const q=DATA.quetes[id],s=Q[id];if(!q||s.s!=1||(q.kind!='pick'&&q.kind!='hide'))continue;o.push({e:q.kind=='hide'?'🌿':'🎒',n:q.n,m:(q.kind=='hide'?'Cachettes trouvées ':'Objets ramassés ')+Math.min(s.n||0,q.need)+'/'+q.need})}return o}
+function invDrag(node,id,from){const o=DATA.objets[id];let st=null,timer=null,D=null;
+const clean=()=>{clearTimeout(timer);timer=null;if(D){D.ghost.remove();$('mbody').querySelectorAll('.islot').forEach(s=>s.classList.remove('ok','over'));$('mbody').querySelector('.invbag')?.classList.remove('drop')}D=null;st=null},
+begin=e=>{try{node.setPointerCapture(st.pid)}catch(_){}const ghost=el('div','idrag',o.e);document.body.appendChild(ghost);D={ghost};node._dragged=true;
+$('mbody').querySelectorAll('.islot').forEach(s=>s.classList.toggle('ok',slotType(s.dataset.slot)==o.slot));if(from)$('mbody').querySelector('.invbag')?.classList.add('drop');pos(e)},
+pos=e=>{D.ghost.style.left=e.clientX+'px';D.ghost.style.top=e.clientY+'px';const t=document.elementFromPoint(e.clientX,e.clientY),s=t&&t.closest('.islot');$('mbody').querySelectorAll('.islot').forEach(x=>x.classList.toggle('over',x===s&&x.classList.contains('ok')))};
+node.addEventListener('pointerdown',e=>{if(e.button>0)return;node._dragged=false;st={x:e.clientX,y:e.clientY,pid:e.pointerId,touch:e.pointerType!='mouse'};if(!st.touch){try{node.setPointerCapture(st.pid)}catch(_){}}if(st.touch)timer=setTimeout(()=>{if(st&&!D)begin({clientX:st.x,clientY:st.y})},220)});
+node.addEventListener('pointermove',e=>{if(!st)return;const d=Math.hypot(e.clientX-st.x,e.clientY-st.y);if(!D){if(st.touch){if(d>10){clearTimeout(timer);st=null}}else if(d>5)begin(e);return}pos(e)});
+node.addEventListener('touchmove',e=>{if(D&&e.cancelable)e.preventDefault()},{passive:false});
+const end=e=>{if(!st&&!D)return;if(D){const t=document.elementFromPoint(e.clientX,e.clientY),s=t&&t.closest('.islot'),bag=t&&t.closest('.invbag');let ch=false;
+if(s&&e.type=='pointerup'&&slotType(s.dataset.slot)==o.slot){equip(s.dataset.slot,id);invSel={id,slot:s.dataset.slot};ch=true}
+else if(bag&&from&&e.type=='pointerup'){equip(from,null);invSel={id,slot:null};ch=true}
+clean();if(ch)renderMenu();return}clean()};
+node.addEventListener('pointerup',end);node.addEventListener('pointercancel',end);node.addEventListener('contextmenu',e=>{if(e.pointerType!='mouse')e.preventDefault()})}
+function invPart(B){const sel=invSel&&invSel.id&&sv.inv.includes(invSel.id)?invSel:null,eqIds=Object.values(sv.eq),wrap=el('div','inv'),left=el('div','card'),right=el('div','card invbag');
+left.appendChild(el('h3','','Équipement'));const sl=el('div','invslots');
+SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,b=el('button','islot'+(id?' full':'')+(sel&&sel.slot==s?' sel':''),id?'<span class="ie">'+DATA.objets[id].e+'</span>':'<span class="ie ghostic">'+ic+'</span>');b.dataset.slot=s;b.style.gridArea=INV_AREA[s];b.title=n;b.setAttribute('aria-label',n);
+if(id){b.style.setProperty('--rc',RC[DATA.objets[id].r]);invDrag(b,id,s)}
+b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel=id?{id,slot:s}:{id:null,slot:s};renderMenu()};sl.appendChild(b)});left.appendChild(sl);
+const tot=Object.fromEntries(Object.entries(gear().t).filter(([k,v])=>v));left.appendChild(el('p','mt','Total équipé : '+(Object.keys(tot).length?fmtSt(tot):'aucun bonus')));
+const gc=gear().cnt;for(const k in DATA.sets){const S=DATA.sets[k],n=gc[k]||0;if(!n)continue;const l=Object.keys(S.bonus).map(p=>'<span style="color:'+(n>=+p?'var(--ok)':'var(--dim)')+'">'+p+' pièces : '+fmtSt(S.bonus[p])+'</span>').join('<br>');left.appendChild(el('div','set','<b>'+S.n+' ('+n+'/'+Math.max(...Object.keys(S.bonus).map(Number))+')</b><br>'+l))}
+const cats=el('div','icats');INV_CATS.forEach(([k,n])=>cats.appendChild(btn(n,'',invCat==k?'on':'',()=>{invCat=k;renderMenu()})));right.appendChild(cats);
+if(invCat=='equip'){const own=sv.inv.filter(i=>DATA.objets[i]&&!eqIds.includes(i)).sort((a,b)=>SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[a].slot)-SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[b].slot)||DATA.objets[b].r-DATA.objets[a].r),g=el('div','igrid');
+own.forEach(id=>{const o=DATA.objets[id],b=el('button','icell'+(sel&&sel.id==id&&!sel.slot?' sel':''),o.e);b.style.setProperty('--rc',RC[o.r]);b.title=o.n;b.setAttribute('aria-label',o.n);invDrag(b,id,null);b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel={id,slot:null};renderMenu()};g.appendChild(b)});
+right.appendChild(own.length?g:el('p','','Rien dans le sac. L\'atelier et les combats fournissent des objets.'));
+const d=el('div','idet');if(sel){d.innerHTML='<div class="row" style="pointer-events:none">'+itemRow(sel.id,sel.slot?'<span class="mt" style="color:var(--ok)">Équipé</span>':'')+'</div>';const o=DATA.objets[sel.id];
+if(sel.slot)d.appendChild(btn('Retirer','','',()=>{equip(sel.slot,null);invSel={id:sel.id,slot:null};renderMenu()}));
+else{const f=SLOTS.filter(s=>slotType(s[0])==o.slot).map(s=>s[0]),to=f.find(s=>!sv.eq[s])||f[0];d.appendChild(btn('Équiper','Ou glisse l\'objet sur un emplacement.','pri',()=>{equip(to,sel.id);invSel={id:sel.id,slot:to};renderMenu()}))}}
+else d.appendChild(el('p','','Glisse un objet du sac sur un emplacement, ou touche-le pour le détail. Glisse un objet équipé dans le sac pour le retirer.'));right.appendChild(d)}
+else if(invCat=='conso')right.appendChild(el('p','','Aucun consommable pour l\'instant.'));
+else if(invCat=='res'){const ks=Object.keys(DATA.res).filter(k=>sv.res[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune ressource. Elles se récoltent en explorant et en combattant.'));ks.forEach(k=>{const[e,...n]=DATA.res[k].split(' ');right.appendChild(row('<span class="em">'+e+'</span><span class="tx"><span class="nm">'+n.join(' ')+'</span></span><span class="chip">×'+sv.res[k]+'</span>'))})}
+else{const q=questItems();if(!q.length)right.appendChild(el('p','','Aucun objet de quête pour l\'instant.'));q.forEach(x=>right.appendChild(row('<span class="em">'+x.e+'</span><span class="tx"><span class="nm">'+escHtml(x.n)+'</span><span class="mt">'+x.m+'</span></span>')))}
+wrap.append(left,right);B.appendChild(wrap)}
 
 // ---------- onglet Lanterne ----------
 function whereLueur(k){const r=DATA.rencontres.find(e=>e.unlock===k);if(r)return 'Récompense : '+r.n;
@@ -148,7 +174,7 @@ else if(q.kind=='pick'){L.push(chk(done||n>=q.need,'Ramasser '+q.need+' objets'+
 else if(q.kind=='hide'){L.push(chk(done||n>=q.need,'Trouver '+q.need+' cachettes 🌿'+(qMapOf(id,'hides')?' — '+qMapOf(id,'hides'):'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
 else if(q.kind=='win'){const r=DATA.rencontres[q.renc];L.push(chk(done||n>=q.need,'Repousser '+q.need+' groupes'+(r?' — '+r.n:'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
 else if(q.kind=='don'){}
-if(q.cost)L.push(chk(done,'Apporter '+rl(q.cost)+(done?'':' (tu as : '+Object.keys(q.cost).map(k=>(sv.res[k]||0)+' '+rn(k)).join(', ')+')')));
+if(q.cost)L.push(chk(done,'Apporter '+rl(q.cost)));
 return L.join('')}
 function questCard(id,st){const q=DATA.quetes[id],s=(sv.q||{})[id],n=s?Math.min(s.n||0,q.need):0;
 const lab={rendre:'🟢 À rendre',cours:'🟡 En cours',dispo:'⚪ Disponible',fini:'✔ Terminée'}[st];
