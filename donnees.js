@@ -63,14 +63,14 @@ eclipse:['Peureuse','Elle est protégée quand elle plonge dans l’ombre. Atten
 cercle:['Gourmande','Ses grévistes font un cercle autour de lui. Écarte-les ou écrase-les : sans escorte, il est à nous.'],
 blague:['Farceuse','Il prépare une blague sur ta case ! Bouge avant qu’elle tombe, et il se fatiguera.']}
 };
-const mou=(x,y)=>({x,y,hp:24,max:24,pm:3,d:8,e:'🪰',n:'La mouche à braise',ia:'dist',garde:[2,3],sort:{n:'Étincelle',r:[2,3],los:1,dmg:6,cd:0}}),cha=(x,y)=>({x,y,hp:30,max:30,pm:2,d:10,e:'🍄',n:'Le champignon bavard',sort:{n:'Spores collantes',r:[1,3],los:1,dmg:0,etats:[{id:'ralenti',v:1,t:1}],cd:3}}),mot=(x,y)=>({x,y,hp:28,max:28,pm:3,d:9,e:'🐑',n:'Le mouton-fantôme',sort:{n:'Coup de tête',r:[1,1],push:1,cd:2}}),ber=(x,y)=>({x,y,hp:30,max:30,pm:2,d:6,e:'🐏',n:'Le berger-fantôme',ia:'soin',sort:{n:'Berceuse de laine',r:[1,3],heal:10,cd:3}});
+const mou=(x,y)=>({x,y,hp:24,max:24,pm:3,d:8,e:'🪰',n:'La mouche à braise',ia:'dist',garde:[2,3],sort:{n:'Étincelle',r:[2,3],los:1,dmg:6,cd:0}}),cha=(x,y)=>({x,y,hp:30,max:30,pm:2,d:10,e:'🍄',n:'Le champignon bavard',sort:{n:'Spores collantes',r:[1,3],los:1,dmg:0,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),mot=(x,y)=>({x,y,hp:28,max:28,pm:3,d:9,e:'🐑',n:'Le mouton-fantôme',sort:{n:'Coup de tête',r:[1,1],push:1,cd:1}}),ber=(x,y)=>({x,y,hp:30,max:30,pm:2,d:6,e:'🐏',n:'Le berger-fantôme',ia:'soin',sort:{n:'Berceuse de laine',r:[1,3],heal:10,cd:2}});
 DATA.res={braise:'🔥 Braises',champi:'🍄 Champignons',laine:'🐑 Laine'};
 DATA.rencontres=[
 {n:'Village des Lanternes',biome:'village',niv:2,loot:{braise:4},m:[mou(10,3),mou(11,8)]},
 {n:'Forêt des Champignons Lumineux',biome:'foret',niv:7,loot:{champi:4,laine:2},m:[cha(10,3),cha(11,8),mot(9,10)]},
 {n:'Collines aux Moutons-Fantômes',biome:'collines',niv:13,loot:{laine:5,braise:3},m:[mot(10,3),mot(11,8),ber(9,10),cha(11,5)]}];
 DATA.lampiste=[{cap:5,cout:{braise:4}},{cap:8,cout:{champi:4,laine:4}},{cap:12,cout:{braise:8,champi:6,laine:8}}];
-const boss=(x,y)=>({x,y,hp:90,max:90,pm:2,d:12,e:'👻',n:'Chambellan Poussière',boss:1,prot:'le formulaire flotte sur lui',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:8,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),frm=(x,y)=>({x,y,hp:15,max:15,pm:0,d:0,e:'📜',n:'Le formulaire',form:1,pct:.14,regen:.03});
+const boss=(x,y)=>({x,y,hp:90,max:90,pm:2,d:12,e:'👻',n:'Chambellan Poussière',boss:1,prot:'le formulaire flotte sur lui',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:8,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),frm=(x,y)=>({x,y,hp:15,max:15,pm:0,d:0,e:'📜',n:'Le formulaire',form:1,pct:.14,regen:.03});
 DATA.rencontres.push({n:'Manoir du Chambellan (boss)',biome:'manoir',niv:18,loot:{braise:8,laine:4,champi:4},say:'formulaire',m:[boss(11,7),frm(11,6),mou(9,3),mou(10,9)]});
 DATA.resE={braise:'🔥',champi:'🍄',laine:'🧶'};
 DATA.cartes={
@@ -136,7 +136,7 @@ DATA.rencontres[3].drops=[{id:'plume',p:35},{id:'bottes_cha',p:35},{id:'lanterne
 DATA.res.cendre='🌫️ Cendres';DATA.res.roseau='🌾 Roseaux';DATA.resE.cendre='🌫️';DATA.resE.roseau='🌾';
 DATA.repliques.cendres=['Gourmande',"Cette dame se tient toujours sur un tas de cendres qui grandit… Disperse-la d’un sort, puis frappe vite !"];
 DATA.repliques.duchesse_vic=['Têtue',"Elle ne voulait pas bouger non plus. On aurait pu s'entendre."];
-const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:5,pull:2,etats:[{id:'poison',v:3,t:2}],cd:3}}),gri=(x,y)=>({x,y,hp:34,max:34,pm:4,d:12,e:'🦗',n:'Le grillon de cendre',ia:'dist',garde:[3,4],sort:{n:'Stridulation',r:[2,5],los:1,dmg:9,cd:0}}),sac=(x,y)=>({x,y,hp:56,max:56,pm:2,d:15,e:'⚱️',n:'Le sac de cendres',mort:{n:'Éclatement',r:1,dmg:12}}),duch=(x,y)=>({x,y,hp:110,max:110,pm:2,d:14,e:'👸',n:'La Duchesse des Cendres',boss:1,cendre:1,spread:2,sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:9,etats:[{id:'brule',v:3,t:2}],cd:2}});
+const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:5,pull:2,etats:[{id:'poison',v:3,t:2}],cd:2}}),gri=(x,y)=>({x,y,hp:34,max:34,pm:4,d:12,e:'🦗',n:'Le grillon de cendre',ia:'dist',garde:[3,4],sort:{n:'Stridulation',r:[2,5],los:1,dmg:9,cd:0}}),sac=(x,y)=>({x,y,hp:56,max:56,pm:2,d:15,e:'⚱️',n:'Le sac de cendres',mort:{n:'Éclatement',r:1,dmg:12}}),duch=(x,y)=>({x,y,hp:110,max:110,pm:2,d:14,e:'👸',n:'La Duchesse des Cendres',boss:1,cendre:1,spread:2,sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:9,etats:[{id:'brule',v:3,t:2}],cd:1}});
 DATA.rencontres.push({n:'Marais de Cendres',biome:'marais',niv:22,loot:{cendre:4,roseau:2},m:[cra(10,3),cra(11,8),gri(9,10)]});
 DATA.rencontres.push({n:'Roselière Fantôme',biome:'roseliere',niv:26,loot:{roseau:5,cendre:3},m:[gri(10,3),gri(11,8),sac(9,10),cra(11,5)]});
 DATA.rencontres.push({n:'Serre de la Duchesse (boss)',biome:'serre',niv:30,loot:{cendre:8,roseau:5,braise:6},say:'cendres',vic:'duchesse_vic',m:[duch(11,7),gri(9,3),gri(10,9)]});
@@ -228,12 +228,12 @@ DATA.ambiance.quartier={type:'lucioles'};DATA.ambiance.poste={type:'lucioles'};D
 
 // ============ ACTE 2 : DÉSERT DES CHAUSSETTES PERDUES (niveaux 33 à 40) ============
 DATA.res.sable='🏜️ Sable';DATA.res.fil='🧵 Fil';DATA.res.chaussette='🧦 Chaussettes';DATA.resE.sable='🏜️';DATA.resE.fil='🧵';DATA.resE.chaussette='🧦';
-const squ=(x,y)=>({x,y,hp:60,max:60,pm:3,d:18,e:'💀',n:'Squelette gréviste',sort:{n:'Coup de pancarte',r:[1,1],push:1,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
-sco=(x,y)=>({x,y,hp:52,max:52,pm:3,d:19,e:'🦂',n:'Scorpion de sable',sort:{n:'Piqûre',r:[1,1],etats:[{id:'poison',v:4,t:3}],cd:2}}),
+const squ=(x,y)=>({x,y,hp:60,max:60,pm:3,d:18,e:'💀',n:'Squelette gréviste',sort:{n:'Coup de pancarte',r:[1,1],push:1,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
+sco=(x,y)=>({x,y,hp:52,max:52,pm:3,d:19,e:'🦂',n:'Scorpion de sable',sort:{n:'Piqûre',r:[1,1],etats:[{id:'poison',v:4,t:3}],cd:1}}),
 chl=(x,y)=>({x,y,hp:48,max:48,pm:4,d:18,e:'🧦',n:'Chaussette lanceuse',ia:'dist',garde:[3,4],sort:{n:'Chaussette lancée',r:[2,5],los:1,dmg:18,cd:0}}),
-cmi=(x,y)=>({x,y,hp:70,max:70,pm:2,d:12,e:'🐪',n:'Chameau-infirmier',ia:'soin',sort:{n:'Sieste express',r:[1,3],heal:15,cd:3}}),
+cmi=(x,y)=>({x,y,hp:70,max:70,pm:2,d:12,e:'🐪',n:'Chameau-infirmier',ia:'soin',sort:{n:'Sieste express',r:[1,3],heal:15,cd:2}}),
 chs=(x,y)=>({x,y,hp:80,max:80,pm:2,d:22,e:'🧦',n:'Chaussette sale',mort:{n:'Éclatement de sueur',r:1,dmg:18}}),
-gen=(x,y)=>({x,y,hp:190,max:190,pm:2,d:22,e:'🪖',n:'Général Gréviste',boss:1,escorte:2,prot:'ses grévistes font un cercle autour de lui',sort:{n:'Appel à la grève',r:[1,1],push:1,dmg:22,etats:[{id:'affaibli',v:25,t:2}],etatsSoi:[{id:'bouclier',v:20,t:2}],cd:3}});
+gen=(x,y)=>({x,y,hp:190,max:190,pm:2,d:22,e:'🪖',n:'Général Gréviste',boss:1,escorte:2,prot:'ses grévistes font un cercle autour de lui',sort:{n:'Appel à la grève',r:[1,1],push:1,dmg:22,etats:[{id:'affaibli',v:25,t:2}],etatsSoi:[{id:'bouclier',v:20,t:2}],cd:2}});
 DATA.rencontres.push(
 {n:'Dunes des Chaussettes Perdues',biome:'desert',niv:33,loot:{sable:4,fil:2},m:[squ(10,3),sco(11,8),chl(9,10)]},
 {n:'Oasis aux Chaussettes',biome:'desert',niv:36,loot:{chaussette:4,fil:2},m:[chl(10,3),sco(11,8),cmi(9,10),chs(11,5)]},
@@ -288,22 +288,22 @@ d4:{n:'Les revendications',desc:'Rassemble 6 fils, 6 chaussettes et 4 sables pou
 
 // ============ ACTE 3 : CHEMIN DU SOLEIL, TEMPLE, CITADELLE BRISÉE (niveaux 44 à 60) ============
 DATA.res.eclat='🌟 Éclats de soleil';DATA.res.gravat='🧱 Gravats';DATA.resE.eclat='🌟';DATA.resE.gravat='🧱';
-const pel=(x,y)=>({x,y,hp:75,max:75,pm:3,d:21,e:'🧎',n:'Pèlerin éteint',sort:{n:'Bénédiction ratée',r:[1,1],etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
+const pel=(x,y)=>({x,y,hp:75,max:75,pm:3,d:21,e:'🧎',n:'Pèlerin éteint',sort:{n:'Bénédiction ratée',r:[1,1],etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
 luc=(x,y)=>({x,y,hp:60,max:60,pm:4,d:20,e:'🪲',n:'Luciole terne',ia:'dist',garde:[3,4],sort:{n:'Éclat pâle',r:[2,5],los:1,dmg:21,cd:0}}),
 sta=(x,y)=>({x,y,hp:110,max:110,pm:2,d:25,e:'🗿',n:'Statue de soleil',mort:{n:'Éboulement',r:1,dmg:20}}),
-pre=(x,y)=>({x,y,hp:85,max:85,pm:2,d:16,e:'🧑‍🦯',n:'Prêtre aveugle',ia:'soin',sort:{n:'Prière tardive',r:[1,3],heal:18,cd:3}}),
-ecl=(x,y)=>({x,y,hp:230,max:230,pm:2,d:26,e:'🌘',n:'Éclipse',boss:1,cycle:{a:2,b:2},prot:'elle est dans l’ombre',sort:{n:'Ombre portée',r:[1,3],los:1,dmg:26,etats:[{id:'ralenti',v:1,t:2}],cd:2}}),
+pre=(x,y)=>({x,y,hp:85,max:85,pm:2,d:16,e:'🧑‍🦯',n:'Prêtre aveugle',ia:'soin',sort:{n:'Prière tardive',r:[1,3],heal:18,cd:2}}),
+ecl=(x,y)=>({x,y,hp:230,max:230,pm:2,d:26,e:'🌘',n:'Éclipse',boss:1,cycle:{a:2,b:2},prot:'elle est dans l’ombre',sort:{n:'Ombre portée',r:[1,3],los:1,dmg:26,etats:[{id:'ralenti',v:1,t:2}],cd:1}}),
 voi=(x,y)=>({x,y,hp:20,max:20,pm:0,d:0,e:'🌑',n:'Le voile d’ombre',form:1,pct:.14,regen:.03}),
-gar=(x,y)=>({x,y,hp:95,max:95,pm:3,d:25,e:'🛡️',n:'Garde fantôme',sort:{n:'Charge spectrale',r:[1,1],push:1,dmg:25,cd:3}}),
+gar=(x,y)=>({x,y,hp:95,max:95,pm:3,d:25,e:'🛡️',n:'Garde fantôme',sort:{n:'Charge spectrale',r:[1,1],push:1,dmg:25,cd:2}}),
 arc=(x,y)=>({x,y,hp:70,max:70,pm:4,d:22,e:'🏹',n:'Archer osseux',ia:'dist',garde:[3,4],sort:{n:'Flèche rouillée',r:[2,6],los:1,dmg:24,cd:0}}),
-che=(x,y)=>({x,y,hp:120,max:120,pm:2,d:27,e:'🤺',n:'Chevalier brisé',sort:{n:'Coup de pommeau',r:[1,1],push:1,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
-lch=(x,y)=>({x,y,hp:130,max:130,pm:2,d:24,e:'👻',n:'Chambellan Poussière',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:24,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
+che=(x,y)=>({x,y,hp:120,max:120,pm:2,d:27,e:'🤺',n:'Chevalier brisé',sort:{n:'Coup de pommeau',r:[1,1],push:1,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
+lch=(x,y)=>({x,y,hp:130,max:130,pm:2,d:24,e:'👻',n:'Chambellan Poussière',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:24,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),
 ldu=(x,y)=>({x,y,hp:120,max:120,pm:2,d:22,e:'👸',n:'Duchesse des Cendres',ia:'dist',garde:[3,4],sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:26,cd:1}}),
-lge=(x,y)=>({x,y,hp:150,max:150,pm:2,d:26,e:'🪖',n:'Général Gréviste',sort:{n:'Appel à la grève',r:[1,1],push:1,dmg:26,etatsSoi:[{id:'bouclier',v:20,t:2}],cd:3}}),
-bou=(x,y)=>({x,y,hp:260,max:260,pm:3,d:27,e:'🤡',n:'Bouffon Sans Rire',boss:1,alerte:{every:3,r:1,mult:1.4,n:'Blague sans rire',vul:1},sort:{n:'Blague sans rire',r:[1,3],los:1,dmg:27,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
-roi=(x,y)=>({x,y,hp:320,max:320,pm:2,d:29,e:'👑',n:'Le Roi Éteint',boss:1,prot:'sa vexation le protège',sort:{n:'Décret royal',r:[1,4],los:1,dmg:30,etats:[{id:'affaibli',v:25,t:2}],etatsSoi:[{id:'bouclier',v:25,t:2}],cd:3}}),
+lge=(x,y)=>({x,y,hp:150,max:150,pm:2,d:26,e:'🪖',n:'Général Gréviste',sort:{n:'Appel à la grève',r:[1,1],push:1,dmg:26,etatsSoi:[{id:'bouclier',v:20,t:2}],cd:2}}),
+bou=(x,y)=>({x,y,hp:260,max:260,pm:3,d:27,e:'🤡',n:'Bouffon Sans Rire',boss:1,alerte:{every:3,r:1,mult:1.4,n:'Blague sans rire',vul:1},sort:{n:'Blague sans rire',r:[1,3],los:1,dmg:27,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),
+roi=(x,y)=>({x,y,hp:320,max:320,pm:2,d:29,e:'👑',n:'Le Roi Éteint',boss:1,prot:'sa vexation le protège',sort:{n:'Décret royal',r:[1,4],los:1,dmg:30,etats:[{id:'affaibli',v:25,t:2}],etatsSoi:[{id:'bouclier',v:25,t:2}],cd:2}}),
 vex=(x,y)=>({x,y,hp:25,max:25,pm:0,d:0,e:'😤',n:'Sa vexation',form:1,pct:.14,regen:.04,mock:.3}),
-cou=(x,y)=>({x,y,hp:90,max:90,pm:3,d:24,e:'💀',n:'Courtisan squelette',sort:{n:'Révérence tranchante',r:[1,1],dmg:24,cd:2}});
+cou=(x,y)=>({x,y,hp:90,max:90,pm:3,d:24,e:'💀',n:'Courtisan squelette',sort:{n:'Révérence tranchante',r:[1,1],dmg:24,cd:1}});
 DATA.rencontres.push(
 {n:'Chemin du Soleil Couchant',biome:'desert',niv:44,loot:{eclat:4,gravat:2},m:[pel(10,3),luc(11,8),sta(9,10)]},
 {n:'Parvis du Temple',biome:'temple',niv:47,loot:{eclat:4,gravat:3},m:[pre(9,10),pel(10,3),luc(11,8),sta(11,5)]},
@@ -410,7 +410,7 @@ DR(16,[{id:'masque_bouffon',p:60},{id:'marotte_bouffon',p:35}]);
 DR(17,[{id:'lanterne_gardien',p:35},{id:'armure_gardien',p:35}]);
 
 // ============ FORÊT ÉTENDUE : Sentier, Clairière et donjon « Le Terrier de la Mère Mycélium » (modèle pour les autres zones) ============
-const mer=(x,y)=>({x,y,hp:150,max:150,pm:2,d:12,e:'🍄',n:'Mère Mycélium',boss:1,renfort:{every:3,max:2,m:cha(0,0)},sort:{n:'Nuage de spores',r:[1,3],los:1,dmg:10,etats:[{id:'ralenti',v:1,t:2}],cd:2}});
+const mer=(x,y)=>({x,y,hp:150,max:150,pm:2,d:12,e:'🍄',n:'Mère Mycélium',boss:1,renfort:{every:3,max:2,m:cha(0,0)},sort:{n:'Nuage de spores',r:[1,3],los:1,dmg:10,etats:[{id:'ralenti',v:1,t:2}],cd:1}});
 DATA.rencontres.push(
 {n:'Sentier des Lucioles',biome:'foret',niv:8,loot:{champi:3,laine:1},m:[mou(10,3),mou(11,8),cha(9,10)]},
 {n:'Clairière des Cèpes',biome:'foret',niv:9,loot:{champi:4,laine:2},m:[cha(10,3),mot(11,8),cha(9,10),mou(11,5)]},
@@ -478,9 +478,9 @@ if(m.renfort){const rm=m.renfort.m,sm=Math.round(rm.max*k);m.renfort={...m.renfo
 // Ces blocs (Collines, Manoir, Marais, Désert, Acte 3) mettent eux-mêmes leurs rencontres à l'échelle (valeurs à recaler avec outils/sim.js).
 (()=>{
 const B=DATA.rencontres.length;
-const lbr=(x,y)=>({x,y,hp:34,max:34,pm:4,d:11,e:'🐺',n:'Le loup de brume',sort:{n:'Hurlement',r:[1,3],los:1,dmg:4,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
+const lbr=(x,y)=>({x,y,hp:34,max:34,pm:4,d:11,e:'🐺',n:'Le loup de brume',sort:{n:'Hurlement',r:[1,3],los:1,dmg:4,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
 plt=(x,y)=>({x,y,hp:30,max:30,pm:3,d:9,e:'🧶',n:'La pelote enragée',mort:{n:'Déroulement',r:1,dmg:8}}),
-bcr=(x,y)=>({x,y,hp:140,max:140,pm:3,d:11,e:'🐐',n:'Bouc Recenseur',boss:1,alerte:{every:3,r:1,mult:1.4,n:'Charge du recensement',vul:1},sort:{n:'Coup de corne',r:[1,1],push:1,dmg:10,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+bcr=(x,y)=>({x,y,hp:140,max:140,pm:3,d:11,e:'🐐',n:'Bouc Recenseur',boss:1,alerte:{every:3,r:1,mult:1.4,n:'Charge du recensement',vul:1},sort:{n:'Coup de corne',r:[1,1],push:1,dmg:10,etats:[{id:'affaibli',v:25,t:2}],cd:1}});
 DATA.rencontres.push(
 {n:'Pâturage Brumeux',biome:'collines',niv:14,loot:{laine:4,braise:2},m:[lbr(10,3),lbr(11,8),mot(9,10)]},
 {n:'Bergerie abandonnée',biome:'collines',niv:15,loot:{laine:5,champi:2},m:[plt(10,3),mot(11,8),ber(9,10),lbr(11,5)]},
@@ -540,10 +540,10 @@ c3:{n:'Le Bouc qui compte tout',desc:'Entre dans l’Enclos, au bout de la Berge
 // ============ MANOIR ÉTENDU : Hall des Guichets, Bureaux des Tampons et donjon « Les Archives du Chambellan » ============
 (()=>{
 const B=DATA.rencontres.length;
-const clr=(x,y)=>({x,y,hp:36,max:36,pm:3,d:10,e:'🧑‍💼',n:'Le clerc fantôme',ia:'dist',garde:[2,3],sort:{n:'Tampon de rappel',r:[2,3],los:1,dmg:5,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),
+const clr=(x,y)=>({x,y,hp:36,max:36,pm:3,d:10,e:'🧑‍💼',n:'Le clerc fantôme',ia:'dist',garde:[2,3],sort:{n:'Tampon de rappel',r:[2,3],los:1,dmg:5,etats:[{id:'ralenti',v:1,t:1}],cd:1}}),
 ccl=(x,y)=>({x,y,hp:50,max:50,pm:2,d:13,e:'🗄️',n:'Le classeur mordant',mort:{n:'Éclatement de dossiers',r:1,dmg:10}}),
 plm=(x,y)=>({x,y,hp:26,max:26,pm:4,d:9,e:'🪶',n:'La plume vexée',ia:'dist',garde:[3,4],sort:{n:'Rature',r:[2,5],los:1,dmg:8,cd:0}}),
-bgr=(x,y)=>({x,y,hp:150,max:150,pm:2,d:12,e:'🧐',n:'Greffier Ratures',boss:1,escorte:2,prot:'ses clercs font un cercle autour de lui',sort:{n:'Rature définitive',r:[1,2],los:1,dmg:10,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+bgr=(x,y)=>({x,y,hp:150,max:150,pm:2,d:12,e:'🧐',n:'Greffier Ratures',boss:1,escorte:2,prot:'ses clercs font un cercle autour de lui',sort:{n:'Rature définitive',r:[1,2],los:1,dmg:10,etats:[{id:'affaibli',v:25,t:2}],cd:1}});
 DATA.rencontres.push(
 {n:'Hall des Guichets',biome:'manoir',niv:18,loot:{braise:4,champi:2},m:[clr(10,3),plm(11,8),mou(9,10)]},
 {n:'Bureaux des Tampons',biome:'manoir',niv:19,loot:{champi:4,laine:3},m:[clr(10,3),ccl(11,8),plm(9,10),clr(11,5)]},
@@ -602,10 +602,10 @@ m3:{n:'Les Archives du Chambellan',desc:'Pénètre dans les Archives, au fond de
 // ============ MARAIS ÉTENDU : Gué des Crapauds, Île aux Berceuses et donjon « Le Manoir des Rêves » ============
 (()=>{
 const B=DATA.rencontres.length;
-const pap=(x,y)=>({x,y,hp:30,max:30,pm:4,d:11,e:'🦋',n:'Le papillon de nuit',ia:'dist',garde:[3,4],sort:{n:'Poudre soporifique',r:[2,4],los:1,dmg:6,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),
+const pap=(x,y)=>({x,y,hp:30,max:30,pm:4,d:11,e:'🦋',n:'Le papillon de nuit',ia:'dist',garde:[3,4],sort:{n:'Poudre soporifique',r:[2,4],los:1,dmg:6,etats:[{id:'ralenti',v:1,t:1}],cd:1}}),
 ore=(x,y)=>({x,y,hp:60,max:60,pm:2,d:14,e:'🛏️',n:'L’oreiller hanté',mort:{n:'Explosion de plumes',r:1,dmg:12}}),
-chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:3}}),
-bar=(x,y)=>({x,y,hp:160,max:160,pm:2,d:13,e:'🦉',n:'Baronne Insomnie',boss:1,cycle:{a:2,b:2},prot:'elle rêve encore',sort:{n:'Bâillement',r:[1,3],los:1,dmg:11,etats:[{id:'ralenti',v:1,t:2}],cd:2}});
+chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
+bar=(x,y)=>({x,y,hp:160,max:160,pm:2,d:13,e:'🦉',n:'Baronne Insomnie',boss:1,cycle:{a:2,b:2},prot:'elle rêve encore',sort:{n:'Bâillement',r:[1,3],los:1,dmg:11,etats:[{id:'ralenti',v:1,t:2}],cd:1}});
 DATA.rencontres.push(
 {n:'Gué des Crapauds',biome:'marais',niv:22,loot:{cendre:4,roseau:2},m:[cra(10,3),pap(11,8),cra(9,10)]},
 {n:'Île aux Berceuses',biome:'marais',niv:23,loot:{roseau:5,cendre:3},m:[pap(10,3),chr(11,8),ore(9,10),gri(11,5)]},
@@ -666,9 +666,9 @@ n3:{n:'La Baronne qui ne dort jamais',desc:'Pénètre dans le Manoir des Rêves,
 (()=>{
 const B=DATA.rencontres.length;
 const vtr=(x,y)=>({x,y,hp:50,max:50,pm:4,d:17,e:'🦅',n:'Le vautour affamé',ia:'dist',garde:[3,4],sort:{n:'Piqué',r:[2,4],los:1,dmg:17,cd:1}}),
-cob=(x,y)=>({x,y,hp:54,max:54,pm:3,d:18,e:'🐍',n:'Le cobra de sable',sort:{n:'Morsure',r:[1,1],etats:[{id:'poison',v:4,t:3}],cd:2}}),
-mom=(x,y)=>({x,y,hp:85,max:85,pm:2,d:20,e:'🧻',n:'La momie bandée',sort:{n:'Bandelettes',r:[1,3],los:1,dmg:10,pull:2,etats:[{id:'ralenti',v:1,t:1}],cd:3}}),
-sph=(x,y)=>({x,y,hp:200,max:200,pm:2,d:18,e:'🦁',n:'Sphinx Dépareillé',boss:1,renfort:{every:3,max:2,m:chs(0,0)},sort:{n:'Énigme sans réponse',r:[1,3],los:1,dmg:14,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+cob=(x,y)=>({x,y,hp:54,max:54,pm:3,d:18,e:'🐍',n:'Le cobra de sable',sort:{n:'Morsure',r:[1,1],etats:[{id:'poison',v:4,t:3}],cd:1}}),
+mom=(x,y)=>({x,y,hp:85,max:85,pm:2,d:20,e:'🧻',n:'La momie bandée',sort:{n:'Bandelettes',r:[1,3],los:1,dmg:10,pull:2,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),
+sph=(x,y)=>({x,y,hp:200,max:200,pm:2,d:18,e:'🦁',n:'Sphinx Dépareillé',boss:1,renfort:{every:3,max:2,m:chs(0,0)},sort:{n:'Énigme sans réponse',r:[1,3],los:1,dmg:14,etats:[{id:'affaibli',v:25,t:2}],cd:1}});
 DATA.rencontres.push(
 {n:'Mirage Changeant',biome:'desert',niv:33,loot:{sable:4,fil:2},m:[vtr(10,3),cob(11,8),squ(9,10)]},
 {n:'Puits aux Mille Pieds',biome:'desert',niv:34,loot:{chaussette:4,sable:3},m:[cob(10,3),mom(11,8),vtr(9,10),chl(11,5)]},
@@ -729,9 +729,9 @@ o3:{n:'L’énigme sans réponse',desc:'Pénètre dans la Pyramide, au bout du P
 // ============ ACTE 3 ÉTENDU : Cloître des Pèlerins, Jardin de cire et donjon « La Crypte du Gardien » ============
 (()=>{
 const B=DATA.rencontres.length;
-const omb=(x,y)=>({x,y,hp:70,max:70,pm:4,d:22,e:'👤',n:'L’ombre errante',sort:{n:'Frisson',r:[1,3],los:1,dmg:12,etats:[{id:'ralenti',v:1,t:1}],cd:2}}),
+const omb=(x,y)=>({x,y,hp:70,max:70,pm:4,d:22,e:'👤',n:'L’ombre errante',sort:{n:'Frisson',r:[1,3],los:1,dmg:12,etats:[{id:'ralenti',v:1,t:1}],cd:1}}),
 cie=(x,y)=>({x,y,hp:65,max:65,pm:3,d:20,e:'🕯️',n:'Le cierge vivant',ia:'dist',garde:[3,4],sort:{n:'Cire brûlante',r:[2,4],los:1,dmg:20,etats:[{id:'brule',v:4,t:2}],cd:1}}),
-eco=(x,y)=>({x,y,hp:280,max:280,pm:2,d:24,e:'🛡️',n:'Écho du Gardien',boss:1,renfort:{every:3,max:2,m:gar(0,0)},sort:{n:'Souvenir tranchant',r:[1,3],los:1,dmg:22,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+eco=(x,y)=>({x,y,hp:280,max:280,pm:2,d:24,e:'🛡️',n:'Écho du Gardien',boss:1,renfort:{every:3,max:2,m:gar(0,0)},sort:{n:'Souvenir tranchant',r:[1,3],los:1,dmg:22,etats:[{id:'affaibli',v:25,t:2}],cd:1}});
 DATA.rencontres.push(
 {n:'Cloître des Pèlerins',biome:'temple',niv:45,loot:{eclat:4,gravat:2},m:[pel(10,3),omb(11,8),cie(9,10)]},
 {n:'Jardin de cire',biome:'temple',niv:46,loot:{eclat:4,gravat:3},m:[cie(10,3),pre(9,10),omb(11,8),sta(11,5)]},

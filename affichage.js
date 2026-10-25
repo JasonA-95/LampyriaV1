@@ -25,7 +25,7 @@ if(item.hp>0&&unit.hp<=0)deathAnimation(unit)}}
 
 // ---------- fin de combat ----------
 function reward(){const e=DATA.rencontres[cfg.renc];if(cfg.test)return{test:true};
-const type=e.type||(e.m.some(m=>m.boss)?'boss':'normal'),gain=XP.rencontre({niv:e.niv||1+cfg.renc*3,m:XP.m[type]||1},sv.niv,!EX.group),r={xp:gain,loot:e.loot||{},lv:0,items:[],eq:[],lueur:null};for(const k in r.loot)sv.res[k]+=r.loot[k];
+const type=e.type||(e.m.some(m=>m.boss)?'boss':'normal'),gain=Math.round(XP.rencontre({niv:e.niv||1+cfg.renc*3,m:XP.m[type]||1},sv.niv,!EX.group)*(type=='boss'&&EX.group&&DJ.of(EX.map)?1.5:1)),r={xp:gain,loot:e.loot||{},lv:0,items:[],eq:[],lueur:null};for(const k in r.loot)sv.res[k]+=r.loot[k];
 r.lv=XP.add(sv,gain);if(r.lv&&typeof playSound=='function')playSound('level');
 if((DATA.rencontres[cfg.renc].base??cfg.renc)==sv.renc&&sv.renc<DATA.rencontres.length-1)sv.renc++;
 if(e.unlock&&!sv.deb.includes(e.unlock)){sv.deb.push(e.unlock);r.lueur=e.unlock}
