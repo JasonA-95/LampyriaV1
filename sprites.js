@@ -140,10 +140,10 @@ function mycelium(){return `<g>
   <path d="M40 80Q50 86 60 80" stroke="#1a1218" stroke-width="2.4" fill="none"/>
   <circle cx="14" cy="14" r="2.2" fill="#d8ffb8"/><circle cx="88" cy="12" r="2.6" fill="#d8ffb8"/><circle cx="98" cy="36" r="2" fill="#d8ffb8"/><circle cx="2" cy="34" r="2" fill="#d8ffb8"/></g>`}
 const VB='-16 -36 130 180',IW=260,IH=360,AN={mouche:[48,100],champignon:[48,90],mouton:[48,92],mycelium:[48,86]};
-const make={porte:[porte,porteD],archer:[archer,archerD],mage:[mage,mageD],mouche:[mouche,mouche],champignon:[champignon,champignon],mouton:[mouton,mouton],mycelium:[mycelium,mycelium]};
+const make={porte:HEROE.porte,archer:HEROE.archer,mage:HEROE.mage,mouche:[mouche,mouche],champignon:[champignon,champignon],mouton:[mouton,mouton],mycelium:[mycelium,mycelium]};
 // Registre : nom exact du monstre (DATA.rencontres[].m[].n) -> sprite. Ajouter un monstre = une ligne ici + une fonction de dessin.
 const MON={'La mouche à braise':'mouche','Le champignon bavard':'champignon','Le mouton-fantôme':'mouton','Mère Mycélium':'mycelium'};
-const SC={mycelium:1.55};
+const SC={mycelium:1.55,porte:1.2,archer:1.2,mage:1.2};
 const cache={};
 function raw(key,back){const fn=make[key][back?1:0];return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+VB+'" width="'+IW+'" height="'+IH+'"><defs>'+DEFS+'</defs>'+fn()+'</svg>'}
 function img(key,back){if(make[key][0]===make[key][1])back=false;const k=key+(back?'D':'F');if(cache[k])return cache[k];const fn=make[key][back?1:0];

@@ -10,6 +10,7 @@ const stubs = { Image: function () {}, cfg: { classe: 'porte' }, encodeURICompon
 function load() {
   const context = vm.createContext({ ...stubs });
   vm.runInContext(source('donnees.js'), context, { filename: 'donnees.js' });
+  vm.runInContext(source('heros.js').replace(/^const HEROE=/m, 'var HEROE='), context, { filename: 'heros.js' });
   vm.runInContext(source('sprites.js').replace(/^const SPR=/m, 'var SPR='), context, { filename: 'sprites.js' });
   vm.runInContext(source('monstres.js'), context, { filename: 'monstres.js' });
   return context;
