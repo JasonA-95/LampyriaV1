@@ -57,4 +57,5 @@ archer:{coat:'#4a6a48',coatSh:'#2a4030',rim:'#ffd890',hood:'#3c5c3e',legs:'#4a3a
 mage:{coat:'#5c4c9c',coatSh:'#382c6a',rim:'#8af0ff',long:1,hat:'#4a3a88',hatSh:'#2c2060',trim:'#e8c870',collar:'#382c6a',beard:1,prop:'staff',gx:220,gy:80,hx:220,hy:236,eye:'#9af0ff'}
 };
 const out={};for(const k in LOOK)out[k]=[()=>wrap(LOOK[k],false),()=>wrap(LOOK[k],true)];
+Object.defineProperty(out,'kit',{value:{INK,L,P,COAT,SH,RIM,eyes,props},enumerable:false});
 return out})();
