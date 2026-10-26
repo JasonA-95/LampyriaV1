@@ -96,6 +96,7 @@ canvas{position:absolute;left:0;top:0;touch-action:none;display:block}
 #zoneBanner{position:absolute;z-index:6;top:54px;left:50%;transform:translateX(-50%);max-width:90%;padding:6px 14px;border:1px solid #806347;border-radius:8px;background:#1a120ddd;color:var(--ink);font:600 14px var(--serif);text-align:center;opacity:0;pointer-events:none;transition:opacity .18s}
 #zoneBanner.show{opacity:1}
 #bubble{position:absolute;z-index:7;max-width:min(280px,86%);width:max-content;background:#f6ecda;color:#2a1a08;border:2px solid var(--c,#b8620a);border-radius:14px;padding:6px 11px;font-size:14px;line-height:1.3;pointer-events:none;box-shadow:0 4px 16px #000a}
+#bubble.hasPt{display:grid;grid-template-columns:56px 1fr;column-gap:9px;align-items:start;max-width:min(330px,90%)}#bubble .pt{grid-row:1/3;width:56px;height:56px;object-fit:cover;border:2px solid;border-radius:10px;background:radial-gradient(ellipse at 70% 80%,#6b5236,#1a120d 75%)}
 #bubble .who{display:block;font-weight:700;font-size:12px}
 #bubble .tail{position:absolute;bottom:-9px;width:0;height:0;border:8px solid transparent;border-top-color:var(--c,#b8620a);border-bottom:0}
 #bubble.below .tail{bottom:auto;top:-9px;border-top:0;border-bottom:8px solid var(--c,#b8620a)}

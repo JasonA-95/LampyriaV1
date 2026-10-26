@@ -75,8 +75,10 @@ const SPK={Gourmande:'#b8620a',Peureuse:'#a07800',Colérique:'#c93a2a',Rêveuse:
 let bub={at:null,t:null};
 function hideBubble(){clearTimeout(bub.t);bub.at=null;$('bubble').classList.add('hide')}
 // Bulle de dialogue au-dessus d'un personnage (o.at = case {x,y}, sinon le héros ; o.stay = reste jusqu'à fermeture)
+// Portrait en buste (sprite recadré) ; chaîne vide si le locuteur n'a pas de sprite
+const PT={};function portrait(who,c){try{const k=who=='Le héros'?SPR.heroKey():SPR.monKey(who);if(!k)return'';if(!PT[k])PT[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(SPR.raw(k).replace(/viewBox="[^"]*"/,'viewBox="6 -10 84 78"').replace(/ width="\d+" height="\d+"/,' width="168" height="156"'));return'<img class="pt" style="border-color:'+c+'" alt="" src="'+PT[k]+'">'}catch(e){return''}}
 function speak(who,txt,o){o=o||{};const c=SPK[who]||'#8a5a1a',B=$('bubble');B.style.setProperty('--c',c);
-B.innerHTML='<span class="who" style="color:'+c+'">'+who+'</span><span class="tx">'+txt+'</span><i class="tail"></i>';B.classList.remove('hide');if(typeof playSound=='function')playSound('dialogue');
+B.innerHTML=portrait(who,c)+'<span class="who" style="color:'+c+'">'+who+'</span><span class="tx">'+txt+'</span><i class="tail"></i>';B.classList.toggle('hasPt',B.innerHTML.startsWith('<img'));B.classList.remove('hide');if(typeof playSound=='function')playSound('dialogue');
 clearTimeout(bub.t);bub.at=o.at||'hero';if(!o.stay)bub.t=setTimeout(hideBubble,6000);if(typeof placeBubble=='function')placeBubble()}
 const say=k=>{let r=DATA.repliques[k];if(!r)return;if(Array.isArray(r[0])){const known=r.filter(v=>Object.keys(DATA.lueurs).some(id=>DATA.lueurs[id].n==v[0]&&(sv.deb||[]).includes(id)));const pool=known.length?known:[r[0]];r=pool[Math.floor(Math.random()*pool.length)]}speak(...r)};
 const msg=t=>$('msgEl').textContent=t;
