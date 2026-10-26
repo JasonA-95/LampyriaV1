@@ -59,3 +59,16 @@ test('EX.enter pose toujours les mêmes repères de quête qu’avant (cachettes
   assert.equal(run(ctx, 'EX.groups.filter(g=>!g.hide).length'), 2);
   assert.equal(run(ctx, 'EX.pend'), null);
 });
+
+test('PNJ : « ! » si une quête est disponible, rien une fois prise, « ? » quand les conditions sont remplies', () => {
+  const ctx = loadExploration(baseSave);
+  const lamp = "DATA.cartes.village.npcs.find(n=>n.n=='Maître Lampiste')";
+  assert.equal(run(ctx, 'EX.npcMark(' + lamp + ')'), '!');
+  run(ctx, "sv.q.q1={s:1,n:0,got:[]}");
+  assert.ok(['', '!'].includes(run(ctx, 'EX.npcMark(' + lamp + ')')));
+  run(ctx, "['q2','q3','L2','L5'].forEach(id=>{sv.q[id]={s:2,n:9,got:[]}});sv.q.q1={s:1,n:0,got:[]}");
+  assert.equal(run(ctx, 'EX.npcMark(' + lamp + ')'), '', 'quête prise mais incomplète : aucun repère');
+  run(ctx, "sv.q.q1.n=DATA.quetes.q1.need;sv.res.braise=99;sv.res.champi=99;sv.res.laine=99");
+  assert.equal(run(ctx, 'EX.npcMark(' + lamp + ')'), '?');
+  assert.equal(run(ctx, "EX.npcMark({quests:[]})"), '');
+});

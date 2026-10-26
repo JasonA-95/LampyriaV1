@@ -57,3 +57,16 @@ test('chaque degrade ou filtre utilise par un sprite est defini (sinon le sprite
     for (const id of utilises) assert.ok(definis.has(id), cle + ' : #' + id + ' non defini');
   }
 });
+
+test('chaque PNJ du jeu a un sprite vectoriel valide', () => {
+  const context = load();
+  vm.runInContext(source('pnj.js'), context, { filename: 'pnj.js' });
+  const noms = vm.runInContext('Object.values(DATA.cartes).flatMap(m=>(m.npcs||[]).map(n=>n.n))', context);
+  assert.ok(noms.length >= 30);
+  const manquants = Array.from(noms).filter(n => !vm.runInContext('SPR.monKey(' + JSON.stringify(n) + ')', context));
+  assert.deepEqual(manquants, [], 'PNJ sans sprite : ' + manquants.join(', '));
+  for (const n of noms) {
+    const svg = vm.runInContext('SPR.raw(SPR.monKey(' + JSON.stringify(n) + '))', context);
+    assert.ok(svg.startsWith('<svg') && svg.length > 400 && !svg.includes('undefined') && !svg.includes('NaN'), 'sprite invalide : ' + n);
+  }
+});
