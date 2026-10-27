@@ -210,12 +210,14 @@ enclos_entree:{once:true,declencheur:{quand:'entree',carte:'enclos1'},etapes:[
 bouc_avant:{once:true,declencheur:{quand:'avantCombat',renc:27},etapes:[
 {qui:'Bouc Recenseur',at:'groupe',txt:'Un, deux… non, silence. Vous n’êtes pas sur la liste. Veuillez vous inscrire avant d’être piétinés.'},
 {qui:'Gourmande',at:'hero',txt:'Le Chambellan lui a encore donné un tampon. Il en fait n’importe quoi.'},
+{qui:'Bouc Recenseur',at:'groupe',txt:'Ordre royal : chaque mouton compte pour un soldat. Sa Majesté lève une armée, et moi, je tiens les comptes.'},
 {qui:'Bouc Recenseur',at:'groupe',txt:'Mission : compter chaque mouton, chaque nuit, jusqu’à ce que le total change. Il ne change jamais. Je recommence.'},
 {hero:'🤔',act:'Tu observes ses sabots. Avant chaque charge, il baisse la tête et le sol rougit.'},
 {qui:'Peureuse',at:'hero',txt:'Quand le sol devient rouge, on part. C’est la seule règle que j’ai jamais aimée.'}]},
 bouc_apres:{once:true,declencheur:{quand:'apresCombat',renc:27,issue:'win'},etapes:[
 {qui:'Bouc Recenseur',at:'hero',txt:'Total : il manque un mouton. Ah non. C’était moi. Je ne m’étais pas compté.'},
 {qui:'Gourmande',at:'hero',txt:'Il faut qu’il se repose. Compter, c’est fatigant, surtout quand on a des cornes.'},
+{qui:'Gourmande',at:'hero',txt:'Une armée de moutons-fantômes. Même les morts ont des idées bizarres.'},
 {qui:'Peureuse',at:'hero',txt:'Dans son carnet, il y a un ordre signé : « Recenser les Lueurs ». Avec une adresse. Au Manoir.'},
 {set:{bouc_battu:true}}]}});
 

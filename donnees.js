@@ -523,16 +523,17 @@ houlette_recenseur:{n:'Houlette du Recenseur',e:'🪝',slot:'arme',r:2,st:{neutr
 pelisse_bouc:{n:'Pelisse du Bouc',e:'🧥',slot:'corps',r:2,st:{pv:20,res:6}}});
 DR(B,[{id:'clochette_brume',p:15}]);DR(B+1,[{id:'guetres_berger',p:20}]);DR(B+3,[{id:'bonnet_brume',p:25}]);DR(B+4,[{id:'houlette_recenseur',p:100},{id:'pelisse_bouc',p:40}]);
 DATA.cartes.collines.exits.push({x:6,y:0,to:'paturage',tx:6,ty:11});
-DATA.cartes.collines.npcs.forEach(n=>{if(n.n=='Berger Laine-de-Nuit')n.quests=['c3']});
+DATA.cartes.collines.npcs.forEach(n=>{if(n.n=='Berger Laine-de-Nuit')n.quests=['c3','c4']});
+DATA.cartes.collines.picks.push({x:5,y:6,quest:'c4'},{x:12,y:2,quest:'c4'},{x:7,y:11,quest:'c4'});
 DATA.cartes.paturage={n:'Pâturage Brumeux',biome:'collines',need:2,start:[6,11],tint:'rgba(170,190,220,.16)',
 rocks:[[3,3],[3,9],[6,6],[9,3],[9,9]],
-npcs:[{x:2,y:11,e:'🧑‍🦰',n:'Bergère Brume',quests:['c1'],txt:'Le brouillard est si épais que mes moutons se comptent en double. J’ai deux fois plus de moutons. Sur le papier.'}],
+npcs:[{x:2,y:11,e:'🧑‍🦰',n:'Bergère Brume',quests:['c1','c5'],txt:'Le brouillard est si épais que mes moutons se comptent en double. J’ai deux fois plus de moutons. Sur le papier.'}],
 groups:[{x:8,y:4,renc:B},{x:3,y:6,renc:B}],
 nodes:[{x:2,y:2,res:'laine'},{x:11,y:11,res:'braise'}],
 exits:[{x:6,y:12,to:'collines',tx:6,ty:1},{x:12,y:6,to:'bergerie',tx:1,ty:6}]};
 DATA.cartes.bergerie={n:'Bergerie abandonnée',biome:'collines',need:2,start:[1,6],tint:'rgba(140,130,110,.2)',
 rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
-npcs:[{x:2,y:10,e:'✂️',n:'Tondeur Mérinos',quests:['c2'],txt:'Je tonds des fantômes. La laine repousse, mais transparente. Ça se vend mal, ça se porte léger.'}],
+npcs:[{x:2,y:10,e:'✂️',n:'Tondeur Mérinos',quests:['c2','c6'],txt:'Je tonds des fantômes. La laine repousse, mais transparente. Ça se vend mal, ça se porte léger.'}],
 picks:[{x:2,y:2,quest:'c2'},{x:11,y:11,quest:'c2'},{x:11,y:1,quest:'c2'}],
 groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
 nodes:[{x:6,y:2,res:'laine'},{x:6,y:11,res:'braise'}],
@@ -558,7 +559,10 @@ exits:[{x:0,y:6,to:'enclos2',tx:11,ty:6}]};
 Object.assign(DATA.quetes,{
 c1:{n:'Brouillard sur le troupeau',desc:'Repousse 2 groupes de monstres sur le Pâturage Brumeux.',need:2,kind:'win',renc:B,req:2,donneur:'Bergère Brume',say:'Le brouillard est monté, et les loups avec. Chasse-en deux groupes : mes moutons ne retrouvent plus leur chemin.',fin:'Ils se sont comptés trois fois en rentrant. Ça fait toujours le même nombre. C’est rassurant.',rew:{xpq:[14,'normale'],res:{laine:4,braise:2}}},
 c2:{n:'Clochettes égarées',desc:'Ramasse 3 clochettes dans la Bergerie abandonnée pour le Tondeur Mérinos.',need:3,kind:'pick',req:2,donneur:'Tondeur Mérinos',say:'Mes moutons ont perdu leurs clochettes dans la bergerie. Sans clochette, un fantôme est introuvable. Trois, s’il te plaît.',fin:'Dring ! Ah, voilà qui rassure. Un mouton fantôme qui ne tinte pas, c’est juste un mouton qui a un problème.',rew:{xpq:[15,'normale'],res:{laine:4,champi:3}}},
-c3:{n:'Le Bouc qui compte tout',desc:'Entre dans l’Enclos, au bout de la Bergerie, et vaincs le Bouc Recenseur.',need:1,kind:'win',renc:B+4,req:2,donneur:'Berger Laine-de-Nuit',say:'Un bouc a pris ma bergerie pour un bureau. Il recense mes moutons : ils ne dorment plus, ils attendent d’être comptés. Vas-y, je garde la barrière.',fin:'Mes moutons dorment ! Enfin, ils flottent en rond. Pour des fantômes, c’est dormir.',rew:{xpq:[17,'longue'],res:{laine:6,braise:4}}}});
+c3:{n:'Le Bouc qui compte tout',desc:'Entre dans l’Enclos, au bout de la Bergerie, et vaincs le Bouc Recenseur.',need:1,kind:'win',renc:B+4,req:2,donneur:'Berger Laine-de-Nuit',say:'Un bouc a pris ma bergerie pour un bureau. Il recense mes moutons : ils ne dorment plus, ils attendent d’être comptés. Vas-y, je garde la barrière.',fin:'Mes moutons dorment ! Enfin, ils flottent en rond. Pour des fantômes, c’est dormir.',rew:{xpq:[17,'longue'],res:{laine:6,braise:4}}},
+c4:{n:'Les fiches du recensement',desc:'Ramasse 3 fiches de recensement dans les Collines pour le Berger Laine-de-Nuit.',need:3,kind:'pick',req:2,donneur:'Berger Laine-de-Nuit',say:'Le bouc sème ses fiches dans les collines. Elles portent un cachet royal : le Roi veut compter chaque sujet. Rapporte-m’en trois, que je comprenne pourquoi.',fin:'« Un mouton, un soldat. » Le Roi lève une armée de laine. Voilà pourquoi le bouc ne dort plus.',rew:{xpq:[16,'normale'],res:{laine:4,braise:2}}},
+c5:{n:'Moutons réquisitionnés',desc:'Repousse 2 groupes de monstres dans la Bergerie abandonnée pour libérer les moutons enrôlés.',need:2,kind:'win',renc:B+1,req:2,donneur:'Bergère Brume',say:'On a enrôlé mes moutons de force : un tampon royal sur le dos, et hop, « soldats ». Ils sont retenus dans la bergerie, gardés par des loups. Libère-les.',fin:'Ils sont rentrés au pas. Je ne sais pas qui leur a appris à marcher en rang, mais je ne l’aime pas.',rew:{xpq:[15,'normale'],res:{laine:4,champi:2}}},
+c6:{n:'Laine pour le Roi',desc:'Livre un ballot de laine au Concierge Ficelle, au Manoir du Chambellan.',need:1,kind:'livre',req:2,donneur:'Tondeur Mérinos',to:'Concierge Ficelle',say:'Le Roi réclame de la laine pour un manteau royal. Le Concierge Ficelle, au Manoir, réceptionne. Vas-y à ma place : on me demanderait un formulaire.',recu:'De la laine pour Sa Majesté ? Parfait. Remplissez le formulaire de remise. Vous n’en avez pas ? Je sais. Je note quand même.',fin:'Livré ? Le Roi aura son manteau. Transparent, mais royal.',rew:{xpq:[17,'normale'],res:{laine:4,braise:2}}}});
 })();
 
 // ============ MANOIR ÉTENDU : Hall des Guichets, Bureaux des Tampons et donjon « Les Archives du Chambellan » ============
