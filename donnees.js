@@ -718,14 +718,13 @@ DATA.cartes.dunes.exits.push({x:6,y:0,to:'mirage',tx:6,ty:11});
 DATA.cartes.dunes.npcs.forEach(n=>{if(n.n=='Vieux Sablier')n.quests.push('o3')});
 DATA.cartes.mirage={n:'Mirage Changeant',biome:'desert',need:7,start:[6,11],tint:'rgba(230,190,120,.14)',
 rocks:[[3,3],[3,9],[6,6],[9,3],[9,9]],
-npcs:[{x:2,y:11,e:'🧞',n:'Guide du Mirage',quests:['o1'],txt:'Je connais le chemin. Il change tous les quarts d’heure. Moi aussi, d’ailleurs.'}],
+npcs:[{x:2,y:11,e:'🧞',n:'Guide du Mirage',quests:['o1'],txt:'Je connais le chemin. Il change tous les quarts d’heure. Moi aussi, d’ailleurs.',variantes:[{si:{flag:'mirage_oasis'},txt:'Les touristes vont tous à l’Oasis. Ils y vont droit, sans mirage. Je m’ennuie un peu.'},{si:{flag:'mirage_secret'},txt:'Le mirage reste secret. Les touristes cherchent encore. Je les regarde chercher : c’est mon métier.'}],actions:[{id:'mirage_oasis',t:'Rediriger vers l’Oasis',sub:'Aider l’Hôtelier : sable et fil',si:{quete:{id:'o1',etat:'finie'},pasFlag:'mirage_choix'},rew:{xpq:[33,'normale'],res:{sable:4,fil:3},set:{mirage_oasis:true,mirage_choix:true}}},{id:'mirage_secret',t:'Garder le mirage secret',sub:'Rester discret : chaussettes en plus',si:{quete:{id:'o1',etat:'finie'},pasFlag:'mirage_choix'},rew:{xpq:[33,'normale'],res:{chaussette:5},set:{mirage_secret:true,mirage_choix:true}}}]}],
 groups:[{x:8,y:4,renc:B},{x:3,y:6,renc:B}],
 nodes:[{x:2,y:2,res:'sable'},{x:11,y:11,res:'fil'}],
 exits:[{x:6,y:12,to:'dunes',tx:6,ty:1},{x:12,y:6,to:'puits',tx:1,ty:6}]};
 DATA.cartes.puits={n:'Puits aux Mille Pieds',biome:'desert',need:7,start:[1,6],tint:'rgba(200,170,120,.18)',
 rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
 npcs:[{x:2,y:10,e:'🪣',n:'Porteur d’eau',quests:['o2'],txt:'Le puits est à sec. Mais il est très profond. C’est le seul compliment qu’on puisse lui faire.'}],
-picks:[{x:2,y:2,quest:'o2'},{x:11,y:11,quest:'o2'},{x:11,y:1,quest:'o2'}],
 groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
 nodes:[{x:6,y:2,res:'chaussette'},{x:6,y:11,res:'sable'}],
 coffres:[{x:12,y:12,res:{chaussette:4,sable:3}}],
@@ -748,8 +747,8 @@ nodes:[],
 coffres:[{x:12,y:12,res:{sable:5,fil:4,chaussette:4}}],
 exits:[{x:0,y:6,to:'pyr2',tx:11,ty:6}]};
 Object.assign(DATA.quetes,{
-o1:{n:'Chemin du mirage',desc:'Repousse 2 groupes de monstres sur le Mirage Changeant.',need:2,kind:'win',renc:B,req:7,donneur:'Guide du Mirage',say:'Des vautours et des cobras squattent mon mirage. Repousses-en deux groupes, que je puisse rediriger les touristes vers autre chose.',fin:'Le mirage est dégagé. Il a même l’air plus vrai. C’est inquiétant, mais c’est mieux.',rew:{xpq:[33,'normale'],res:{sable:4,fil:3}}},
-o2:{n:'Gourdes asséchées',desc:'Ramasse 3 gourdes oubliées autour du Puits aux Mille Pieds pour le Porteur d’eau.',need:3,kind:'pick',req:7,donneur:'Porteur d’eau',say:'Trois gourdes ont roulé dans le sable. Elles sont vides, mais elles ont de la valeur sentimentale.',fin:'Les voilà ! Vides, comme dans mon souvenir. Merci, je vais pouvoir les remplir de rien.',rew:{xpq:[34,'normale'],res:{chaussette:4,sable:3}}},
+o1:{n:'Chemin du mirage',desc:'Repousse le groupe de vautours et de cobras qui squatte le Mirage Changeant, puis décide avec le Guide de ce qu’on fait des touristes.',need:1,kind:'win',renc:B,req:7,donneur:'Guide du Mirage',say:'Des vautours et des cobras squattent mon mirage. Dégage-les : on décidera ensuite ce qu’on fait des touristes.',fin:'Le mirage est dégagé. Il a même l’air plus vrai. C’est inquiétant, mais c’est mieux. Reste à décider des touristes : parle-moi encore.',rew:{xpq:[33,'courte'],res:{sable:2}}},
+o2:{n:'Gourdes asséchées',desc:'Mène l’enquête : interroge le Chamelier et le Marchand de chaussettes, à l’Oasis, pour savoir où sont passées les gourdes du Porteur d’eau.',need:2,kind:'livre',req:7,donneur:'Porteur d’eau',to:['Chamelier','Marchand de chaussettes'],say:'Trois gourdes ont disparu et le puits est à sec. Je soupçonne un complot. Demande au Chamelier et au Marchand de chaussettes, à l’Oasis : l’un transporte, l’autre revend tout.',recu:{'Chamelier':'Les gourdes ? Mes chameaux les portent la nuit, vides, par habitude. Demande au marchand : c’est lui qui les rachète.','Marchand de chaussettes':'Je les rachète vides, je les revends vides. Marge parfaite. Dis au Porteur que son puits n’est pas à sec : il est en rupture de stock.'},fin:'En rupture de stock ! Voilà qui change tout. Enfin, ça ne change rien, mais ça sonne mieux. Merci.',rew:{xpq:[34,'normale'],res:{chaussette:4,sable:3}}},
 o3:{n:'L’énigme sans réponse',desc:'Pénètre dans la Pyramide, au bout du Puits, et vaincs le Sphinx Dépareillé.',need:1,kind:'win',renc:B+4,req:7,donneur:'Vieux Sablier',say:'Un sphinx pose une énigme depuis mille ans. Personne n’a trouvé la réponse. Lui non plus, d’ailleurs. Il serait temps qu’on lui dise d’arrêter.',fin:'Il arrête ! Enfin ! Et il y avait bien une chaussette au fond. Je tiens mon registre à jour.',rew:{xpq:[37,'longue'],res:{sable:6,fil:5,chaussette:5}}}});
 })();
 
@@ -891,6 +890,9 @@ const npc=(c,n)=>DATA.cartes[c].npcs.find(x=>x.n==n);
 npc('ile','Vieille Berceuse').variantes=[{si:{flag:'berceuses_rendues'},txt:'Mes berceuses sont rentrées. Le marais ne me chante plus de reproches : il ronfle.'}];
 npc('marais','La Passeuse').variantes=[{si:{flag:'berceuses_rendues'},txt:'Tu entends ? Le marais ronfle. Depuis les berceuses, même les crapauds baissent la voix.'}];
 })();
+
+// ============ ÉTAPE 4 (quêtes variées) : Désert, conséquence du choix du Mirage (o1) ============
+DATA.cartes.oasis.npcs.find(n=>n.n.startsWith('Hôtelier')).variantes=[{si:{flag:'mirage_oasis'},txt:'Des touristes ! Enfin ! Ils dorment sur des draps dépareillés, et ils trouvent ça charmant.'}];
 
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran

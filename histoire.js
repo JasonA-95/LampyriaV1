@@ -337,3 +337,12 @@ courrier_libre:{once:true,declencheur:{quand:'action',id:'courrier_libre'},etape
 berceuses_fin:{once:true,declencheur:{quand:'quete',id:'n2',etat:'terminee'},etapes:[
 {qui:'Vieille Berceuse',at:'pnj:Vieille Berceuse',txt:'Écoute : le marais ronfle. Pour la première fois depuis longtemps, je n’ai plus rien à chanter.'},
 {qui:'Rêveuse',at:'hero',txt:'Il rêve, le marais. À voix basse. Chut.'}]}});
+
+// ---- Désert : choix du mirage (o1) ----
+Object.assign(DATA.scenes,{
+mirage_oasis:{once:true,declencheur:{quand:'action',id:'mirage_oasis'},etapes:[
+{qui:'Guide du Mirage',at:'pnj:Guide du Mirage',txt:'À l’Oasis, alors. Les touristes y verront de vraies palmes. Ça va les déstabiliser.'},
+{qui:'Farceuse',at:'hero',txt:'Un vrai endroit, pour une fois ! Je ne sais pas si c’est une bonne ou une mauvaise farce.'}]},
+mirage_secret:{once:true,declencheur:{quand:'action',id:'mirage_secret'},etapes:[
+{qui:'Guide du Mirage',at:'pnj:Guide du Mirage',txt:'Le mirage restera secret. Les touristes se perdront un peu. C’est ce qu’ils viennent chercher.'},
+{qui:'Têtue',at:'hero',txt:'Un secret bien gardé. Voilà une décision que je respecte.'}]}});
