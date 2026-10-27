@@ -104,6 +104,7 @@ const LOOKS={
 'Bergère Brume':{r:'#8aa0c8',t:'#f0f4ff',h:'#e8c890',hs:'braid',hat:'cap',hc:'#6a80b0',tr:'#f0f4ff',prop:'crook'},
 'Tondeur Mérinos':{r:'#d0c0a0',t:'#f6f2ea',h:'#8a5a3a',b:'short',hat:'cap',hc:'#8a6a4a',prop:'shears'},
 'Concierge Ficelle':{r:'#2a3a6a',t:'#e8b860',h:'#3a2a20',b:'mus',hat:'kepi',hc:'#2a3a6a',prop:'keys'},
+'Stagiaire Pochoir':{r:'#4a3a6a',t:'#c8b8e8',h:'#5a3a2a',hat:'cap',hc:'#3a2a50',prop:'quill',s:'#f0cdb0',sc:.9},
 'Copiste Rature':{r:'#3a2a4a',t:'#8a7aaa',h:'#2a2a3a',hat:'cap',hc:'#2a2040',tr:'#8a7aaa',prop:'quill',s:'#e8d0b8'},
 'Naufragé Barnabé':{r:'#8a7a5a',t:'#d8c8a0',h:'#6a4a2a',b:'short',hat:'straw',hc:'#c8b070',tr:'#8a7a5a',prop:'rod'},
 'Vieux Fanal':{old:1,r:'#5a6a7a',t:'#d8e0e8',h:'#e8e8ee',b:'short',hat:'cap',hc:'#2a3a5a',prop:'rod'},

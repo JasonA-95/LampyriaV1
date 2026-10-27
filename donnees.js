@@ -592,14 +592,13 @@ DR(B,[{id:'encrier_noir',p:15}]);DR(B+1,[{id:'chaussons_feutres',p:20}]);DR(B+3,
 DATA.cartes.manoir.exits.push({x:6,y:0,to:'hall',tx:6,ty:11});
 DATA.cartes.hall={n:'Hall des Guichets',biome:'manoir',need:3,start:[6,11],tint:'rgba(130,70,170,.18)',
 rocks:[[3,4],[3,8],[6,6],[9,4],[9,8]],
-npcs:[{x:2,y:11,e:'🧑‍✈️',n:'Concierge Ficelle',quests:['m1','m3'],txt:'Guichet 1 : fermé. Guichet 2 : fermé. Guichet 3 : ouvert, mais il est dans le mauvais bâtiment.'}],
+npcs:[{x:2,y:11,e:'🧑‍✈️',n:'Concierge Ficelle',quests:['m1','m3'],txt:'Guichet 1 : fermé. Guichet 2 : fermé. Guichet 3 : ouvert, mais il est dans le mauvais bâtiment.',variantes:[{si:{flag:'courrier_tampon'},txt:'Tout est tamponné, donc légalement arrivé. Les destinataires, eux, n’ont toujours rien reçu.'},{si:{flag:'courrier_libre'},txt:'Du courrier distribué sans tampon ? Je n’ai rien vu. Je n’ai jamais rien vu. Je note quand même.'}],actions:[{id:'courrier_tampon',t:'Faire tamponner le courrier',sub:'Suivre la procédure : braises et champignons',si:{quete:{id:'m1',etat:'finie'},pasFlag:'courrier_choix'},rew:{xpq:[18,'normale'],res:{braise:4,champi:2},set:{courrier_tampon:true,courrier_choix:true}}},{id:'courrier_libre',t:'Distribuer sans tampon',sub:'Désobéir au règlement : de la laine en plus',si:{quete:{id:'m1',etat:'finie'},pasFlag:'courrier_choix'},rew:{xpq:[18,'normale'],res:{laine:6},set:{courrier_libre:true,courrier_choix:true}}}]}],
 groups:[{x:8,y:3,renc:B},{x:3,y:6,renc:B}],
 nodes:[{x:2,y:2,res:'braise'},{x:11,y:11,res:'champi'}],
 exits:[{x:6,y:12,to:'manoir',tx:6,ty:1},{x:12,y:6,to:'bureaux',tx:1,ty:6}]};
 DATA.cartes.bureaux={n:'Bureaux des Tampons',biome:'manoir',need:3,start:[1,6],tint:'rgba(150,100,170,.2)',
 rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
-npcs:[{x:2,y:10,e:'🖋️',n:'Copiste Rature',quests:['m2'],txt:'Je recopie le même formulaire depuis 40 ans. Je ne sais pas ce qu’il dit. Il est très bien écrit.'}],
-picks:[{x:2,y:2,quest:'m2'},{x:11,y:11,quest:'m2'},{x:11,y:1,quest:'m2'}],
+npcs:[{x:2,y:10,e:'🖋️',n:'Copiste Rature',quests:['m2'],txt:'Je recopie le même formulaire depuis 40 ans. Je ne sais pas ce qu’il dit. Il est très bien écrit.'},{x:9,y:7,e:'🧑‍💼',n:'Stagiaire Pochoir',txt:'Je tamponne. On ne m’a jamais dit quoi. Ni pourquoi trois fois.'}],
 groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
 nodes:[{x:6,y:2,res:'champi'},{x:6,y:11,res:'laine'}],
 coffres:[{x:12,y:12,res:{braise:4,champi:2}}],
@@ -622,8 +621,8 @@ nodes:[],
 coffres:[{x:12,y:12,res:{braise:5,champi:4}}],
 exits:[{x:0,y:6,to:'archives2',tx:11,ty:6}]};
 Object.assign(DATA.quetes,{
-m1:{n:'Courrier en souffrance',desc:'Repousse 2 groupes de monstres dans le Hall des Guichets.',need:2,kind:'win',renc:B,req:3,donneur:'Concierge Ficelle',say:'Le courrier s’entasse devant les guichets, gardé par des clercs et des mouches. Repousses-en deux groupes, je te ferai un reçu.',fin:'Un reçu ! Tamponné, signé et déjà périmé. Tu as bien mérité ta récompense.',rew:{xpq:[18,'normale'],res:{braise:4,champi:3}}},
-m2:{n:'Formulaires égarés',desc:'Ramasse 3 formulaires perdus dans les Bureaux des Tampons pour le Copiste Rature.',need:3,kind:'pick',req:3,donneur:'Copiste Rature',say:'Trois formulaires ont glissé hors de leur dossier. Sans eux, mon formulaire est incomplet. Je ne sais pas de quoi, mais ça me gêne.',fin:'Complet ! Je peux enfin le recopier à nouveau. Merci, je suis ému. Il y a de l’encre sur ma joue.',rew:{xpq:[19,'normale'],res:{laine:4,champi:3}}},
+m1:{n:'Courrier en souffrance',desc:'Repousse le groupe de clercs et de mouches qui bloque le courrier dans le Hall des Guichets, puis décide du sort du courrier avec le Concierge Ficelle.',need:1,kind:'win',renc:B,req:3,donneur:'Concierge Ficelle',say:'Le courrier s’entasse devant les guichets, gardé par des clercs et des mouches. Dégage le passage : je déciderai ensuite avec toi de ce qu’on en fait.',fin:'Le passage est libre. Reste le courrier : parle-moi encore, on va décider.',rew:{xpq:[18,'courte'],res:{braise:2}}},
+m2:{n:'Formulaires égarés',desc:'Mène l’enquête : interroge le Concierge Ficelle et le Stagiaire Pochoir pour savoir où sont passées les pages du formulaire du Copiste Rature.',need:2,kind:'livre',req:3,donneur:'Copiste Rature',to:['Concierge Ficelle','Stagiaire Pochoir'],say:'Trois pages de mon formulaire ont disparu. Sans elles, il est incomplet. Je ne sais pas de quoi, mais ça me gêne. Demande au Concierge Ficelle et au Stagiaire Pochoir : l’un garde les guichets, l’autre fait les tampons.',recu:{'Concierge Ficelle':'Des pages ? Elles passent toutes par le guichet 3, qui est fermé. Demande au stagiaire : c’est lui qui tamponne.','Stagiaire Pochoir':'Je les ai tamponnées, par réflexe. Trois fois chacune. Elles sont si tamponnées qu’on ne lit plus rien. Dis au Copiste que son formulaire est complet. Illisible, mais complet.'},fin:'Complet ! Illisible, mais complet. Je vais pouvoir le recopier à nouveau. Merci, je suis ému. Il y a de l’encre sur ma joue.',rew:{xpq:[19,'normale'],res:{laine:4,champi:3}}},
 m3:{n:'Les Archives du Chambellan',desc:'Pénètre dans les Archives, au fond des Bureaux, et vaincs le Greffier Ratures.',need:1,kind:'win',renc:B+4,req:3,donneur:'Concierge Ficelle',say:'Le Greffier archive tout, même les gens. Quelqu’un doit lui rappeler qu’on ne classe pas les visiteurs. Les Archives sont derrière les Bureaux.',fin:'Les visiteurs sont sortis des classeurs ! Certains ont un peu jauni. Merci, on sent que ça circule.',rew:{xpq:[20,'longue'],res:{braise:6,champi:4,laine:4}}}});
 })();
 
@@ -685,8 +684,8 @@ nodes:[],
 coffres:[{x:12,y:12,res:{cendre:5,roseau:5}}],
 exits:[{x:0,y:6,to:'reves2',tx:11,ty:6}]};
 Object.assign(DATA.quetes,{
-n1:{n:'Les crapauds de passage',desc:'Repousse 2 groupes de monstres au Gué des Crapauds.',need:2,kind:'win',renc:B,req:4,donneur:'Pêcheur de Brume',say:'Des crapauds et des papillons squattent mon gué. Repousses-en deux groupes : j’aimerais pêcher quelque chose, même un caillou.',fin:'J’ai pêché un caillou ! Il est gros, il est mouillé, il est à moi.',rew:{xpq:[22,'normale'],res:{cendre:4,roseau:3}}},
-n2:{n:'Berceuses envolées',desc:'Ramasse 3 berceuses sur l’Île aux Berceuses pour la Vieille Berceuse.',need:3,kind:'pick',req:4,donneur:'Vieille Berceuse',say:'Trois berceuses se sont échappées de mon carnet. Elles brillent un peu. Sans elles, plus personne ne dort ici.',fin:'La première note est revenue. Les roseaux bâillent. Merci, je vais pouvoir me reposer, moi aussi.',rew:{xpq:[23,'normale'],res:{roseau:4,cendre:3}}},
+n1:{n:'Le crapaud-roi du Gué',desc:'Un crapaud géant et ses deux chasseurs de rêves ont pris le Gué des Crapauds : chasse-les.',need:1,kind:'win',renc:B,req:4,donneur:'Pêcheur de Brume',say:'Un crapaud grand comme une barque squatte mon gué, avec deux chasseurs de rêves pour garde. Chasse-les : j’aimerais pêcher quelque chose, même un caillou.',fin:'J’ai pêché un caillou ! Il est gros, il est mouillé, il est à moi. Garde la verrue : elle porte bonheur, paraît-il.',rew:{xpq:[22,'normale'],res:{cendre:4,roseau:3}}},
+n2:{n:'Berceuses envolées',desc:'Ramasse 3 berceuses sur l’Île aux Berceuses pour la Vieille Berceuse.',need:3,kind:'pick',req:4,donneur:'Vieille Berceuse',say:'Trois berceuses se sont échappées de mon carnet. Elles brillent un peu. Sans elles, plus personne ne dort ici.',fin:'La première note est revenue. Les roseaux bâillent, et le marais commence à se taire. Merci, je vais pouvoir me reposer, moi aussi.',rew:{xpq:[23,'normale'],res:{roseau:4,cendre:3},set:{berceuses_rendues:true}}},
 n3:{n:'La Baronne qui ne dort jamais',desc:'Pénètre dans le Manoir des Rêves, au bout de l’Île, et vaincs la Baronne Insomnie.',need:1,kind:'win',renc:B+4,req:4,donneur:'La Passeuse',say:'Une baronne veille dans le manoir des rêves. Tant qu’elle ne dort pas, tout le marais fait des cauchemars. Je connais les habitudes du marais, mais pas les siennes.',fin:'Les cauchemars retombent en cendres. Le marais dort. C’est très inhabituel, et très agréable.',rew:{xpq:[26,'longue'],res:{cendre:6,roseau:4,braise:4}}}});
 })();
 
@@ -876,6 +875,23 @@ r4:{n:'Marée de livraison',desc:'Livre des cordages à Mousse Cuivré, au Port 
 r5:{n:'L’Amiral qui attend la marée',desc:'Entre dans l’Épave au bout du Port et vaincs l’Amiral Marée-Basse.',need:1,kind:'win',renc:B+2,req:11,donneur:'Mousse Cuivré',say:'L’Amiral a reçu un ordre du Roi : retrouver l’endroit où le soleil est tombé. Il a navigué jusqu’au bout du monde, et la marée s’est arrêtée, lui avec. Fais-la repartir.',fin:'La marée repart ! Lentement, mais elle repart. L’Amiral parlait du Soleil Couchant : le soleil a plongé du côté du Temple. Je crois que tu sais où aller.',rew:{xpq:[43,'longue'],res:{fil:6,gravat:5,sable:4}}}
 })})();
 
+// ============ ÉTAPE 3 (quêtes variées) : chasse au crapaud-roi (n1) et conséquences des berceuses (n2) ============
+(()=>{
+const HB=DATA.rencontres.length;
+const roi=(x,y)=>({x,y,hp:85,max:85,pm:3,d:15,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'poison',v:3,t:2}],cd:2}}),
+chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+DATA.rencontres.push({n:'Chasse au crapaud-roi',biome:'marais',niv:23,type:'elite',loot:{cendre:5,roseau:3},m:[roi(10,6),chr(9,3),chr(9,9)]});
+{const k=4.8,kd=Math.pow(k,.7);DATA.rencontres[HB].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd)}})}
+DATA.objets.verrue_chance={n:'Verrue porte-bonheur',e:'🐸',slot:'acc',r:2,st:{pv:16,res:5}};
+DR(HB,[{id:'verrue_chance',p:100}]);
+DATA.quetes.n1.renc=HB;
+DATA.cartes.gue.groups.push({x:10,y:9,renc:HB});
+const npc=(c,n)=>DATA.cartes[c].npcs.find(x=>x.n==n);
+npc('ile','Vieille Berceuse').variantes=[{si:{flag:'berceuses_rendues'},txt:'Mes berceuses sont rentrées. Le marais ne me chante plus de reproches : il ronfle.'}];
+npc('marais','La Passeuse').variantes=[{si:{flag:'berceuses_rendues'},txt:'Tu entends ? Le marais ronfle. Depuis les berceuses, même les crapauds baissent la voix.'}];
+})();
+
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
 DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
@@ -968,6 +984,7 @@ if(Object.keys(rs).length)m.rs=rs}))}
 
 // ============ ROSELIÈRE ET SERRE : PNJ isolés et quêtes (ro1-ro3, se1-se2) ============
 DATA.cartes.roseliere.npcs.push({x:3,y:7,e:'😴',n:'Insomniaque Mirette',quests:['ro1','ro2','ro3'],txt:'Je n’ai pas dormi depuis la Baronne. Elle compte les moutons des autres, et les miens avec.'});
+DATA.cartes.roseliere.npcs[0].variantes=[{si:{flag:'berceuses_rendues'},txt:'On chante, au loin, dans le marais. Je ferme un œil. Un seul, mais c’est un début.'}];
 DATA.cartes.serre.npcs.push({x:3,y:5,e:'🧑‍🌾',n:'Jardinier Sans-Pousse',quests:['se1','se2'],txt:'Je plante des graines pour la Duchesse depuis 200 ans. Rien ne pousse. Elle ne m’a pas dit d’arrêter.'});
 DATA.cartes.serre.picks=[{x:11,y:2,quest:'se1'},{x:11,y:10,quest:'se1'},{x:6,y:1,quest:'se1'}];
 Object.assign(DATA.quetes,{

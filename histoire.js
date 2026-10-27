@@ -325,3 +325,15 @@ moutons_bouc:{once:true,declencheur:{quand:'action',id:'moutons_bouc'},etapes:[
 moutons_bergers:{once:true,declencheur:{quand:'action',id:'moutons_bergers'},etapes:[
 {qui:'Bergère Brume',at:'pnj:Bergère Brume',txt:'Au pâturage ! Qu’il vienne les chercher, son bouc. Je lui servirai du brouillard.'},
 {qui:'Gourmande',at:'hero',txt:'Désobéir au Roi, c’est bien. Surtout si ça se finit par une tarte à la laine.'}]}});
+
+// ---- Manoir et Marais : choix du courrier (m1) et fin des berceuses (n2) ----
+Object.assign(DATA.scenes,{
+courrier_tampon:{once:true,declencheur:{quand:'action',id:'courrier_tampon'},etapes:[
+{qui:'Concierge Ficelle',at:'pnj:Concierge Ficelle',txt:'Tamponné, enregistré, classé. Le courrier est arrivé. Dommage qu’il soit resté ici.'},
+{qui:'Têtue',at:'hero',txt:'La procédure a été respectée. C’est tout ce qu’on demande. Parfois.'}]},
+courrier_libre:{once:true,declencheur:{quand:'action',id:'courrier_libre'},etapes:[
+{qui:'Concierge Ficelle',at:'pnj:Concierge Ficelle',txt:'Sans tampon ? Les destinataires vont être contents. Et le règlement, bouleversé.'},
+{qui:'Farceuse',at:'hero',txt:'Distribuer le courrier sans tampon ! Le Chambellan va faire une tête de formulaire froissé.'}]},
+berceuses_fin:{once:true,declencheur:{quand:'quete',id:'n2',etat:'terminee'},etapes:[
+{qui:'Vieille Berceuse',at:'pnj:Vieille Berceuse',txt:'Écoute : le marais ronfle. Pour la première fois depuis longtemps, je n’ai plus rien à chanter.'},
+{qui:'Rêveuse',at:'hero',txt:'Il rêve, le marais. À voix basse. Chut.'}]}});
