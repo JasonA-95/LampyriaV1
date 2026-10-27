@@ -316,3 +316,12 @@ mirette_dort:{once:true,declencheur:{quand:'quete',id:'ro3',etat:'terminee'},eta
 jardin_arrose:{once:true,declencheur:{quand:'quete',id:'se2',etat:'terminee'},etapes:[
 {qui:'Jardinier Sans-Pousse',at:'pnj:Jardinier Sans-Pousse',txt:'Un brin vert ! Dans la Serre de la Duchesse ! Je vais devoir le dire à quelqu’un.'},
 {qui:'Gourmande',at:'hero',txt:'Ça se mange, un brin ? Non ? Dommage. Mais c’est beau quand même.'}]}});
+
+// ---- Collines : choix des moutons réquisitionnés (c5) ----
+Object.assign(DATA.scenes,{
+moutons_bouc:{once:true,declencheur:{quand:'action',id:'moutons_bouc'},etapes:[
+{qui:'Bergère Brume',at:'pnj:Bergère Brume',txt:'Au Bouc, alors. Un décret est un décret. Même quand il sent la laine mouillée.'},
+{qui:'Peureuse',at:'hero',txt:'On a obéi au Roi. Je ne sais pas si je dois être soulagée ou inquiète.'}]},
+moutons_bergers:{once:true,declencheur:{quand:'action',id:'moutons_bergers'},etapes:[
+{qui:'Bergère Brume',at:'pnj:Bergère Brume',txt:'Au pâturage ! Qu’il vienne les chercher, son bouc. Je lui servirai du brouillard.'},
+{qui:'Gourmande',at:'hero',txt:'Désobéir au Roi, c’est bien. Surtout si ça se finit par une tarte à la laine.'}]}});
