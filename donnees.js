@@ -826,37 +826,39 @@ mou=(x,y)=>({x,y,hp:52,max:52,pm:4,d:17,e:'🐦',n:'La mouette pillarde',ia:'dis
 med=(x,y)=>({x,y,hp:60,max:60,pm:2,d:12,e:'🪼',n:'La méduse luisante',sort:{n:'Voile urticant',r:[1,3],los:1,dmg:10,etats:[{id:'poison',v:4,t:2}],cd:1}}),
 mar=(x,y)=>({x,y,hp:88,max:88,pm:3,d:22,e:'🏴‍☠️',n:'Le marin fantôme',sort:{n:'Grappin',r:[2,4],los:1,dmg:12,pull:2,cd:2}}),
 ami=(x,y)=>({x,y,hp:190,max:190,pm:2,d:22,e:'⚓',n:'Amiral Marée-Basse',boss:1,boussole:1,cycle:{a:3,b:2,h:'La marée monte : l’Amiral est submergé et protégé.',l:'La marée descend ! L’Amiral est à découvert (dégâts ×1,5).'},prot:'la marée est haute',sort:{n:'Lame de marée',r:[1,3],los:1,dmg:24,push:1,cd:1}}),
-bou=(x,y)=>({x,y,hp:22,max:22,pm:0,d:0,e:'🧭',n:'La boussole',form:1,pct:.12,regen:.03});
+bou=(x,y)=>({x,y,hp:22,max:22,pm:0,d:0,e:'🧭',n:'La boussole',form:1,pct:.12,regen:.03}),
+gro=(x,y)=>({...cra(x,y),hp:130,max:130,d:24});
 DATA.rencontres.push(
 {n:'Plage des Naufragés',biome:'mer',niv:41,loot:{fil:4,sable:3},m:[cra(10,3),mou(11,8),med(9,10)]},
 {n:'Port des Marées Mortes',biome:'mer',niv:42,loot:{sable:4,gravat:3},m:[mar(10,3),cra(11,8),med(9,10),mou(11,5)]},
-{n:'Épave de l’Amiral (boss)',biome:'mer',niv:43,say:'amiral',loot:{fil:8,gravat:6,sable:5},m:[ami(11,7),bou(11,6),mar(9,3),mou(10,10)]});
-[4.0,4.2,4.5].forEach((k,j)=>{const kd=Math.pow(k,.7);const r=DATA.rencontres[B+j];
+{n:'Épave de l’Amiral (boss)',biome:'mer',niv:43,say:'amiral',loot:{fil:8,gravat:6,sable:5},m:[ami(11,7),bou(11,6),mar(9,3),mou(10,10)]},
+{n:'Chasse au crabe colossal',biome:'mer',niv:42,type:'elite',loot:{fil:5,sable:4},m:[gro(10,6),mou(9,3),mou(9,9)]});
+[4.0,4.2,4.5,4.6].forEach((k,j)=>{const kd=Math.pow(k,.7);const r=DATA.rencontres[B+j];
 {const b0=r.m.find(m=>m.boss),f0=r.m.find(m=>m.form);if(b0&&f0)f0.hp=f0.max=Math.max(15,Math.round(b0.max*k*(f0.pct||.22)))}
 r.m.forEach(m=>{if(m.form)return;m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
 if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd)}})});
 DATA.repliques.amiral=['Peureuse','La marée monte : il est intouchable ! Attends qu’elle redescende, ou brise sa boussole.'];
 Object.assign(DATA.objets,{
+pince_rouille:{n:'Pince de crabe colossal',e:'🦀',slot:'acc',r:2,st:{pv:22,res:6}},
 ancre_doree:{n:'Ancre dorée',e:'⚓',slot:'acc',r:2,st:{pv:20,neutre:2}},
 bottes_maree:{n:'Bottes de marée',e:'👢',slot:'bottes',r:2,st:{pv:22,res:6}},
 tricorne_amiral:{n:'Tricorne d’amiral',e:'🎩',slot:'tete',r:3,st:{pv:30,res:7}},
 sabre_maree:{n:'Sabre de marée',e:'🗡️',slot:'arme',r:3,st:{neutre:9}},
 veste_amiral:{n:'Veste d’amiral',e:'🧥',slot:'corps',r:3,st:{pv:34,res:10}}});
-DR(B,[{id:'ancre_doree',p:15}]);DR(B+1,[{id:'bottes_maree',p:20}]);DR(B+2,[{id:'sabre_maree',p:100},{id:'tricorne_amiral',p:35},{id:'veste_amiral',p:35}]);
+DR(B,[{id:'ancre_doree',p:15}]);DR(B+1,[{id:'bottes_maree',p:20}]);DR(B+3,[{id:'pince_rouille',p:100}]);DR(B+2,[{id:'sabre_maree',p:100},{id:'tricorne_amiral',p:35},{id:'veste_amiral',p:35}]);
 DATA.cartes.mirage.exits.push({x:6,y:12,to:'plage',tx:6,ty:1});
 DATA.cartes.plage={n:'Plage des Naufragés',biome:'mer',need:11,start:[6,1],tint:'rgba(120,170,200,.16)',
 rocks:[[3,4],[9,4],[6,7],[3,10],[9,10]],
 npcs:[{x:2,y:6,e:'🧔',n:'Naufragé Barnabé',quests:['r1','r2','r4'],txt:'Je suis naufragé depuis trois ans. Le bateau est parti sans moi. Il est revenu sans personne. C’est vexant.'}],
-picks:[{x:2,y:2,quest:'r1'},{x:11,y:11,quest:'r1'},{x:11,y:1,quest:'r1'}],
-groups:[{x:8,y:5,renc:B},{x:5,y:9,renc:B}],
+groups:[{x:8,y:5,renc:B},{x:5,y:9,renc:B},{x:10,y:9,renc:B+3}],
 nodes:[{x:1,y:11,res:'fil'},{x:11,y:6,res:'sable'}],
 exits:[{x:6,y:0,to:'mirage',tx:6,ty:11},{x:6,y:12,to:'port',tx:6,ty:1}]};
 DATA.cartes.port={n:'Port des Marées Mortes',biome:'mer',need:11,start:[6,1],tint:'rgba(100,140,170,.2)',
 rocks:[[3,3],[9,3],[6,6],[3,9],[9,9]],
-npcs:[{x:2,y:6,e:'👦',n:'Mousse Cuivré',quests:['r3','r5'],txt:'L’Amiral dit que la marée reviendra. Elle ne revient pas. Lui non plus ne bouge pas : il attend sur l’épave, au bout du quai.'}],
 picks:[{x:1,y:2,quest:'r3'},{x:11,y:2,quest:'r3'},{x:11,y:11,quest:'r3'}],
 groups:[{x:8,y:5,renc:B+1},{x:5,y:9,renc:B+1}],
 nodes:[{x:1,y:11,res:'sable'},{x:7,y:11,res:'gravat'}],
+npcs:[{x:2,y:6,e:'👦',n:'Mousse Cuivré',quests:['r3','r5'],txt:'L’Amiral dit que la marée reviendra. Elle ne revient pas. Lui non plus ne bouge pas : il attend sur l’épave, au bout du quai.'},{x:10,y:7,e:'🧓',n:'Vieux Fanal',txt:'Je garde le phare du port. Il n’éclaire rien, mais personne ne s’en est plaint.'}],
 coffres:[{x:12,y:6,res:{sable:4,gravat:3}}],
 exits:[{x:6,y:0,to:'plage',tx:6,ty:11},{x:6,y:12,to:'epave',tx:6,ty:1}]};
 DATA.cartes.epave={n:'Épave de l’Amiral',biome:'mer',need:11,start:[6,1],tint:'rgba(70,100,130,.3)',
@@ -867,8 +869,8 @@ coffres:[{x:12,y:12,res:{fil:5,gravat:5,sable:4}}],
 exits:[{x:6,y:0,to:'port',tx:6,ty:11}]};
 DATA.ambiance.mer={type:'brume'};DATA.decor.mer=.12;
 Object.assign(DATA.quetes,{
-r1:{n:'Bouteilles à la mer',desc:'Ramasse 3 bouteilles échouées sur la Plage des Naufragés pour Barnabé.',need:3,kind:'pick',req:11,donneur:'Naufragé Barnabé',say:'Je jette des messages en bouteille depuis trois ans. Elles me reviennent toutes. Récupères-en trois : j’ai oublié ce que j’ai écrit.',fin:'« Au secours. » Ah. C’était donc ça. Je me demande qui j’espérais.',rew:{xpq:[41,'normale'],res:{fil:4,sable:3}}},
-r2:{n:'Filets percés',desc:'Repousse 2 groupes de monstres sur la Plage des Naufragés.',need:2,kind:'win',renc:B,req:11,donneur:'Naufragé Barnabé',say:'Des crabes et des mouettes ont éventré mes filets. Chasses-en deux groupes, ou je finirai par pêcher mes propres sandales.',fin:'Plus un crabe. Les mouettes ont juste changé de plage. Elles m’observent.',rew:{xpq:[41,'normale'],res:{fil:4,sable:3}}},
+r1:{n:'Bouteilles à la mer',desc:'Découvre qui reçoit les messages en bouteille de Barnabé : interroge Mousse Cuivré et le Vieux Fanal, au Port des Marées Mortes.',need:2,kind:'livre',req:11,donneur:'Naufragé Barnabé',to:['Mousse Cuivré','Vieux Fanal'],say:'Je jette des messages en bouteille depuis trois ans, et personne ne répond. Va demander au mousse et au vieux du phare, au port : quelqu’un doit bien les lire.',recu:{'Mousse Cuivré':'Ses bouteilles ? Je n’en ai jamais vu une seule arriver au port. Demande au Vieux Fanal : il repêche tout ce qui flotte.','Vieux Fanal':'Je les repêche, bien sûr. Je les relance ensuite : on ne lit pas le courrier des autres. Je croyais qu’il aimait les voir revenir.'},fin:'Il les repêche et les relance ? Trois ans de « Au secours », relancés par politesse. Je vais lui écrire autre chose.',rew:{xpq:[41,'normale'],res:{fil:4,sable:3}}},
+r2:{n:'Le crabe colossal',desc:'Un crabe colossal rôde sur la Plage des Naufragés : chasse-le, lui et ses mouettes.',need:1,kind:'win',renc:B+3,req:11,donneur:'Naufragé Barnabé',say:'Un crabe grand comme une barque a éventré mes filets. Il vit sur la plage avec ses mouettes. Chasse-le, ou je pêcherai mes sandales.',fin:'Plus de crabe, et des filets que je peux enfin raccommoder. Garde sa pince : elle brille comme une médaille.',rew:{xpq:[41,'normale'],res:{fil:4,sable:3}}},
 r3:{n:'Ancres perdues',desc:'Ramasse 3 ancres autour du Port des Marées Mortes pour Mousse Cuivré.',need:3,kind:'pick',req:11,donneur:'Mousse Cuivré',say:'Les ancres sont tombées du quai quand la marée s’est arrêtée. Sans ancre, un bateau fantôme dérive. Trois, s’il te plaît : je les compte à chaque fois.',fin:'Trois ancres ! Je les range. Elles ne partiront plus nulle part, et elles adorent ça.',rew:{xpq:[42,'normale'],res:{sable:4,gravat:3}}},
 r4:{n:'Marée de livraison',desc:'Livre des cordages à Mousse Cuivré, au Port des Marées Mortes.',need:1,kind:'livre',req:11,donneur:'Naufragé Barnabé',to:'Mousse Cuivré',say:'Ces cordages sont pour le mousse du port. Dis-lui qu’ils sont mouillés. Il ne verra pas la différence.',recu:'Des cordages ! Un peu mouillés, mais tout est mouillé ici. Merci, naufragé.',fin:'Livré ? Parfait. Il me doit un sandwich. Il le sait.',rew:{xpq:[42,'normale'],res:{fil:4,gravat:2}}},
 r5:{n:'L’Amiral qui attend la marée',desc:'Entre dans l’Épave au bout du Port et vaincs l’Amiral Marée-Basse.',need:1,kind:'win',renc:B+2,req:11,donneur:'Mousse Cuivré',say:'L’Amiral a reçu un ordre du Roi : retrouver l’endroit où le soleil est tombé. Il a navigué jusqu’au bout du monde, et la marée s’est arrêtée, lui avec. Fais-la repartir.',fin:'La marée repart ! Lentement, mais elle repart. L’Amiral parlait du Soleil Couchant : le soleil a plongé du côté du Temple. Je crois que tu sais où aller.',rew:{xpq:[43,'longue'],res:{fil:6,gravat:5,sable:4}}}
