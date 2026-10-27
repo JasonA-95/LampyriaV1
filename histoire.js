@@ -307,3 +307,12 @@ amiral_apres:{once:true,declencheur:{quand:'apresCombat',renc:R,issue:'win'},eta
 {qui:'Mélancolique',at:'hero',si:{flag:'melancolique_libre'},txt:'Sa boussole ne montrait pas le nord. Elle montrait le Roi. Il l’a suivi trop longtemps.'},
 {qui:'Gourmande',at:'hero',txt:'Un amiral sans bateau, c’est triste. On lui apportera un sandwich. Les mouettes ne le sauront pas.'},
 {set:{amiral_battu:true}}]}})})();
+
+// ---- Roselière et Serre : fins de quêtes ----
+Object.assign(DATA.scenes,{
+mirette_dort:{once:true,declencheur:{quand:'quete',id:'ro3',etat:'terminee'},etapes:[
+{qui:'Insomniaque Mirette',at:'pnj:Insomniaque Mirette',txt:'Ça marche… Je bâille. Dis à la Baronne que… zzz.'},
+{qui:'Rêveuse',at:'hero',si:{flag:'reve_gardien'},txt:'Elle dort. Je me sens un peu responsable. Et un peu jalouse.'}]},
+jardin_arrose:{once:true,declencheur:{quand:'quete',id:'se2',etat:'terminee'},etapes:[
+{qui:'Jardinier Sans-Pousse',at:'pnj:Jardinier Sans-Pousse',txt:'Un brin vert ! Dans la Serre de la Duchesse ! Je vais devoir le dire à quelqu’un.'},
+{qui:'Gourmande',at:'hero',txt:'Ça se mange, un brin ? Non ? Dommage. Mais c’est beau quand même.'}]}});

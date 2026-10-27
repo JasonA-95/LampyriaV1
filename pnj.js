@@ -82,6 +82,8 @@ const LOOKS={
 'Ermite Champignac':{old:1,r:'#6a7a4a',t:'#a8b878',h:'#d8d0c0',b:'long',hat:'shroom',prop:'staff',pc:'#ff9ab0',long:1},
 'Berger Laine-de-Nuit':{old:1,r:'#5a6a9a',t:'#e8e8ff',h:'#d0d4e0',hat:'cap',hc:'#3a4670',tr:'#e8e8ff',prop:'crook',b:'mus'},
 'La Passeuse':{r:'#2a5a5a',t:'#8ad8c8',hood:'#2a5a5a',h:'#1a1a2a',hs:'none',s:'#d8b090',prop:'staff',pc:'#8ad8c8',long:1},
+'Insomniaque Mirette':{r:'#6a7ab0',t:'#e0e6ff',h:'#4a3a60',hs:'braid',mood:'sleep',s:'#f0cdb0'},
+'Jardinier Sans-Pousse':{r:'#5a6a4a',t:'#c8d8b0',h:'#b8b0a0',b:'short',hat:'straw',hc:'#8a7a50',prop:'shears'},
 'Mémé Lumignon':{old:1,r:'#a85a7a',t:'#f0d8e0',h:'#eeeef4',hs:'bun',s:'#f0cdb0',mood:'smile',sc:.92},
 'Tonton Zébulon':{r:'#4a7a4a',t:'#e8d070',h:'#6a4a2a',b:'mus',hat:'straw',hc:'#e0c070',prop:'sack',pc:'#ffd24a'},
 'Pétoche':{r:'#b02a2a',t:'#e8b860',h:'#4a3020',hat:'kepi',hc:'#1a1a22',mood:'fear'},
