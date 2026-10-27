@@ -346,3 +346,18 @@ mirage_oasis:{once:true,declencheur:{quand:'action',id:'mirage_oasis'},etapes:[
 mirage_secret:{once:true,declencheur:{quand:'action',id:'mirage_secret'},etapes:[
 {qui:'Guide du Mirage',at:'pnj:Guide du Mirage',txt:'Le mirage restera secret. Les touristes se perdront un peu. C’est ce qu’ils viennent chercher.'},
 {qui:'Têtue',at:'hero',txt:'Un secret bien gardé. Voilà une décision que je respecte.'}]}});
+
+// ---- Acte 3 : pétales (e1), choix du Parvis (e2), fleurs de cire (t2) ----
+Object.assign(DATA.scenes,{
+petales_fin:{once:true,declencheur:{quand:'quete',id:'e1',etat:'terminee'},etapes:[
+{qui:'Pèlerin Cendré',at:'pnj:Pèlerin Cendré',txt:'Les pétales brillent encore. Le Temple saura que quelqu’un est passé.'},
+{qui:'Mélancolique',at:'hero',txt:'Le soleil est passé ici pour la dernière fois. On lui doit bien quelques fleurs.'}]},
+parvis_pleurs:{once:true,declencheur:{quand:'action',id:'parvis_pleurs'},etapes:[
+{qui:'Gardien du Parvis',at:'pnj:Gardien du Parvis',txt:'Qu’ils pleurent, alors. Ils en ont le droit. Moi, j’ai mon balai.'},
+{qui:'Mélancolique',at:'hero',txt:'Respecter la tristesse des autres. C’est une forme de tendresse.'}]},
+parvis_cloitre:{once:true,declencheur:{quand:'action',id:'parvis_cloitre'},etapes:[
+{qui:'Gardien du Parvis',at:'pnj:Gardien du Parvis',txt:'Au Cloître ! Sœur Veilleuse va être ravie. Ou terrifiée. Les deux, probablement.'},
+{qui:'Gourmande',at:'hero',txt:'Au moins, au Cloître, il y a de la soupe. Je crois. J’espère.'}]},
+fleurs_fin:{once:true,declencheur:{quand:'quete',id:'t2',etat:'terminee'},etapes:[
+{qui:'Jardinier de cire',at:'pnj:Jardinier de cire',txt:'Replantées. Elles fondront, mais en bon ordre. C’est plus poétique que de ne jamais pousser.'},
+{qui:'Rêveuse',at:'hero',txt:'Elles sont tièdes. Je crois qu’elles rêvent d’être des vraies.'}]}});

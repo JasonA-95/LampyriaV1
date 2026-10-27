@@ -349,7 +349,7 @@ DATA.rencontres[17].drops=[{id:'couronne_eteinte',p:100}];
 DATA.cartes.camp.exits.push({x:12,y:6,to:'chemin',tx:1,ty:6});
 DATA.cartes.chemin={n:'Chemin du Soleil Couchant',biome:'desert',need:11,start:[1,6],tint:'rgba(240,150,70,.16)',
 rocks:[[4,2],[4,10],[6,6],[8,3],[8,9],[10,6]],
-npcs:[{x:2,y:8,e:'🧙',n:'Pèlerin Cendré',quests:['e1'],txt:'Je marche vers le Temple depuis 300 ans. Je n’ai jamais regardé où il était. Il est devant.'}],
+npcs:[{x:2,y:8,e:'🧙',n:'Pèlerin Cendré',quests:['e1'],txt:'Je marche vers le Temple depuis 300 ans. Je n’ai jamais regardé où il était. Il est devant.',variantes:[{si:{flag:'petales_offerts'},txt:'Mes pétales sont sur les marches. Le Temple ne m’a pas remercié, mais il les a gardées. C’est déjà quelque chose.'}]}],
 picks:[{x:1,y:2,quest:'e1'},{x:6,y:11,quest:'e1'},{x:11,y:11,quest:'e1'}],
 groups:[{x:9,y:4,renc:11},{x:9,y:9,renc:11}],
 nodes:[{x:2,y:3,res:'eclat'},{x:5,y:2,res:'gravat'}],
@@ -357,7 +357,7 @@ coffres:[{x:12,y:1,res:{eclat:3,gravat:2}}],
 exits:[{x:0,y:6,to:'camp',tx:11,ty:6},{x:12,y:6,to:'parvis',tx:1,ty:6}]};
 DATA.cartes.parvis={n:'Parvis du Temple',biome:'temple',need:12,start:[1,6],tint:'rgba(255,210,120,.14)',
 rocks:[[3,3],[3,9],[6,2],[6,10],[7,6],[9,3],[9,9]],
-npcs:[{x:2,y:6,e:'🧑‍🦯',n:'Gardien du Parvis',quests:['e2'],txt:'Le Temple est fermé à cause de la tristesse. Entendez : trop de monstres qui pleurent.'}],
+npcs:[{x:2,y:6,e:'🧑‍🦯',n:'Gardien du Parvis',quests:['e2'],txt:'Le Temple est fermé à cause de la tristesse. Entendez : trop de monstres qui pleurent.',variantes:[{si:{flag:'parvis_cloitre'},txt:'Les pèlerins sont au Cloître. On les entend pleurer d’ici, mais en rythme. Presque une prière.'},{si:{flag:'parvis_pleurs'},txt:'Ils pleurent sur mes marches, comme avant. Mais maintenant, c’est un choix. Ça change tout et rien.'},{si:{flag:'petales_offerts'},txt:'Quelqu’un a posé des pétales sur mes marches. Je ne sais pas qui. Je les balaie doucement.'}],actions:[{id:'parvis_pleurs',t:'Laisser les pèlerins pleurer',sub:'Respecter leur deuil : éclats et gravats',si:{quete:{id:'e2',etat:'finie'},pasFlag:'parvis_choix'},rew:{xpq:[47,'normale'],res:{eclat:3,gravat:2},set:{parvis_pleurs:true,parvis_choix:true}}},{id:'parvis_cloitre',t:'Les inviter au Cloître',sub:'Les confier à Sœur Veilleuse : éclats en plus',si:{quete:{id:'e2',etat:'finie'},pasFlag:'parvis_choix'},rew:{xpq:[47,'normale'],res:{eclat:5},set:{parvis_cloitre:true,parvis_choix:true}}}]}],
 groups:[{x:8,y:4,renc:12},{x:9,y:8,renc:12},{x:11,y:6,renc:12}],
 nodes:[{x:2,y:2,res:'eclat'},{x:11,y:11,res:'gravat'}],
 exits:[{x:0,y:6,to:'chemin',tx:11,ty:6},{x:12,y:2,to:'temple',tx:1,ty:6}]};
@@ -371,7 +371,6 @@ exits:[{x:0,y:6,to:'parvis',tx:11,ty:2},{x:12,y:6,to:'cour',tx:1,ty:6}]};
 DATA.cartes.cour={n:'Cour de la Citadelle',biome:'citadelle',need:14,start:[1,6],tint:'rgba(130,70,170,.2)',
 rocks:[[4,2],[4,10],[6,4],[6,8],[8,6],[10,2],[10,10]],
 npcs:[{x:2,y:3,e:'👻',n:'Capitaine fantôme',quests:['e3'],txt:'Garde de la Citadelle depuis sa chute. Mon poste est de ne laisser entrer personne. Je n’ai pas dit pour qui.'}],
-picks:[{x:1,y:11,quest:'e3'},{x:7,y:1,quest:'e3'},{x:11,y:6,quest:'e3'}],
 groups:[{x:9,y:4,renc:14},{x:9,y:9,renc:14}],
 nodes:[{x:3,y:6,res:'gravat'},{x:11,y:11,res:'eclat'}],
 coffres:[{x:12,y:1,res:{eclat:3,gravat:3}}],
@@ -389,9 +388,9 @@ groups:[{x:10,y:6,renc:17}],
 nodes:[{x:2,y:2,res:'eclat'},{x:2,y:10,res:'gravat'}],
 exits:[{x:0,y:6,to:'salle',tx:11,ty:6}]};
 Object.assign(DATA.quetes,{
-e1:{n:'Pétales de couchant',desc:'Ramasse 3 pétales de soleil mourant le long du Chemin pour le Pèlerin Cendré.',need:3,kind:'pick',req:11,donneur:'Pèlerin Cendré',say:'Des pétales de couchant. Elles fleurissent là où le soleil est passé pour la dernière fois. Trois, s’il te plaît.',fin:'Elles brillent encore. Je les offrirai au Temple, s’il se souvient de moi.',rew:{xpq:[44,'normale'],res:{eclat:4}}},
-e2:{n:'Parvis en deuil',desc:'Repousse 2 groupes de monstres éplorés sur le Parvis du Temple.',need:2,kind:'win',renc:12,req:12,donneur:'Gardien du Parvis',say:'Les pèlerins éteints pleurent sur mes marches. Repousse-en deux groupes, que je puisse balayer.',fin:'Enfin du silence. Il y a du bruit dans le silence, mais c’est le mien.',rew:{xpq:[47,'longue'],res:{eclat:4,gravat:2}}},
-e3:{n:'Médailles de la Garde',desc:'Retrouve 3 médailles de la Garde royale dans la Cour de la Citadelle.',need:3,kind:'pick',req:14,donneur:'Capitaine fantôme',say:'Mes gardes ont perdu leurs médailles dans la cour. Trois. Sans elles, ils ne se souviennent plus d’être des gardes.',fin:'Les voilà ! Ils vont se souvenir. Ils vont être très fâchés.',rew:{xpq:[53,'longue'],res:{eclat:4,gravat:4}}}});
+e1:{n:'Pétales de couchant',desc:'Ramasse 3 pétales de soleil mourant le long du Chemin pour le Pèlerin Cendré.',need:3,kind:'pick',req:11,donneur:'Pèlerin Cendré',say:'Des pétales de couchant. Elles fleurissent là où le soleil est passé pour la dernière fois. Trois, s’il te plaît.',fin:'Elles brillent encore. Je les poserai sur les marches du Temple, avant qu’il ne m’oublie.',rew:{xpq:[44,'normale'],res:{eclat:4},set:{petales_offerts:true}}},
+e2:{n:'Parvis en deuil',desc:'Repousse le groupe de monstres éplorés qui pleure sur le Parvis du Temple, puis décide avec le Gardien de ce qu’on fait des pèlerins.',need:1,kind:'win',renc:12,req:12,donneur:'Gardien du Parvis',say:'Les pèlerins éteints pleurent sur mes marches. Dégage-les : on décidera ensuite de ce qu’on en fait.',fin:'Enfin du silence. Reste à savoir quoi faire des pèlerins : parle-moi encore.',rew:{xpq:[47,'courte'],res:{eclat:2}}},
+e3:{n:'Médailles de la Garde',desc:'Mène l’enquête : interroge le Gardien du Parvis et Sœur Veilleuse pour retrouver la trace des médailles du Capitaine fantôme.',need:2,kind:'livre',req:14,donneur:'Capitaine fantôme',to:['Gardien du Parvis','Sœur Veilleuse'],say:'Mes gardes ont perdu leurs médailles. Trois. Sans elles, ils ne se souviennent plus d’être des gardes. Demande au Gardien du Parvis et à Sœur Veilleuse, au Temple : les pèlerins ramassent tout.',recu:{'Gardien du Parvis':'Des médailles ? Les pèlerins éteints les ont prises pour des offrandes. Demande à Sœur Veilleuse : elle récupère les offrandes.','Sœur Veilleuse':'Les médailles ? Fondues dans les cierges, avec le reste des offrandes. Dis au Capitaine que ses gardes veillent désormais pour le Temple. Ils vont être fâchés.'},fin:'Fondues dans les cierges ! Mes gardes veillent pour le Temple, sans le savoir. Ils vont être très fâchés. Mais ils se souviennent d’être des gardes.',rew:{xpq:[53,'longue'],res:{eclat:4,gravat:4}}}});
 
 // ============ ÉQUIPEMENT DES ACTES 2 ET 3 : nouveaux objets, panoplies et butins ============
 DATA.sets.marais={n:'Panoplie des marais',bonus:{2:{pv:10},4:{neutre:1,res:4}}};
@@ -780,13 +779,13 @@ DATA.cartes.parvis.exits.push({x:6,y:0,to:'cloitre',tx:6,ty:11});
 DATA.cartes.parvis.npcs.forEach(n=>{if(n.n=='Gardien du Parvis')n.quests.push('t3')});
 DATA.cartes.cloitre={n:'Cloître des Pèlerins',biome:'temple',need:12,start:[6,11],tint:'rgba(255,210,120,.12)',
 rocks:[[3,3],[3,9],[6,6],[9,3],[9,9]],
-npcs:[{x:2,y:11,e:'🧕',n:'Sœur Veilleuse',quests:['t1'],txt:'Nous veillons depuis des siècles. Personne n’a pensé à nous dire quoi.'}],
+npcs:[{x:2,y:11,e:'🧕',n:'Sœur Veilleuse',quests:['t1'],txt:'Nous veillons depuis des siècles. Personne n’a pensé à nous dire quoi.',variantes:[{si:{flag:'parvis_cloitre'},txt:'Des pèlerins sont arrivés. Ils pleurent doucement. Nous veillons enfin sur quelqu’un.'},{si:{flag:'fleurs_replantees'},txt:'On dit que des fleurs de cire ont été replantées au jardin. Nous veillons dessus, pour qu’elles ne fondent pas trop vite.'}]}],
 groups:[{x:8,y:4,renc:B},{x:3,y:6,renc:B}],
 nodes:[{x:2,y:2,res:'eclat'},{x:11,y:11,res:'gravat'}],
 exits:[{x:6,y:12,to:'parvis',tx:6,ty:1},{x:12,y:6,to:'jardin',tx:1,ty:6}]};
 DATA.cartes.jardin={n:'Jardin de cire',biome:'temple',need:12,start:[1,6],tint:'rgba(240,200,140,.16)',
 rocks:[[4,3],[4,9],[7,6],[10,3],[10,9]],
-npcs:[{x:2,y:10,e:'🧑‍🌾',n:'Jardinier de cire',quests:['t2'],txt:'Mes fleurs sont en cire. Elles ne fanent pas, elles fondent. C’est plus poétique.'}],
+npcs:[{x:2,y:10,e:'🧑‍🌾',n:'Jardinier de cire',quests:['t2'],txt:'Mes fleurs sont en cire. Elles ne fanent pas, elles fondent. C’est plus poétique.',variantes:[{si:{flag:'fleurs_replantees'},txt:'Mes fleurs sont replantées. Elles fondront, mais en bon ordre. On vient les voir, maintenant.'}]}],
 picks:[{x:2,y:2,quest:'t2'},{x:11,y:11,quest:'t2'},{x:11,y:1,quest:'t2'}],
 groups:[{x:9,y:5,renc:B+1},{x:9,y:10,renc:B+1}],
 nodes:[{x:6,y:2,res:'eclat'},{x:6,y:11,res:'gravat'}],
@@ -811,7 +810,7 @@ coffres:[{x:12,y:12,res:{eclat:6,gravat:5}}],
 exits:[{x:0,y:6,to:'crypte2',tx:11,ty:6}]};
 Object.assign(DATA.quetes,{
 t1:{n:'Cloître assiégé',desc:'Repousse 2 groupes de monstres dans le Cloître des Pèlerins.',need:2,kind:'win',renc:B,req:12,donneur:'Sœur Veilleuse',say:'Des ombres et des cierges errent dans le cloître. Repousses-en deux groupes : nous ne pouvons plus veiller en paix.',fin:'Le silence est revenu. Nous pouvons de nouveau veiller sans rien surveiller.',rew:{xpq:[45,'normale'],res:{eclat:4,gravat:3}}},
-t2:{n:'Fleurs de cire',desc:'Ramasse 3 fleurs de cire dans le Jardin pour le Jardinier.',need:3,kind:'pick',req:12,donneur:'Jardinier de cire',say:'Trois fleurs de cire ont fondu à travers le jardin. Elles sont encore tièdes : retrouve-les avant qu’elles refroidissent.',fin:'Les voilà, presque intactes ! Je vais les replanter. Elles fondront quand même, mais plus tard.',rew:{xpq:[46,'normale'],res:{eclat:4,gravat:3}}},
+t2:{n:'Fleurs de cire',desc:'Ramasse 3 fleurs de cire dans le Jardin pour le Jardinier.',need:3,kind:'pick',req:12,donneur:'Jardinier de cire',say:'Trois fleurs de cire ont fondu à travers le jardin. Elles sont encore tièdes : retrouve-les avant qu’elles refroidissent.',fin:'Les voilà, presque intactes ! Je vais les replanter. Elles fondront quand même, mais plus tard. Peut-être qu’on viendra les voir.',rew:{xpq:[46,'normale'],res:{eclat:4,gravat:3},set:{fleurs_replantees:true}}},
 t3:{n:'La Crypte du Gardien',desc:'Pénètre dans la Crypte, au fond du Jardin, et vaincs l’Écho du Gardien.',need:1,kind:'win',renc:B+4,req:12,donneur:'Gardien du Parvis',say:'Sous le jardin, il y a la crypte où le Gardien a veillé une dernière fois. Son écho y monte encore la garde. Quelqu’un doit lui dire que c’est fini.',fin:'L’écho s’est tu. Je crois qu’il a enfin pu s’asseoir. Merci pour lui.',rew:{xpq:[49,'longue'],res:{eclat:6,gravat:5}}}});
 })();
 
