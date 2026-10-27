@@ -169,7 +169,7 @@ test('chaque carte et chaque rencontre déclarent un biome pris en charge', () =
   vm.runInContext(source('donnees.js'), context, { filename: 'donnees.js' });
   const biomes = vm.runInContext("JSON.stringify({cartes:Object.values(DATA.cartes).map(d=>d.biome),rencontres:DATA.rencontres.map(d=>d.biome),ambiance:Object.keys(DATA.ambiance)})", context);
   const { cartes, rencontres, ambiance } = JSON.parse(biomes);
-  const supported = ['village', 'foret', 'collines', 'manoir', 'marais', 'roseliere', 'serre', 'desert', 'temple', 'citadelle', 'trone'];
+  const supported = ['village', 'foret', 'collines', 'manoir', 'marais', 'roseliere', 'serre', 'desert', 'temple', 'citadelle', 'trone', 'mer'];
   assert.ok(cartes.every(biome => supported.includes(biome)));
   assert.ok(rencontres.every(biome => supported.includes(biome)));
   assert.ok(cartes.length >= 7 && rencontres.length >= 7);

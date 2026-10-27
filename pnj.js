@@ -103,6 +103,8 @@ const LOOKS={
 'Tondeur Mérinos':{r:'#d0c0a0',t:'#f6f2ea',h:'#8a5a3a',b:'short',hat:'cap',hc:'#8a6a4a',prop:'shears'},
 'Concierge Ficelle':{r:'#2a3a6a',t:'#e8b860',h:'#3a2a20',b:'mus',hat:'kepi',hc:'#2a3a6a',prop:'keys'},
 'Copiste Rature':{r:'#3a2a4a',t:'#8a7aaa',h:'#2a2a3a',hat:'cap',hc:'#2a2040',tr:'#8a7aaa',prop:'quill',s:'#e8d0b8'},
+'Naufragé Barnabé':{r:'#8a7a5a',t:'#d8c8a0',h:'#6a4a2a',b:'short',hat:'straw',hc:'#c8b070',tr:'#8a7a5a',prop:'rod'},
+'Mousse Cuivré':{r:'#3a5a8a',t:'#e8f0ff',s:'#d8e8f0',h:'#c07a3a',hat:'cap',hc:'#2a3a6a',tr:'#e8f0ff',tail:1,g:1,aura:'#bcd8ff',eye:'#7ad0ff',sc:.85},
 'Pêcheur de Brume':{r:'#4a6a7a',t:'#a8c8d0',h:'#b8bcc0',b:'short',hat:'straw',hc:'#7a8a6a',tr:'#4a6a7a',prop:'rod'},
 'Vieille Berceuse':{old:1,r:'#7a6a9a',t:'#d8d0f0',h:'#f0f0f6',hs:'long',mood:'sleep',s:'#f0cdb0',long:1,sc:.92},
 'Guide du Mirage':{r:'#3a7ab8',t:'#ffd24a',s:'#6ab0d8',h:'#1a2a4a',b:'short',hat:'turban',hc:'#e8d8f8',tr:'#ffd24a',tail:1,aura:'#8ad0ff',mood:'smile'},

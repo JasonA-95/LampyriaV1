@@ -817,6 +817,63 @@ t2:{n:'Fleurs de cire',desc:'Ramasse 3 fleurs de cire dans le Jardin pour le Jar
 t3:{n:'La Crypte du Gardien',desc:'Pénètre dans la Crypte, au fond du Jardin, et vaincs l’Écho du Gardien.',need:1,kind:'win',renc:B+4,req:12,donneur:'Gardien du Parvis',say:'Sous le jardin, il y a la crypte où le Gardien a veillé une dernière fois. Son écho y monte encore la garde. Quelqu’un doit lui dire que c’est fini.',fin:'L’écho s’est tu. Je crois qu’il a enfin pu s’asseoir. Merci pour lui.',rew:{xpq:[49,'longue'],res:{eclat:6,gravat:5}}}});
 })();
 
+// ============ MER : Plage des Naufragés, Port des Marées Mortes, Épave de l'Amiral (niv. 41-43) ============
+// Accessible depuis le Mirage Changeant après le Général Gréviste (need 11). Commandant : l'Amiral Marée-Basse (marée haute = protégé ; boussole brisée = vulnérable).
+(()=>{
+const B=DATA.rencontres.length;
+const cra=(x,y)=>({x,y,hp:72,max:72,pm:3,d:19,e:'🦀',n:'Le crabe-lanterne',sort:{n:'Pince de lanterne',r:[1,1],etats:[{id:'affaibli',v:20,t:2}],cd:1}}),
+mou=(x,y)=>({x,y,hp:52,max:52,pm:4,d:17,e:'🐦',n:'La mouette pillarde',ia:'dist',garde:[3,4],sort:{n:'Piqué du sandwich',r:[2,4],los:1,dmg:16,cd:1}}),
+med=(x,y)=>({x,y,hp:60,max:60,pm:2,d:12,e:'🪼',n:'La méduse luisante',sort:{n:'Voile urticant',r:[1,3],los:1,dmg:10,etats:[{id:'poison',v:4,t:2}],cd:1}}),
+mar=(x,y)=>({x,y,hp:88,max:88,pm:3,d:22,e:'🏴‍☠️',n:'Le marin fantôme',sort:{n:'Grappin',r:[2,4],los:1,dmg:12,pull:2,cd:2}}),
+ami=(x,y)=>({x,y,hp:190,max:190,pm:2,d:22,e:'⚓',n:'Amiral Marée-Basse',boss:1,boussole:1,cycle:{a:3,b:2,h:'La marée monte : l’Amiral est submergé et protégé.',l:'La marée descend ! L’Amiral est à découvert (dégâts ×1,5).'},prot:'la marée est haute',sort:{n:'Lame de marée',r:[1,3],los:1,dmg:24,push:1,cd:1}}),
+bou=(x,y)=>({x,y,hp:22,max:22,pm:0,d:0,e:'🧭',n:'La boussole',form:1,pct:.12,regen:.03});
+DATA.rencontres.push(
+{n:'Plage des Naufragés',biome:'mer',niv:41,loot:{fil:4,sable:3},m:[cra(10,3),mou(11,8),med(9,10)]},
+{n:'Port des Marées Mortes',biome:'mer',niv:42,loot:{sable:4,gravat:3},m:[mar(10,3),cra(11,8),med(9,10),mou(11,5)]},
+{n:'Épave de l’Amiral (boss)',biome:'mer',niv:43,say:'amiral',loot:{fil:8,gravat:6,sable:5},m:[ami(11,7),bou(11,6),mar(9,3),mou(10,10)]});
+[4.0,4.2,4.5].forEach((k,j)=>{const kd=Math.pow(k,.7);const r=DATA.rencontres[B+j];
+{const b0=r.m.find(m=>m.boss),f0=r.m.find(m=>m.form);if(b0&&f0)f0.hp=f0.max=Math.max(15,Math.round(b0.max*k*(f0.pct||.22)))}
+r.m.forEach(m=>{if(m.form)return;m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd)}})});
+DATA.repliques.amiral=['Peureuse','La marée monte : il est intouchable ! Attends qu’elle redescende, ou brise sa boussole.'];
+Object.assign(DATA.objets,{
+ancre_doree:{n:'Ancre dorée',e:'⚓',slot:'acc',r:2,st:{pv:20,neutre:2}},
+bottes_maree:{n:'Bottes de marée',e:'👢',slot:'bottes',r:2,st:{pv:22,res:6}},
+tricorne_amiral:{n:'Tricorne d’amiral',e:'🎩',slot:'tete',r:3,st:{pv:30,res:7}},
+sabre_maree:{n:'Sabre de marée',e:'🗡️',slot:'arme',r:3,st:{neutre:9}},
+veste_amiral:{n:'Veste d’amiral',e:'🧥',slot:'corps',r:3,st:{pv:34,res:10}}});
+DR(B,[{id:'ancre_doree',p:15}]);DR(B+1,[{id:'bottes_maree',p:20}]);DR(B+2,[{id:'sabre_maree',p:100},{id:'tricorne_amiral',p:35},{id:'veste_amiral',p:35}]);
+DATA.cartes.mirage.exits.push({x:6,y:12,to:'plage',tx:6,ty:1});
+DATA.cartes.plage={n:'Plage des Naufragés',biome:'mer',need:11,start:[6,1],tint:'rgba(120,170,200,.16)',
+rocks:[[3,4],[9,4],[6,7],[3,10],[9,10]],
+npcs:[{x:2,y:6,e:'🧔',n:'Naufragé Barnabé',quests:['r1','r2','r4'],txt:'Je suis naufragé depuis trois ans. Le bateau est parti sans moi. Il est revenu sans personne. C’est vexant.'}],
+picks:[{x:2,y:2,quest:'r1'},{x:11,y:11,quest:'r1'},{x:11,y:1,quest:'r1'}],
+groups:[{x:8,y:5,renc:B},{x:5,y:9,renc:B}],
+nodes:[{x:1,y:11,res:'fil'},{x:11,y:6,res:'sable'}],
+exits:[{x:6,y:0,to:'mirage',tx:6,ty:11},{x:6,y:12,to:'port',tx:6,ty:1}]};
+DATA.cartes.port={n:'Port des Marées Mortes',biome:'mer',need:11,start:[6,1],tint:'rgba(100,140,170,.2)',
+rocks:[[3,3],[9,3],[6,6],[3,9],[9,9]],
+npcs:[{x:2,y:6,e:'👦',n:'Mousse Cuivré',quests:['r3','r5'],txt:'L’Amiral dit que la marée reviendra. Elle ne revient pas. Lui non plus ne bouge pas : il attend sur l’épave, au bout du quai.'}],
+picks:[{x:1,y:2,quest:'r3'},{x:11,y:2,quest:'r3'},{x:11,y:11,quest:'r3'}],
+groups:[{x:8,y:5,renc:B+1},{x:5,y:9,renc:B+1}],
+nodes:[{x:1,y:11,res:'sable'},{x:7,y:11,res:'gravat'}],
+coffres:[{x:12,y:6,res:{sable:4,gravat:3}}],
+exits:[{x:6,y:0,to:'plage',tx:6,ty:11},{x:6,y:12,to:'epave',tx:6,ty:1}]};
+DATA.cartes.epave={n:'Épave de l’Amiral',biome:'mer',need:11,start:[6,1],tint:'rgba(70,100,130,.3)',
+rocks:[[3,4],[9,4],[6,8]],npcs:[],
+groups:[{x:6,y:9,renc:B+2}],
+nodes:[],
+coffres:[{x:12,y:12,res:{fil:5,gravat:5,sable:4}}],
+exits:[{x:6,y:0,to:'port',tx:6,ty:11}]};
+DATA.ambiance.mer={type:'brume'};DATA.decor.mer=.12;
+Object.assign(DATA.quetes,{
+r1:{n:'Bouteilles à la mer',desc:'Ramasse 3 bouteilles échouées sur la Plage des Naufragés pour Barnabé.',need:3,kind:'pick',req:11,donneur:'Naufragé Barnabé',say:'Je jette des messages en bouteille depuis trois ans. Elles me reviennent toutes. Récupères-en trois : j’ai oublié ce que j’ai écrit.',fin:'« Au secours. » Ah. C’était donc ça. Je me demande qui j’espérais.',rew:{xpq:[41,'normale'],res:{fil:4,sable:3}}},
+r2:{n:'Filets percés',desc:'Repousse 2 groupes de monstres sur la Plage des Naufragés.',need:2,kind:'win',renc:B,req:11,donneur:'Naufragé Barnabé',say:'Des crabes et des mouettes ont éventré mes filets. Chasses-en deux groupes, ou je finirai par pêcher mes propres sandales.',fin:'Plus un crabe. Les mouettes ont juste changé de plage. Elles m’observent.',rew:{xpq:[41,'normale'],res:{fil:4,sable:3}}},
+r3:{n:'Ancres perdues',desc:'Ramasse 3 ancres autour du Port des Marées Mortes pour Mousse Cuivré.',need:3,kind:'pick',req:11,donneur:'Mousse Cuivré',say:'Les ancres sont tombées du quai quand la marée s’est arrêtée. Sans ancre, un bateau fantôme dérive. Trois, s’il te plaît : je les compte à chaque fois.',fin:'Trois ancres ! Je les range. Elles ne partiront plus nulle part, et elles adorent ça.',rew:{xpq:[42,'normale'],res:{sable:4,gravat:3}}},
+r4:{n:'Marée de livraison',desc:'Livre des cordages à Mousse Cuivré, au Port des Marées Mortes.',need:1,kind:'livre',req:11,donneur:'Naufragé Barnabé',to:'Mousse Cuivré',say:'Ces cordages sont pour le mousse du port. Dis-lui qu’ils sont mouillés. Il ne verra pas la différence.',recu:'Des cordages ! Un peu mouillés, mais tout est mouillé ici. Merci, naufragé.',fin:'Livré ? Parfait. Il me doit un sandwich. Il le sait.',rew:{xpq:[42,'normale'],res:{fil:4,gravat:2}}},
+r5:{n:'L’Amiral qui attend la marée',desc:'Entre dans l’Épave au bout du Port et vaincs l’Amiral Marée-Basse.',need:1,kind:'win',renc:B+2,req:11,donneur:'Mousse Cuivré',say:'L’Amiral a reçu un ordre du Roi : retrouver l’endroit où le soleil est tombé. Il a navigué jusqu’au bout du monde, et la marée s’est arrêtée, lui avec. Fais-la repartir.',fin:'La marée repart ! Lentement, mais elle repart. L’Amiral parlait du Soleil Couchant : le soleil a plongé du côté du Temple. Je crois que tu sais où aller.',rew:{xpq:[43,'longue'],res:{fil:6,gravat:5,sable:4}}}
+})})();
+
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
 DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
@@ -827,7 +884,8 @@ paturage:[2,1],bergerie:[3,1],enclos1:[4,1],enclos2:[5,1],enclos3:[6,1],
 hall:[1,3],bureaux:[1,4],archives1:[1,5],archives2:[1,6],archives3:[1,7],
 gue:[0,3],ile:[0,4],reves1:[0,5],reves2:[0,6],reves3:[0,7],
 mirage:[-3,1],puits:[-4,1],pyr1:[-5,1],pyr2:[-6,1],pyr3:[-7,1],
-cloitre:[-1,-3],jardin:[-1,-4],crypte1:[-1,-5],crypte2:[-1,-6],crypte3:[-1,-7]};
+cloitre:[-1,-3],jardin:[-1,-4],crypte1:[-1,-5],crypte2:[-1,-6],crypte3:[-1,-7],
+plage:[-3,2],port:[-3,3],epave:[-3,4]};
 DATA.monde=L;
 const dir=(a,b)=>{const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'S':'N'},
 side=e=>e.x==0?'W':e.x>=12?'E':e.y==0?'N':'S',def={E:[14,-1],W:[-1,14],N:[0,0],S:[12,12]},inn={E:[-1,0],W:[1,0],N:[0,1],S:[0,-1]},opp={E:'W',W:'E',N:'S',S:'N'},P={};
@@ -887,7 +945,8 @@ DATA.monstreElem={'La mouche à braise':'foudre','Le champignon bavard':'lumiere
 'Chameau-infirmier':'lumiere','Pèlerin éteint':'lumiere','Luciole terne':'foudre','Statue de soleil':'lumiere','Prêtre aveugle':'lumiere','Éclipse':'tenebres','Garde fantôme':'tenebres',
 'Bouffon Sans Rire':'foudre','Le Roi Éteint':'tenebres','Mère Mycélium':'lumiere','Le loup de brume':'vent','Le clerc fantôme':'tenebres','La plume vexée':'vent','Greffier Ratures':'tenebres',
 'Le papillon de nuit':'vent','Le chasseur de rêves':'tenebres','Baronne Insomnie':'tenebres','Le vautour affamé':'vent','Le cobra de sable':'foudre','Sphinx Dépareillé':'lumiere',
-'L’ombre errante':'tenebres','Le cierge vivant':'lumiere','Écho du Gardien':'lumiere'};
+'L’ombre errante':'tenebres','Le cierge vivant':'lumiere','Écho du Gardien':'lumiere',
+'Le crabe-lanterne':'foudre','La mouette pillarde':'vent','La méduse luisante':'lumiere','Le marin fantôme':'tenebres','Amiral Marée-Basse':'vent'};
 // Résistances en % (positif = résiste, négatif = vulnérable) : élément du monstre +R, celui qui le bat −R (R = 25, boss 20), et un profil secondaire
 // de ±10 sur les deux autres éléments (profils choisis pour que chaque élément soit, en moyenne sur toutes les rencontres, ni plus ni moins résisté) : 'A' = résiste à l'élément qu'il bat et craint l'opposé, 'B' = l'inverse. Un monstre Neutre reçoit ±15 (boss ±10)
 // sur deux éléments [résiste, craint]. Chaque profil est équilibré : la somme de ses résistances vaut 0, et rien n'est jamais en Neutre.
@@ -897,7 +956,8 @@ DATA.monstreRs={'La mouche à braise':'A','Le champignon bavard':'B','Le mouton-
 'Archer osseux':['foudre','vent'],'Chevalier brisé':['foudre','lumiere'],'Bouffon Sans Rire':'A','Le Roi Éteint':'A','Courtisan squelette':['tenebres','vent'],'Mère Mycélium':'A','Le loup de brume':'A',
 'La pelote enragée':['tenebres','lumiere'],'Bouc Recenseur':['tenebres','foudre'],'Le clerc fantôme':'A','La plume vexée':'A','Le classeur mordant':['lumiere','vent'],'Greffier Ratures':'A',
 'Le papillon de nuit':'A','Le chasseur de rêves':'A','L’oreiller hanté':['lumiere','vent'],'Baronne Insomnie':'A','Le vautour affamé':'A','Le cobra de sable':'A','La momie bandée':['tenebres','lumiere'],
-'Sphinx Dépareillé':'B','L’ombre errante':'A','Le cierge vivant':'B','Écho du Gardien':'B'};
+'Sphinx Dépareillé':'B','L’ombre errante':'A','Le cierge vivant':'B','Écho du Gardien':'B',
+'Le crabe-lanterne':'A','La mouette pillarde':'A','La méduse luisante':'B','Le marin fantôme':'A','Amiral Marée-Basse':'B'};
 {const BAT={vent:'foudre',foudre:'tenebres',tenebres:'lumiere',lumiere:'vent'};
 DATA.rencontres.forEach(r=>r.m.forEach(m=>{if(m.form||m.elem||m.rs)return;const e=DATA.monstreElem[m.n],p=DATA.monstreRs[m.n],rs={};
 if(e){const R=m.boss?20:25,b=BAT[e],o=BAT[b];m.elem=e;rs[e]=R;rs[DATA.elements[e].faiblesse]=-R;rs[b]=p=='A'?10:-10;rs[o]=p=='A'?-10:10}

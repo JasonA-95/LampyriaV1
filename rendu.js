@@ -12,6 +12,7 @@ roseliere:{base:'#3e5651',light:'#52736d',grain:'#89b2a7'},
 serre:{base:'#5b5a58',light:'#77736a',grain:'#c1c2ae'},
 desert:{base:'#655642',light:'#806b4b',grain:'#baa276'},
 temple:{base:'#6b5a3a',light:'#8f7a48',grain:'#e0c27a'},
+mer:{base:'#35505e',light:'#4d7384',grain:'#9cc4d6'},
 citadelle:{base:'#3f3a4c',light:'#575069',grain:'#9a8fb0'},
 trone:{base:'#2c2a36',light:'#46414f',grain:'#c9a85a'}
 };
@@ -47,6 +48,8 @@ ctx.strokeStyle='#f0d58a';ctx.lineWidth=1;ctx.globalAlpha=.2;for(let i=0;i<7;i++
 ctx.strokeStyle='#14121a';ctx.lineWidth=1.2;ctx.globalAlpha=.4;for(let i=0;i<3;i++){let x=10+random()*108,y=6+random()*20;ctx.beginPath();ctx.moveTo(x,y);for(let k=0;k<4;k++){x+=(random()-.5)*26;y+=6+random()*8;ctx.lineTo(x,y)}ctx.stroke()}
 }else if(biome=='trone'){
 ctx.strokeStyle='#d9b45f';ctx.lineWidth=1.2;ctx.globalAlpha=.3;ctx.beginPath();ctx.moveTo(0,32);ctx.lineTo(128,32);ctx.moveTo(64,0);ctx.lineTo(64,64);ctx.stroke();ctx.globalAlpha=.18;ctx.beginPath();ctx.ellipse(64,32,24,12,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#0d0c12';ctx.globalAlpha=.4;ctx.beginPath();ctx.moveTo(20,10);ctx.lineTo(34,22);ctx.lineTo(30,36);ctx.stroke();
+}else if(biome=='mer'){
+ctx.strokeStyle='#a8d0e0';ctx.lineWidth=1;ctx.globalAlpha=.22;for(let i=0;i<5;i++){const y=7+i*12+(random()-.5)*3;ctx.beginPath();ctx.moveTo(4,y);ctx.quadraticCurveTo(24,y-5,44,y);ctx.quadraticCurveTo(64,y+5,84,y);ctx.quadraticCurveTo(104,y-4,124,y);ctx.stroke()}
 }else if(biome=='desert'){
 ctx.strokeStyle='#c0a578';ctx.lineWidth=1;ctx.globalAlpha=.22;for(let i=0;i<5;i++){const y=6+i*12+(random()-.5)*4;ctx.beginPath();ctx.moveTo(4,y);ctx.quadraticCurveTo(38,y-5,64,y);ctx.quadraticCurveTo(95,y+5,124,y-1);ctx.stroke()}
 }
@@ -84,6 +87,9 @@ else if(biome=='citadelle'){obstaclePath(ctx,[[18,80],[26,58],[40,50],[52,34],[6
 else if(biome=='trone'&&variant==0){ctx.fillStyle='#1d1b24';ctx.fillRect(34,20,28,62);ctx.fillStyle='#d9b45f';ctx.fillRect(30,16,36,6);ctx.fillRect(30,78,36,6);ctx.fillRect(46,28,4,46)}
 else if(biome=='trone'&&variant==1){ctx.fillStyle='#2a2733';ctx.fillRect(32,56,32,24);ctx.fillRect(26,50,44,8);ctx.fillStyle='#8b5cf6';ctx.beginPath();ctx.moveTo(48,16);ctx.quadraticCurveTo(66,38,56,50);ctx.lineTo(40,50);ctx.quadraticCurveTo(30,38,48,16);ctx.fill();ctx.fillStyle='#d9c2ff';ctx.beginPath();ctx.moveTo(48,30);ctx.quadraticCurveTo(54,42,51,50);ctx.lineTo(45,50);ctx.quadraticCurveTo(42,42,48,30);ctx.fill()}
 else if(biome=='trone'){ctx.fillStyle='#2a2733';ctx.fillRect(28,48,40,34);ctx.fillStyle='#d9b45f';ctx.fillRect(34,36,28,14);ctx.beginPath();ctx.moveTo(34,36);ctx.lineTo(38,24);ctx.lineTo(44,34);ctx.lineTo(48,22);ctx.lineTo(52,34);ctx.lineTo(58,24);ctx.lineTo(62,36);ctx.fill();ctx.fillStyle='#14121a';ctx.fillRect(34,52,28,24)}
+else if(biome=='mer'&&variant==0){obstaclePath(ctx,[[14,80],[24,58],[40,50],[52,32],[66,50],[80,58],[86,80]],'#47525e');obstaclePath(ctx,[[30,62],[52,40],[64,62]],'#5e6c78');ctx.strokeStyle='#4f8a5a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(28,80);ctx.quadraticCurveTo(22,66,30,56);ctx.stroke()}
+else if(biome=='mer'&&variant==1){ctx.fillStyle='#6a4a2c';ctx.fillRect(30,46,36,36);ctx.fillStyle='#8a6840';ctx.fillRect(30,46,36,8);ctx.fillStyle='#3a2a1c';ctx.fillRect(30,60,36,4);ctx.fillRect(30,74,36,4)}
+else if(biome=='mer'){ctx.save();ctx.translate(48,60);ctx.rotate(-.22);ctx.fillStyle='#5a4230';ctx.fillRect(-34,-8,68,16);ctx.fillStyle='#7a5c3c';for(let i=0;i<4;i++)ctx.fillRect(-30+i*16,-8,3,16);ctx.restore();ctx.fillStyle='#4a3626';ctx.fillRect(44,30,6,34)}
 else if(biome=='desert'&&variant==1){ctx.fillStyle='#41624b';ctx.fillRect(44,37,10,47);ctx.fillRect(31,48,15,7);ctx.fillRect(31,39,7,16);ctx.fillRect(53,59,15,7);ctx.fillRect(61,48,7,18);ctx.fillStyle='#78905c';ctx.fillRect(47,32,4,18)}
 else if(biome=='desert'&&variant==2){obstaclePath(ctx,[[12,80],[26,57],[45,48],[57,21],[70,47],[85,80]],'#855340');obstaclePath(ctx,[[42,51],[57,24],[63,51]],'#a15c45')}
 else{obstaclePath(ctx,[[13,79],[23,56],[36,49],[48,29],[61,39],[75,54],[84,79]],'#884c3b');obstaclePath(ctx,[[25,58],[48,37],[57,49]],'#a45d43')}

@@ -294,3 +294,16 @@ echo_apres:{once:true,declencheur:{quand:'apresCombat',renc:47,issue:'win'},etap
 {qui:'Mélancolique',at:'hero',si:{flag:'melancolique_libre'},txt:'C’est exactement ce qu’il s’est dit, ce soir-là. Il ne l’a jamais cru. Il va peut-être y arriver.'},
 {qui:'Gourmande',at:'hero',txt:'On le dira au vrai, tout à l’heure. Avec une tarte, si possible.'},
 {set:{echo_battu:true}}]}});
+
+// ---- Mer : Épave de l'Amiral (rencontre repérée par son nom : l'index dépend de l'ordre des extensions) ----
+(()=>{const R=DATA.rencontres.findIndex(r=>r.n=='Épave de l’Amiral (boss)');if(R<0)return;
+Object.assign(DATA.scenes,{
+amiral_avant:{once:true,declencheur:{quand:'avantCombat',renc:R},etapes:[
+{qui:'Amiral Marée-Basse',at:'groupe',txt:'Halte. Le Roi m’a ordonné de retrouver l’endroit où le soleil est tombé. Je l’ai presque trouvé. Il manquait seulement la marée.'},
+{qui:'Peureuse',at:'hero',txt:'Il dit qu’elle ne répond qu’à lui. Moi je crois surtout qu’il refuse de sortir de l’eau.'},
+{hero:'🤔',act:'Tu observes sa boussole : quand la marée monte, il devient intouchable. Attends la marée basse, ou brise la boussole.'}]},
+amiral_apres:{once:true,declencheur:{quand:'apresCombat',renc:R,issue:'win'},etapes:[
+{qui:'Amiral Marée-Basse',at:'hero',txt:'La marée repart. Alors le soleil est bien tombé du côté du Temple. Le Roi voulait le rallumer seul. Dites-lui que j’ai fait mon possible.'},
+{qui:'Mélancolique',at:'hero',si:{flag:'melancolique_libre'},txt:'Sa boussole ne montrait pas le nord. Elle montrait le Roi. Il l’a suivi trop longtemps.'},
+{qui:'Gourmande',at:'hero',txt:'Un amiral sans bateau, c’est triste. On lui apportera un sandwich. Les mouettes ne le sauront pas.'},
+{set:{amiral_battu:true}}]}})})();
