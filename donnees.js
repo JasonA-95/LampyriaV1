@@ -998,7 +998,7 @@ DATA.cartes.village.npcs.push({x:9,y:5,e:'🏮',n:'Passeur de Lanternes',zaap:1,
 // afin de ne pas décaler les identifiants des rencontres existantes.
 DATA.zones=[];
 DATA.zone=(id,o)=>{const m=DATA.cartes[id]={n:o.n,biome:o.biome,need:0,start:[6,11],tint:o.tint||'rgba(120,180,110,.07)',rocks:[[3,3],[9,3],[3,9],[9,9]],npcs:o.npcs||[],picks:[],groups:[],nodes:o.nodes||[],exits:o.exits.map(t=>({x:0,y:0,to:t,tx:0,ty:0}))};
-DATA.extraMonde[id]=o.pos;DATA.ambiance[id]={type:o.amb||'spores'};DATA.decor[id]=.13;DATA.zones.push({id,niv:o.niv,tailles:o.tailles});return m};
+DATA.extraMonde[id]=o.pos;DATA.ambiance[id]={type:o.amb||'spores'};DATA.decor[id]=o.decor||.13;(o.list||DATA.zones).push({id,niv:o.niv,tailles:o.tailles,pool:o.pool});return m};
 {const Z=[['lu1',3,-1,6,[1,3],'Lisière des Landes'],['lu2',4,-1,6,[2,4],'Landes aux Herbes Hautes'],['lu3',5,-1,7,[3,5],'Landes du Vent Doux'],['lu4',6,-1,8,[1,2],'Landes de la Pierre Plate'],
 ['lu5',3,-2,7,[4,2],'Fourré des Lucioles'],['lu6',4,-2,7,[5,3],'Clairière du Bûcheron'],['lu7',5,-2,8,[2,1],'Landes Bruissantes'],['lu8',6,-2,9,[3,4],'Landes des Ronces'],
 ['lu9',4,-3,8,[1,5],'Combe des Lucioles'],['lu10',5,-3,9,[2,3],'Hauteur des Lucioles']],P={};Z.forEach(z=>P[z[1]+','+z[2]]=z[0]);
@@ -1008,6 +1008,27 @@ const nd=[NR[i%4],NR[(i+2)%4]].map(r=>({x:r[0],y:r[1],res:r[2]})),np=z[0]=='lu2'
 DATA.zone(z[0],{n:z[5],biome:'foret',pos:[z[1],z[2]],niv:z[3],tailles:z[4],exits:ex,nodes:nd,npcs:np})});
 DATA.cartes.clairiere.exits.push({x:0,y:0,to:'lu1',tx:0,ty:0});
 Object.assign(DATA.quetes,{lu_q1:{n:'Des herbes pour le bûcheron',desc:'Porte le fagot d’herbes de l’Herboriste Brindille au Bûcheron Mousse, dans la Clairière du Bûcheron.',need:1,kind:'livre',req:3,donneur:'Herboriste Brindille',to:'Bûcheron Mousse',say:'Ces herbes sont pour le Bûcheron Mousse, plus à l’ouest dans les landes. Il dit qu’elles font repousser le bois. Moi, je dis qu’elles font surtout rire les arbres.',recu:'Des herbes ? Parfait, j’en avais besoin pour mes tisanes. Pas pour les arbres. Les arbres repoussent déjà trop.',fin:'Il les a prises pour ses tisanes ? Bon. Les arbres repoussent toujours, c’est déjà ça.',rew:{xpq:[9,'normale'],res:{champi:3,laine:2}}}})}
+
+// Zones générées 2 : Friches du Sud (collines), Désert Profond (désert), Rivages Perdus (mer). Rencontres équilibrées automatiquement en fin de fichier.
+DATA.zonesB=[];
+{const Z=(pref,nom,biome,tint,amb,entry,cells,nodes,npcs,quest)=>{const P={};cells.forEach(c=>P[c[0]+','+c[1]]=pref+(cells.indexOf(c)+1));
+cells.forEach((c,i)=>{const id=pref+(i+1),ex=[[1,0],[-1,0],[0,1],[0,-1]].map(d=>P[(c[0]+d[0])+','+(c[1]+d[1])]).filter(Boolean);if(i==0)ex.push(entry);
+const nd=[nodes[i%nodes.length],nodes[(i+1)%nodes.length]].map((r,j)=>({x:[2,6,2,10][(i+j*2)%4],y:[6,2,10,6][(i+j*2)%4],res:r})),np=(npcs[i]||[]).map(n=>({...n}));
+DATA.zone(id,{n:nom[i],biome,pos:[c[0],c[1]],niv:c[2],tailles:null,exits:ex,nodes:nd,npcs:np,tint,amb,decor:.12,list:DATA.zonesB,pool:biome})});
+DATA.cartes[entry].exits.push({x:0,y:0,to:pref+'1',tx:0,ty:0});Object.assign(DATA.quetes,quest)};
+Z('fs',['Friches de la Barrière','Friches aux Chardons','Friches du Vieux Puits','Friches Venteuses','Friches des Meules','Friches Moutonnantes','Friches de la Lisière Sud','Friches aux Corbeaux','Friches des Cairns','Friches du Bout du Monde'],'collines','rgba(170,190,220,.14)','brume','paturage',
+[[2,2,14],[2,3,15],[2,4,15],[2,5,16],[3,5,17],[4,5,17],[5,5,18],[2,6,17],[3,6,18],[4,6,19]],['laine','champi','braise'],
+[[],[{x:5,y:6,e:'🧑‍🌾',n:'Fermier Guenille',txt:'Mes moutons sont partis voir ailleurs. Ils ont dit que l’herbe y est moins fantôme. Je n’ai pas su quoi répondre.',quests:['fs_q1']}],[],[],[],[],[],[{x:6,y:5,e:'🌾',n:'Meunière Farine',txt:'Je moule la farine, mais il n’y a plus de blé. Je moule de la brume, ça fait des galettes tièdes.'}]],
+{fs_q1:{n:'Des nouvelles du troupeau',desc:'Porte le mot du Fermier Guenille à la Meunière Farine, aux Friches aux Corbeaux.',need:1,kind:'livre',req:8,donneur:'Fermier Guenille',to:'Meunière Farine',say:'Dis à la Meunière Farine que mes moutons ne sont pas chez elle. Ou alors qu’ils le sont, et qu’elle ne dise rien.',recu:'Des moutons ? Je n’en ai vu aucun. Mais mes galettes ont l’air lainées, depuis ce matin. Dis-lui de venir voir.',fin:'Lainées ? Alors ils sont passés par là. Je vais la voir, merci.',rew:{xpq:[16,'normale'],res:{laine:3,champi:2}}}});
+Z('dp',['Piste des Perdus','Dunes des Chaussettes','Sables Murmurants','Piste des Oubliés','Dunes Sans Retour','Dune Ensorcelée','Sables Pâlis','Ravine des Mirages','Dunes de l’Adieu','Désert du Bout'],'desert','rgba(220,170,90,.14)','sable','oasis',
+[[-3,0,35],[-4,0,36],[-3,-1,36],[-4,-1,37],[-5,0,37],[-5,-1,38],[-6,0,39],[-6,-1,39],[-7,0,40],[-7,-1,40]],['sable','chaussette','fil'],
+[[],[{x:5,y:6,e:'🧳',n:'Caravanier Perdu',txt:'Ma caravane est partie sans moi. Ou je suis parti sans elle. Les deux versions se défendent.',quests:['dp_q1']}],[],[],[],[],[{x:6,y:5,e:'⏳',n:'Nomade Sablier',txt:'Le désert est un grand sablier. Je suis dedans. Je cherche la sortie, mais elle coule toujours sous mes pieds.'}]],
+{dp_q1:{n:'Un message pour le nomade',desc:'Porte le message du Caravanier Perdu au Nomade Sablier, dans les Sables Pâlis.',need:1,kind:'livre',req:18,donneur:'Caravanier Perdu',to:'Nomade Sablier',say:'Le Nomade Sablier a mon bagage. Enfin, il l’aura peut-être. Dis-lui que je le rejoins, si je retrouve la route.',recu:'Un bagage ? Je n’en ai pas vu. Mais j’ai vu cinq chaussettes. Dis-lui de les prendre, il en a toujours besoin.',fin:'Cinq chaussettes ! Les voilà, mes affaires. Merci, le désert te revaudra ça.',rew:{xpq:[37,'normale'],res:{sable:3,chaussette:2}}}});
+Z('rp',['Anse des Perdus','Récif aux Cierges','Banc de l’Oubli','Falaise des Naufragés','Lagune Tiède','Écueils du Silence','Crique aux Étoiles','Rivage de Brume','Grève de l’Adieu','Pointe de la Dernière Vague'],'mer','rgba(70,100,130,.22)','brume','epave',
+[[-3,5,41],[-4,4,41],[-4,5,42],[-2,5,42],[-3,6,43],[-4,6,43],[-2,6,44],[-3,7,44],[-4,7,45],[-2,7,45]],['gravat','eclat','roseau'],
+[[],[{x:5,y:6,e:'🎣',n:'Pêcheur Sans-Ligne',txt:'J’ai perdu ma ligne. Ou c’est elle qui m’a perdu. La mer ne tranche pas.',quests:['rp_q1']}],[],[],[],[],[],[{x:6,y:5,e:'🔦',n:'Gardienne du Phare Brisé',txt:'Mon phare est brisé, mais il éclaire quand même. De travers, certes. Les bateaux perdus apprécient l’originalité.'}]],
+{rp_q1:{n:'Une ligne pour le phare',desc:'Porte le mot du Pêcheur Sans-Ligne à la Gardienne du Phare Brisé, au Rivage de Brume.',need:1,kind:'livre',req:24,donneur:'Pêcheur Sans-Ligne',to:'Gardienne du Phare Brisé',say:'La Gardienne du Phare Brisé a peut-être ma ligne. Elle a tout ce qui flotte. Demande-lui, poliment.',recu:'Une ligne ? Elle s’est enroulée autour de mon phare. Elle éclaire mieux qu’avant. Dis-lui qu’il peut la garder.',fin:'Elle éclaire le phare ? Alors c’est une promotion. Merci, je pêcherai sans.',rew:{xpq:[43,'normale'],res:{gravat:3,eclat:2}}}});
+}
 
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
@@ -1120,4 +1141,19 @@ const SL=[[10,3],[11,8],[9,10],[11,5],[10,7]],KH={1:1.7,2:1.25,3:1,4:.85,5:.75},
 DATA.zones.forEach((z,zi)=>{const m=DATA.cartes[z.id];z.tailles.forEach((n,g)=>{const f=1+.06*(z.niv-8),ms=[];
 for(let i=0;i<n;i++){const t=JSON.parse(JSON.stringify(T[SQ[(zi*3+g*2+i)%SQ.length]%T.length]));t.x=SL[i][0];t.y=SL[i][1];t.hp=t.max=Math.round(t.hp*f*KH[n]);t.d=Math.round(t.d*f*KD[n]);ms.push(t)}
 R.push({n:'Landes des Lucioles',biome:'foret',niv:z.niv,loot:{champi:2+(zi+g)%3,laine:1+(g%2)},m:ms,drops:JSON.parse(JSON.stringify(R[1].drops||[]))});
+m.groups.push({x:GP[g][0],y:GP[g][1],renc:R.length-1})})})})();
+
+// ---- Phase C : rencontres des zones 2 : composition choisie pour garder le bestiaire équilibré (résistance moyenne ~0 par élément) ----
+(()=>{const R=DATA.rencontres,E=['vent','foudre','tenebres','lumiere'],S={},cnt={};let N=0;
+const add=m=>{if(!m.rs)return;N++;E.forEach(e=>S[e]=(S[e]||0)+(m.rs[e]||0))};R.forEach(r=>r.m.forEach(add));
+const hp0=n=>100+4.5*n,d0=n=>20+.7*n,KH={1:1.7,2:1.25,3:1,4:.85,5:.75},KD={1:1.25,2:1.1,3:1,4:.95,5:.9},SL=[[10,3],[11,8],[9,10],[11,5],[10,7]],GP=[[9,5],[9,10]],TL=[[1,3],[2,4],[3,5],[1,2],[4,2],[5,3],[2,1],[3,4],[1,5],[2,3]],NM={collines:'Friches du Sud',desert:'Désert Profond',mer:'Rivages Perdus'};
+const orig=R.length,base={};
+R.slice(0,orig).forEach(r=>{if(r.n.includes('boss')||r.type=='elite'||r.base!=null)return;r.m.forEach(m=>{if(m.boss||m.form||!m.rs)return;const k=r.biome+'|'+m.n;if(!base[k])base[k]={m,niv:r.niv,biome:r.biome}})});
+DATA.zonesB.forEach((z,zi)=>{const P=Object.values(base).filter(b=>b.biome==z.pool&&b.niv<=z.niv+4),m=DATA.cartes[z.id],T=TL.slice(zi%10).concat(TL.slice(0,zi%10));
+const sz=T[parseInt(z.id.replace(/\D/g,''))-1];
+sz.forEach((n,g)=>{const ms=[],used={};for(let i=0;i<n;i++){let best=null;P.forEach((b,bi)=>{const w=Math.max(...E.map(e=>Math.abs((S[e]+(b.m.rs[e]||0))/(N+1))))+.04*(used[bi]||0)+((bi+zi+g+i)%P.length)*1e-4;if(!best||w<best.w)best={w,bi,b}});
+used[best.bi]=(used[best.bi]||0)+1;const t=JSON.parse(JSON.stringify(best.b.m)),f=hp0(z.niv)/hp0(best.b.niv),fd=d0(z.niv)/d0(best.b.niv);t.x=SL[i][0];t.y=SL[i][1];
+t.hp=t.max=Math.round(t.hp*f*KH[n]);t.d=Math.round(t.d*fd*KD[n]);ms.push(t);add(t)}
+const loot=z.pool=='desert'?{sable:2+g,chaussette:1}:z.pool=='mer'?{gravat:2+g,eclat:1}:{laine:2+g,champi:1};
+R.push({n:NM[z.pool],biome:z.pool,niv:z.niv,loot,m:ms,drops:JSON.parse(JSON.stringify((R.find(r=>r.biome==z.pool&&r.drops&&r.drops.length)||{}).drops||[]))});
 m.groups.push({x:GP[g][0],y:GP[g][1],renc:R.length-1})})})})();
