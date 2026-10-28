@@ -40,7 +40,7 @@ if(r.rel)h+='<p>'+DJ.D[r.rel].e+' <b>'+DJ.D[r.rel].rel+'</b> obtenue ! Elle ouvr
 r.items.forEach((id,i)=>{const o=DATA.objets[id];h+='<p>'+o.e+' <b style="color:'+RC[o.r]+'">'+o.n+'</b> <span class="sp">('+RAR[o.r]+', '+fmtSt(o.st)+')'+(r.eq[i]?' · équipé':' · dans ton sac')+'</span></p>'})}
 n.innerHTML=h}
 else{say('defaite');n.innerHTML='<h2>Défaite</h2><p>'+(EX.group?'Tu te réveilles au village, sans rien avoir perdu.':'Aucune perte : réessaie avec un autre équipement ou d\'autres Lueurs.')+'</p>'}
-const fin=()=>EX.group?EX.back(res):openMenu('jouer');
+const fin=()=>EX.group?EX.back(res,C.turn):openMenu('jouer');
 after=fin;msg(win?'Victoire !':'Défaite.');ui();draw();
 const B=EX.group?[['Continuer',fin,'pri']]:win?[['Menu',()=>openMenu('jouer')],['Rejouer',()=>startTraining(cfg.renc),'pri']]:[['Menu',()=>openMenu('jouer')],['Réessayer',()=>startTraining(cfg.renc),'pri']];
 modal(n,B)}
@@ -149,7 +149,7 @@ if(f.rs)for(const k of Object.keys(f.rs).sort((a,b)=>f.rs[a]-f.rs[b])){const v=f
 item.append(top,bar,tags,states);
 item.onclick=()=>{$('tip').textContent=[...(f.cendre?['La Duchesse est protégée tant qu’elle se tient sur de la cendre (cases grises ≈). Lance un sort sur sa case : la cendre se disperse et elle devient vulnérable 2 tours. Elle en recrée à chaque tour.']:[]),...active.map(e=>{const d=DATA.etats[e.id];return d.n+' : '+d.d+' Durée : '+e.t+' tour(s)'+(e.id=='bouclier'?' · '+e.v+' points restants':'')+'.'}),...(f.sleep?['Sommeil : passe son prochain tour.']:[])].join(' ');if(!$('tip').textContent)$('tip').textContent='Aucun état actif.'};F.appendChild(item)}}
 function ui(){const h=C.hero;foesUI();const states=h.etats.filter(e=>e.t>0).map(e=>{const d=DATA.etats[e.id];return'<span class="tag state">'+d.e+' '+d.n+' '+e.t+(e.id=='bouclier'?' · '+e.v:'')+'</span>'}).join('');
-$('hud').innerHTML='<div class="pv"><span><b style="color:var(--ink)">'+h.hp+'</b> / '+h.max+' PV · Niv '+sv.niv+'</span><div class="bar"><i style="width:'+Math.max(0,Math.round(100*h.hp/h.max))+'%"></i></div></div>'+pips('pa',C.pa,C.PA)+pips('pm',C.pm,C.PM)+'<span class="pip">Tour '+C.turn+'</span>'+(h.rage?'<span class="tag">RAGE</span>':'')+(h.mur?'<span class="tag">MUR</span>':'')+(h.garde?'<span class="tag state">🛡️ Garde '+h.garde+'</span>':'')+states;
+$('hud').innerHTML='<div class="pv"><span><b style="color:var(--ink)">'+h.hp+'</b> / '+h.max+' PV · Niv '+sv.niv+'</span><div class="bar"><i style="width:'+Math.max(0,Math.round(100*h.hp/h.max))+'%"></i></div></div>'+pips('pa',C.pa,C.PA)+pips('pm',C.pm,C.PM)+'<span class="pip">Tour '+C.turn+(EX.group&&EX.defi&&EX.defi(cfg.renc)?'/'+EX.defi(cfg.renc).defi.tours+(C.turn>EX.defi(cfg.renc).defi.tours?' ✗':''):'')+'</span>'+(h.rage?'<span class="tag">RAGE</span>':'')+(h.mur?'<span class="tag">MUR</span>':'')+(h.garde?'<span class="tag state">🛡️ Garde '+h.garde+'</span>':'')+states;
 $('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';
 if(C.result){F.appendChild(btn('Menu','','',()=>after&&after()));F.appendChild(btn('Continuer','','pri',()=>after&&after()));return}
 const off=busy;

@@ -72,3 +72,22 @@ test('PNJ : « ! » si une quête est disponible, rien une fois prise, « ? » q
   assert.equal(run(ctx, 'EX.npcMark(' + lamp + ')'), '?');
   assert.equal(run(ctx, "EX.npcMark({quests:[]})"), '');
 });
+
+test('défi de combat : un défi est manqué seulement si la quête est active, a une limite et que la victoire la dépasse', () => {
+  const ctx = loadExploration({ ...baseSave, niv: 45, renc: 17, q: { t1: { s: 1, n: 0, got: [] }, m1: { s: 1, n: 0, got: [] } } });
+  assert.equal(val(ctx, 'DATA.quetes.t1.defi.tours'), 6);
+  assert.equal(val(ctx, 'EX.defiMiss("t1",5)'), false, 'victoire en 5 tours : défi tenu');
+  assert.equal(val(ctx, 'EX.defiMiss("t1",6)'), false, 'victoire en 6 tours : défi tenu (limite incluse)');
+  assert.equal(val(ctx, 'EX.defiMiss("t1",7)'), true, 'victoire en 7 tours : défi manqué');
+  assert.equal(val(ctx, 'EX.defiMiss("t1")'), false, 'nombre de tours inconnu : jamais de blocage');
+  assert.equal(val(ctx, 'EX.defiMiss("m1",40)'), false, 'quête sans défi : comportement inchangé');
+  const sans = loadExploration(baseSave);
+  assert.equal(val(sans, 'EX.defiMiss("t1",40)'), false, 'quête non acceptée : pas de défi');
+});
+
+test('défi de combat : EX.defi retrouve la quête à défi liée à la rencontre du Cloître, seulement si elle est active', () => {
+  const idx = 'DATA.rencontres.findIndex(r=>r.n=="Cloître des Pèlerins")';
+  const actif = loadExploration({ ...baseSave, niv: 45, renc: 17, q: { t1: { s: 1, n: 0, got: [] } } });
+  assert.equal(val(actif, 'EX.defi(' + idx + ').defi.tours'), 6);
+  assert.equal(val(loadExploration(baseSave), 'EX.defi(' + idx + ')'), null);
+});
