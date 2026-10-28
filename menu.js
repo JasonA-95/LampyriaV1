@@ -1,7 +1,7 @@
 // MENU : écran à onglets (Jouer, Héros, Lanterne, Atelier, Quêtes). Aucun dessin de grille ici.
 let tab='heros',resume=null,combatLive=false;
 const TABS=[['heros','Héros','🛡️'],['equip','Inventaire','🎒'],['sorts','Sorts','✨'],['lanterne','Lanterne','🏮'],['atelier','Atelier','🔨'],['quetes','Quêtes','📜'],['carte','Carte','🗺️'],['options','Options','⚙️']];
-const craftables=()=>Object.keys(DATA.objets).filter(id=>DATA.objets[id].cout&&!sv.inv.includes(id));
+const craftables=()=>{const A=EX.atelier();return A?Object.keys(DATA.objets).filter(id=>DATA.objets[id].cout&&!sv.inv.includes(id)&&A.slots.includes(DATA.objets[id].slot)):[]};
 const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout));
 const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];return s&&s.s==1&&(s.n||0)>=DATA.quetes[id].need});
 const heroMax=()=>DATA.classes[cfg.classe].hp+8*(sv.niv-1)+gear().t.pv;
@@ -145,9 +145,9 @@ B.appendChild(L)}
 function craft(id){const o=DATA.objets[id];if(sv.inv.includes(id)||!canPay(o.cout)){toast('Impossible');return}
 pay(o.cout);sv.inv.push(id);const e=autoEquip(id);store();toast(o.n+' fabriqué'+(e?' et équipé':''));renderMenu()}
 let atOnly=false;
-function tabAtelier(B){const all=craftables(),list=atOnly?all.filter(id=>canPay(DATA.objets[id].cout)):all;
+function tabAtelier(B){const A=EX.atelier();if(!A){B.appendChild(card('Fabrication','La fabrication se fait uniquement dans les ateliers de la Cour des Ouvrages, au Village des Lanternes. Va y rencontrer les artisans.'));return}if(A.bientot){B.appendChild(card(A.n,'L’atelier n’est pas encore prêt : les fioles refroidissent. Reviens plus tard.'));return}const all=craftables(),list=atOnly?all.filter(id=>canPay(DATA.objets[id].cout)):all;
 B.appendChild(row('<span class="em">🔎</span><span class="tx"><span class="nm">Afficher : '+(atOnly?'ce que je peux fabriquer maintenant':'tout')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{atOnly=!atOnly;renderMenu()}));
-const c=card('Fabrication','Transforme tes ressources en équipement. Chaque objet se fabrique une seule fois. Les panoplies donnent un bonus à partir de 2 pièces portées.');
+const c=card(A.n,'Transforme tes ressources en équipement. Chaque objet se fabrique une seule fois. Les panoplies donnent un bonus à partir de 2 pièces portées.');
 if(!all.length)c.appendChild(el('p','','Tout est fabriqué !'));else if(!list.length)c.appendChild(el('p','','Rien n’est fabricable pour l’instant : récolte des ressources.'));
 const groups={};list.forEach(id=>{const k=DATA.objets[id].set||'_';(groups[k]=groups[k]||[]).push(id)});
 const order=Object.keys(groups).sort((x,y)=>(x=='_')-(y=='_')||Object.keys(DATA.objets).indexOf(groups[x][0])-Object.keys(DATA.objets).indexOf(groups[y][0]));

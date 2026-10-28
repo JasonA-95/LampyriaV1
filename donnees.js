@@ -893,6 +893,50 @@ npc('marais','La Passeuse').variantes=[{si:{flag:'berceuses_rendues'},txt:'Tu en
 // ============ ÉTAPE 4 (quêtes variées) : Désert, conséquence du choix du Mirage (o1) ============
 DATA.cartes.oasis.npcs.find(n=>n.n.startsWith('Hôtelier')).variantes=[{si:{flag:'mirage_oasis'},txt:'Des touristes ! Enfin ! Ils dorment sur des draps dépareillés, et ils trouvent ça charmant.'}];
 
+// ============ VILLES : cartes sans monstres générées à partir d'une courte description ============
+// DATA.ville(id,{n,pos:[x,y],npcs,exits:[{to}],portes:[{to,d}],atelier}) : exits[].to suffit (les cases de sortie sont calculées plus bas) ;
+// portes : liaison entre deux cartes non voisines sur la grille, avec la direction de la sortie (le retour prend la direction opposée).
+DATA.liens=DATA.liens||{};DATA.extraMonde=DATA.extraMonde||{};
+DATA.ville=(id,o)=>{const m=DATA.cartes[id]={n:o.n,biome:o.biome||'village',need:o.need||0,start:o.start||[6,11],tint:o.tint||'rgba(255,170,80,.08)',rocks:o.rocks||[],npcs:o.npcs||[],picks:[],groups:[],nodes:[],exits:(o.exits||[]).map(e=>({x:0,y:0,to:e.to,tx:0,ty:0}))};
+if(o.atelier)m.atelier=o.atelier;DATA.extraMonde[id]=o.pos;(o.portes||[]).forEach(q=>{DATA.liens[id+'>'+q.to]=q.d});DATA.ambiance[id]={type:'lucioles'};DATA.decor[id]=.12;return m};
+// Capitale : le Village des Lanternes s'étend au sud (Marché), au nord (Auberge, Remparts) et vers la Cour des Ouvrages (ateliers de fabrication).
+{const R4=[[3,3],[9,3],[3,9],[9,9]],
+art=(x,y,e,n,txt,extra)=>({x,y,e,n,txt,...(extra||{})}),
+atl=(x,y,e,n,txt,sub)=>art(x,y,e,n,txt,{actions:[{id:'atelier_'+n,t:'Ouvrir l’atelier',sub,open:'atelier'}]});
+DATA.cartes.village.exits.push({x:0,y:0,to:'v_marche',tx:0,ty:0});
+DATA.cartes.poste.exits.push({x:0,y:0,to:'v_auberge',tx:0,ty:0},{x:0,y:0,to:'v_remparts',tx:0,ty:0});
+DATA.ville('v_marche',{n:'Marché des Lanternes',pos:[0,1],tint:'rgba(255,190,110,.1)',rocks:R4,exits:[{to:'village'},{to:'v_ouvrages'}],portes:[{to:'v_ouvrages',d:'E'}],npcs:[
+art(4,4,'🧵','Marchande de Rubans','Des rubans pour lanternes ! Elle n’en a pas besoin, mais ça fait joli. Dix pour cent de réduction si vous ne comptez pas.',{trade:[{give:{sable:3},get:{fil:1}},{give:{fil:3},get:{sable:1}}]}),
+art(8,4,'💎','Marchand d’Éclats','Éclats, gravats, cailloux brillants ! Tout est authentique, sauf ce qui est faux.',{trade:[{give:{gravat:3},get:{eclat:1}},{give:{eclat:3},get:{gravat:1}}]}),
+art(6,8,'📣','Crieur des Lanternes','Dernières nouvelles : le soleil est toujours éteint ! Le Roi s’en excuse. Il n’a pas précisé auprès de qui.'),
+art(10,7,'🧦','Pique-Chaussette','Je ne vole pas : je rends aux chaussettes leur liberté. Elles me remercient. En silence.')]});
+DATA.ville('v_auberge',{n:'Auberge du Dernier Feu',pos:[-1,-1],tint:'rgba(255,140,70,.14)',rocks:R4,exits:[{to:'poste'}],npcs:[
+art(6,4,'🍺','Aubergiste Tisonnier','Le dernier feu du monde est dans cette cheminée. Il fume un peu. Ne le dites pas aux autres feux.'),
+art(3,7,'🎻','Barde Sans-Voix','Je chante une ballade sur le soleil. Personne ne l’entend. C’est une ballade très discrète.'),
+art(9,7,'🧳','Voyageuse Éteinte','Je viens de loin. Plus personne ne sait d’où. Mon sac est lourd d’adresses oubliées.')]});
+DATA.ville('v_remparts',{n:'Remparts et jardins',pos:[1,-1],tint:'rgba(150,190,110,.1)',rocks:R4,exits:[{to:'poste'}],npcs:[
+art(4,5,'💂','Sentinelle Mollette','Je garde les remparts. Contre quoi ? On ne m’a pas encore dit. Je surveille quand même, avec méthode.'),
+art(8,8,'🪴','Jardinière Pétale','Mes fleurs poussent à l’ombre. C’est pratique : le soleil n’est pas là pour les déranger.'),
+art(10,4,'🧓','Vieux Veilleur','Ces murs ont connu le soleil. Ils s’en souviennent mieux que moi.')]});
+DATA.ville('v_ouvrages',{n:'Cour des Ouvrages',pos:[3,3],tint:'rgba(230,170,90,.12)',rocks:R4,exits:[{to:'v_marche'},{to:'v_forge'},{to:'v_armurerie'},{to:'v_cordonnerie'}],portes:[],npcs:[
+art(4,4,'📐','Contremaître Rivet','Ici, on fabrique. La Braise Vive forge les armes, au nord. Les Tôles Fines font les armures, à l’est. Les Semelles Lumineuses, les bottes, au sud.'),
+art(9,7,'🔧','Apprenti Étincelle','Moi, je porte les pièces. Le Contremaître dit que c’est un métier. Je crois qu’il parle de lui.')]});
+DATA.ville('v_forge',{n:'La Braise Vive',pos:[3,2],tint:'rgba(255,120,60,.16)',rocks:R4,exits:[{to:'v_ouvrages'},{to:'v_bijouterie'}],atelier:{n:'La Braise Vive',slots:['arme']},npcs:[
+atl(4,5,'🔨','Maître Braisard','Une arme bien forgée, c’est de la braise qui se souvient d’avoir été un arbre. Apportez les ressources, je m’occupe du reste.','Fabriquer des armes'),
+art(9,8,'🧹','Apprenti Suie','Je balaie la cendre. Elle revient toujours. Je crois qu’elle me préfère au balai.')]});
+DATA.ville('v_armurerie',{n:'Les Tôles Fines',pos:[4,3],tint:'rgba(170,170,190,.14)',rocks:R4,exits:[{to:'v_ouvrages'}],atelier:{n:'Les Tôles Fines',slots:['corps','tete']},npcs:[
+atl(4,5,'🛡️','Armurière Tôle','Casques, plastrons, tout ce qui évite de recevoir les coups sur soi. Faites-moi confiance : je n’en ai jamais reçu un seul.','Fabriquer des armures et des casques'),
+art(9,8,'🧍','Mannequin Fidèle','…Il ne dit rien. Il porte les dernières armures avec une patience admirable.')]});
+DATA.ville('v_cordonnerie',{n:'Les Semelles Lumineuses',pos:[3,4],tint:'rgba(200,160,110,.14)',rocks:R4,exits:[{to:'v_ouvrages'},{to:'v_apothicairerie'}],atelier:{n:'Les Semelles Lumineuses',slots:['bottes']},npcs:[
+atl(4,5,'👢','Cordonnier Talon','Des bottes qui brillent dans le noir. Le secret ? Ne jamais les faire marcher sur une chaussette perdue.','Fabriquer des bottes'),
+art(9,8,'🦶','Client Pied-Plat','Je cherche des bottes qui me rendent plus grand. On me répond qu’il faut d’abord des jambes plus longues.')]});
+DATA.ville('v_bijouterie',{n:'L’Écrin des Étincelles',pos:[4,2],tint:'rgba(230,200,255,.14)',rocks:R4,exits:[{to:'v_forge'}],atelier:{n:'L’Écrin des Étincelles',slots:['acc']},npcs:[
+atl(4,5,'💍','Bijoutière Éclat','Un bijou ne protège de rien, mais il rend le malheur plus élégant. Apportez-moi vos éclats.','Fabriquer des accessoires'),
+art(9,8,'🕶️','Garde Sourcilleux','Je surveille les bijoux. Les bijoux me surveillent aussi. Nous nous respectons.')]});
+DATA.ville('v_apothicairerie',{n:'La Fiole Tiède',pos:[4,4],tint:'rgba(150,220,170,.12)',rocks:R4,exits:[{to:'v_cordonnerie'}],atelier:{n:'La Fiole Tiède',slots:[],bientot:1},npcs:[
+art(5,5,'⚗️','Apothicaire Alambic','Mes fioles refroidissent… Elles arrivent bientôt. Revenez : je vous réchaufferai une potion, ou presque.')]});
+}
+
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
 DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
@@ -904,9 +948,9 @@ hall:[1,3],bureaux:[1,4],archives1:[1,5],archives2:[1,6],archives3:[1,7],
 gue:[0,3],ile:[0,4],reves1:[0,5],reves2:[0,6],reves3:[0,7],
 mirage:[-3,1],puits:[-4,1],pyr1:[-5,1],pyr2:[-6,1],pyr3:[-7,1],
 cloitre:[-1,-3],jardin:[-1,-4],crypte1:[-1,-5],crypte2:[-1,-6],crypte3:[-1,-7],
-plage:[-3,2],port:[-3,3],epave:[-3,4]};
+plage:[-3,2],port:[-3,3],epave:[-3,4]};Object.assign(L,DATA.extraMonde||{});
 DATA.monde=L;
-const dir=(a,b)=>{const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'S':'N'},
+const dir=(a,b)=>{const o=DATA.liens||{};if(o[a+'>'+b])return o[a+'>'+b];if(o[b+'>'+a])return {E:'W',W:'E',N:'S',S:'N'}[o[b+'>'+a]];const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'S':'N'},
 side=e=>e.x==0?'W':e.x>=12?'E':e.y==0?'N':'S',def={E:[14,-1],W:[-1,14],N:[0,0],S:[12,12]},inn={E:[-1,0],W:[1,0],N:[0,1],S:[0,-1]},opp={E:'W',W:'E',N:'S',S:'N'},P={};
 for(const k in C)P[k]={};
 for(const k in C)for(const e of C[k].exits){const d=dir(k,e.to);P[k][e.to]=def[d]}
