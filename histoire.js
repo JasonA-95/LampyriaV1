@@ -361,3 +361,12 @@ parvis_cloitre:{once:true,declencheur:{quand:'action',id:'parvis_cloitre'},etape
 fleurs_fin:{once:true,declencheur:{quand:'quete',id:'t2',etat:'terminee'},etapes:[
 {qui:'Jardinier de cire',at:'pnj:Jardinier de cire',txt:'Replantées. Elles fondront, mais en bon ordre. C’est plus poétique que de ne jamais pousser.'},
 {qui:'Rêveuse',at:'hero',txt:'Elles sont tièdes. Je crois qu’elles rêvent d’être des vraies.'}]}});
+
+// ---- Roselière : choix des somnambules (ro2) ----
+Object.assign(DATA.scenes,{
+somnambules_reveil:{once:true,declencheur:{quand:'action',id:'somnambules_reveil'},etapes:[
+{qui:'Insomniaque Mirette',at:'pnj:Insomniaque Mirette',txt:'Réveillés, et rentrés chez eux ! Ils m’ont regardée comme si c’était ma faute. C’est un peu ma faute.'},
+{qui:'Rêveuse',at:'hero',txt:'On les a réveillés. J’espère qu’ils n’avaient pas un beau rêve en cours.'}]},
+somnambules_sommeil:{once:true,declencheur:{quand:'action',id:'somnambules_sommeil'},etapes:[
+{qui:'Insomniaque Mirette',at:'pnj:Insomniaque Mirette',txt:'Qu’ils marchent, alors. À condition qu’ils ne piétinent plus mes roseaux. Je leur ai fait signe.'},
+{qui:'Têtue',at:'hero',txt:'Laisser dormir ceux qui dorment. Voilà une règle que je respecte.'}]}});
