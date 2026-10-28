@@ -937,6 +937,33 @@ DATA.ville('v_apothicairerie',{n:'La Fiole Tiède',pos:[4,4],tint:'rgba(150,220,
 art(5,5,'⚗️','Apothicaire Alambic','Mes fioles refroidissent… Elles arrivent bientôt. Revenez : je vous réchaufferai une potion, ou presque.')]});
 }
 
+// Cendrebourg (niv ~20-25) : ville de cendres au sud de la Roselière, à l'ouest du Gué
+{const R4=[[3,3],[9,3],[3,9],[9,9]],a=(x,y,e,n,txt,extra)=>({x,y,e,n,txt,...(extra||{})}),B='marais',T='rgba(190,150,120,.1)';
+DATA.cartes.roseliere.exits.push({x:0,y:0,to:'cb_place',tx:0,ty:0});DATA.cartes.gue.exits.push({x:0,y:0,to:'cb_place',tx:0,ty:0});
+DATA.ville('cb_place',{n:'Place des Braises',biome:B,pos:[-1,3],tint:T,rocks:R4,exits:[{to:'roseliere'},{to:'gue'},{to:'cb_fonderie'},{to:'cb_taverne'}],npcs:[
+a(6,4,'🎩','Bourgmestre Cendrier','Bienvenue à Cendrebourg ! Ville fondée sur les restes d’une autre ville. Nous sommes très attachés à nos fondations.',{quests:['cb1']}),
+a(3,6,'🍲','Cantinière Braisette','Soupe de cendres, chaude comme au premier jour. Oui, elle a un goût de cendres. C’est la recette.'),
+a(9,6,'🧒','Gamin Suie-Pouce','Je cherche des gens propres pour leur sourire. Personne ne passe l’examen.'),
+a(7,9,'👵','Veuve Cendreuse','Mon mari est parti en fumée. Littéralement. Il m’avait promis qu’il ferait attention à la cheminée.')]});
+DATA.ville('cb_fonderie',{n:'Fonderie Éteinte',biome:B,pos:[-2,3],tint:'rgba(255,120,60,.1)',rocks:R4,exits:[{to:'cb_place'},{to:'cb_chaudron'}],npcs:[
+a(5,5,'🔥','Fondeur Refroidi','Mon four est éteint depuis la dernière nuit du soleil. Je lui parle, il ne répond pas. Ça fait un peu de peine.',{quests:['cb2'],variantes:[{si:{flag:'fonderie_rallumee'},txt:'Il chauffe ! Il chauffe même un peu trop. Mais je ne me plains pas : je suis enfin à l’heure.'}]}),
+a(9,8,'💨','Souffleuse Muette','…Elle souffle sur les braises avec un sérieux imperturbable. Un jour, elle parlera. Peut-être.')]});
+DATA.ville('cb_taverne',{n:'Taverne du Tison Froid',biome:B,pos:[-1,4],tint:'rgba(255,140,70,.12)',rocks:R4,exits:[{to:'cb_place'},{to:'cb_chaudron'},{to:'cb_cimetiere'}],npcs:[
+a(6,4,'🍻','Tavernier Pelle','Ici, la bière est tiède et les nouvelles aussi. Je préfère les deux comme ça : ça évite les mauvaises surprises.'),
+a(3,7,'🎲','Joueur de Dés Éteint','Je joue contre moi-même. C’est la seule partie que je n’ai jamais perdue. Ni gagnée.'),
+a(9,7,'🎒','Colporteur Cendré','Un peu de tout, beaucoup de rien. Échange possible, mais je garde le meilleur côté.',{trade:[{give:{cendre:3},get:{roseau:1}},{give:{roseau:3},get:{cendre:1}},{give:{braise:3},get:{cendre:1}}]})]});
+DATA.ville('cb_chaudron',{n:'Quartier des Chaudronniers',biome:B,pos:[-2,4],tint:'rgba(170,140,110,.1)',rocks:R4,exits:[{to:'cb_fonderie'},{to:'cb_taverne'}],npcs:[
+a(5,5,'🍳','Chaudronnier Bosse','Je répare tout ce qui chauffe. Surtout les caractères. Ceux-là, ça prend plus de temps.',{quests:['cb3']}),
+a(9,8,'🔩','Apprentie Rivette','Je tape sur les chaudrons depuis ce matin. Le chaudron n’a rien fait. Il tape en retour, par principe.')]});
+DATA.ville('cb_cimetiere',{n:'Cimetière aux Cendres',biome:B,pos:[-1,5],tint:'rgba(120,130,150,.14)',rocks:R4,exits:[{to:'cb_taverne'}],npcs:[
+a(4,4,'🌲','Gardienne Cyprès','Ici, les morts sont discrets. Pas autant que les vivants, pourtant. Ceux-là ne font que passer.'),
+a(8,9,'⚰️','Fossoyeur Distrait','Je creuse. Pour qui ? Je ne sais plus. Je verrai bien qui se présente.')]}).groups=[{x:6,y:6,renc:4}];
+Object.assign(DATA.quetes,{
+cb1:{n:'Les registres de cendre',desc:'Interroge le Tavernier Pelle et le Fondeur Refroidi pour retrouver l’origine de Cendrebourg.',need:2,kind:'livre',req:5,donneur:'Bourgmestre Cendrier',to:['Tavernier Pelle','Fondeur Refroidi'],say:'Nos registres ont brûlé. Va demander au Tavernier Pelle et au Fondeur Refroidi : ils se souviennent de la ville, eux.',recu:{'Tavernier Pelle':'La ville est née d’un incendie, évidemment. Dis au Bourgmestre qu’on y a gagné des fondations.','Fondeur Refroidi':'On a fondu ce qui restait de la vieille ville. Nos casseroles sont des souvenirs. Ne leur dis pas.'},fin:'Un incendie, des casseroles… Je dois réécrire l’histoire de la ville. En cendres, comme il se doit.',rew:{xpq:[22,'normale'],res:{cendre:4,braise:3}}},
+cb2:{n:'Rallumer la fonderie',desc:'Apporte 6 braises et 4 cendres au Fondeur Refroidi pour rallumer son four.',need:0,kind:'don',req:6,apres:'cb1',cost:{braise:6,cendre:4},donneur:'Fondeur Refroidi',say:'Mon four est froid. Il lui faut de la braise pour repartir, de la cendre pour le lit. Aide-moi, il nous attend tous les deux.',fin:'Il chauffe ! Il chauffe même trop. La ville aura de nouveau des casseroles.',rew:{xpq:[26,'normale'],set:{fonderie_rallumee:true}}},
+cb3:{n:'Un message pour le cimetière',desc:'Porte le message du Chaudronnier Bosse à la Gardienne Cyprès, au Cimetière aux Cendres.',need:1,kind:'livre',req:6,donneur:'Chaudronnier Bosse',to:'Gardienne Cyprès',say:'Un chaudron du cimetière est à réparer. Dis à la Gardienne Cyprès que je passe demain. Enfin, un jour.',recu:'Demain ? Je vois. Les morts ont de la patience, mais pas moi. Dis-lui que je l’attends.',fin:'Elle attend ? Alors je passe demain. Cette fois, je le note quelque part.',rew:{xpq:[24,'normale'],res:{cendre:3}}}});
+}
+
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
 DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
