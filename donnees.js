@@ -993,6 +993,22 @@ sv3:{n:'Des cierges pour le Cloître',desc:'Porte le message du Sacristain Mèch
 
 DATA.zaaps=['village','cb_place','sv_parvis'];
 DATA.cartes.village.npcs.push({x:9,y:5,e:'🏮',n:'Passeur de Lanternes',zaap:1,txt:'Une lanterne, un souhait, un trajet. Dis-moi où tu veux aller : je ne te promets que les endroits où tu es déjà passé.'});DATA.cartes.cb_place.npcs.push({x:9,y:8,e:'🏮',n:'Passeur de Lanternes',zaap:1,txt:'Une lanterne, un souhait, un trajet. Dis-moi où tu veux aller : je ne te promets que les endroits où tu es déjà passé.'});DATA.cartes.sv_parvis.npcs.push({x:3,y:5,e:'🏮',n:'Passeur de Lanternes',zaap:1,txt:'Une lanterne, un souhait, un trajet. Dis-moi où tu veux aller : je ne te promets que les endroits où tu es déjà passé.'});
+// ============ PHASE C : zones de nature générées (pilote : Landes des Lucioles, niv 6-10, au nord de la Clairière) ============
+// Les cartes sont créées ici (pour que les sorties soient calculées avec le reste du monde) ; les rencontres sont ajoutées en toute fin de fichier
+// afin de ne pas décaler les identifiants des rencontres existantes.
+DATA.zones=[];
+DATA.zone=(id,o)=>{const m=DATA.cartes[id]={n:o.n,biome:o.biome,need:0,start:[6,11],tint:o.tint||'rgba(120,180,110,.07)',rocks:[[3,3],[9,3],[3,9],[9,9]],npcs:o.npcs||[],picks:[],groups:[],nodes:o.nodes||[],exits:o.exits.map(t=>({x:0,y:0,to:t,tx:0,ty:0}))};
+DATA.extraMonde[id]=o.pos;DATA.ambiance[id]={type:o.amb||'spores'};DATA.decor[id]=.13;DATA.zones.push({id,niv:o.niv,tailles:o.tailles});return m};
+{const Z=[['lu1',3,-1,6,[1,3],'Lisière des Landes'],['lu2',4,-1,6,[2,4],'Landes aux Herbes Hautes'],['lu3',5,-1,7,[3,5],'Landes du Vent Doux'],['lu4',6,-1,8,[1,2],'Landes de la Pierre Plate'],
+['lu5',3,-2,7,[4,2],'Fourré des Lucioles'],['lu6',4,-2,7,[5,3],'Clairière du Bûcheron'],['lu7',5,-2,8,[2,1],'Landes Bruissantes'],['lu8',6,-2,9,[3,4],'Landes des Ronces'],
+['lu9',4,-3,8,[1,5],'Combe des Lucioles'],['lu10',5,-3,9,[2,3],'Hauteur des Lucioles']],P={};Z.forEach(z=>P[z[1]+','+z[2]]=z[0]);
+const NR=[[2,6,'champi'],[6,2,'laine'],[2,10,'laine'],[10,6,'champi']];
+Z.forEach((z,i)=>{const ex=[[1,0],[-1,0],[0,1],[0,-1]].map(d=>P[(z[1]+d[0])+','+(z[2]+d[1])]).filter(Boolean);if(z[0]=='lu1')ex.push('clairiere');
+const nd=[NR[i%4],NR[(i+2)%4]].map(r=>({x:r[0],y:r[1],res:r[2]})),np=z[0]=='lu2'?[{x:5,y:6,e:'🌾',n:'Herboriste Brindille',txt:'Les herbes des landes poussent à l’envers : racines en haut, feuilles en bas. Ou l’inverse. Je n’ai jamais tranché.',quests:['lu_q1']}]:z[0]=='lu6'?[{x:6,y:5,e:'🪓',n:'Bûcheron Mousse',txt:'Je coupe du bois depuis ce matin. L’arbre repousse pendant que je dîne. C’est un peu vexant.'}]:[];
+DATA.zone(z[0],{n:z[5],biome:'foret',pos:[z[1],z[2]],niv:z[3],tailles:z[4],exits:ex,nodes:nd,npcs:np})});
+DATA.cartes.clairiere.exits.push({x:0,y:0,to:'lu1',tx:0,ty:0});
+Object.assign(DATA.quetes,{lu_q1:{n:'Des herbes pour le bûcheron',desc:'Porte le fagot d’herbes de l’Herboriste Brindille au Bûcheron Mousse, dans la Clairière du Bûcheron.',need:1,kind:'livre',req:3,donneur:'Herboriste Brindille',to:'Bûcheron Mousse',say:'Ces herbes sont pour le Bûcheron Mousse, plus à l’ouest dans les landes. Il dit qu’elles font repousser le bois. Moi, je dis qu’elles font surtout rire les arbres.',recu:'Des herbes ? Parfait, j’en avais besoin pour mes tisanes. Pas pour les arbres. Les arbres repoussent déjà trop.',fin:'Il les a prises pour ses tisanes ? Bon. Les arbres repoussent toujours, c’est déjà ça.',rew:{xpq:[9,'normale'],res:{champi:3,laine:2}}}})}
+
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
 DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
@@ -1093,3 +1109,15 @@ ro2:{n:'Les somnambules',desc:'Repousse le groupe de somnambules qui piétine le
 ro3:{n:'Oreillers pour insomniaques',desc:'Rapporte 5 roseaux et 2 cendres à Mirette pour garnir des oreillers.',need:0,kind:'don',req:5,apres:'ro2',cost:{roseau:5,cendre:2},donneur:'Insomniaque Mirette',say:'Des oreillers, voilà ce qu’il me faut. Des roseaux, de la cendre pour la douceur. Je te dirai si ça marche.',fin:'Ça marche. Je bâille. C’est la première fois depuis un siècle. Va, avant que je ne m’endorme sur toi.',rew:{xpq:[27,'normale'],set:{mirette_dort:true}}},
 se1:{n:'Graines mortes',desc:'Mène l’enquête : interroge le Pêcheur de Brume et la Vieille Berceuse, dans le Marais, pour savoir pourquoi les graines du Jardinier ne poussent pas.',need:2,kind:'livre',req:6,donneur:'Jardinier Sans-Pousse',to:['Pêcheur de Brume','Vieille Berceuse'],say:'Je plante des graines depuis 200 ans, et rien ne pousse. Je soupçonne qu’on me les a changées. Demande au Pêcheur de Brume et à la Vieille Berceuse, dans le Marais : ils sont passés dans la Serre.',recu:{'Pêcheur de Brume':'Des graines ? J’en ai pêché dans le gué, la semaine dernière. Je les ai portées à la Vieille Berceuse : elle sait quoi faire de ce qui dort.','Vieille Berceuse':'Les graines du Jardinier ? Je leur chante des berceuses depuis des années, pour qu’elles se tiennent tranquilles. Elles dorment, voilà tout. Dis-lui de les réveiller.'},fin:'Elles dorment ! Voilà pourquoi rien ne pousse. Ce n’est pas que je plante mal : j’endors mes graines avec mes berceuses.',rew:{xpq:[30,'normale'],res:{cendre:3}}},
 se2:{n:'Arrosage à la cendre',desc:'Apporte 4 cendres et 4 roseaux au Jardinier pour tenter d’arroser autrement.',need:0,kind:'don',req:6,apres:'se1',cost:{cendre:4,roseau:4},donneur:'Jardinier Sans-Pousse',say:'L’eau ne marche pas. Je n’ai jamais essayé la cendre et les roseaux. Autant tout tenter.',fin:'Un brin. Un seul, tout vert. La Duchesse sera… enfin, elle sera là, au moins.',rew:{xpq:[30,'normale'],set:{jardin_arrose:true}}}});
+
+// ---- Phase C : rencontres des zones générées (ajoutées en fin de fichier : les indices existants ne bougent pas) ----
+// Tailles de groupes variées (1 à 5 monstres) : un monstre seul est plus costaud, un grand groupe est composé de monstres plus fragiles.
+(()=>{const R=DATA.rencontres,T=[],seen={};
+R.filter(r=>r.biome=='foret'&&!r.n.includes('boss')&&r.base==null&&r.niv<=9).forEach(r=>r.m.forEach(m=>{if(!m.boss&&!m.form&&!seen[m.n]){seen[m.n]=1;T.push(m)}}));
+const nv=(b,n,e,rs)=>{const c=JSON.parse(JSON.stringify(T.find(m=>m.n.includes(b))));c.n=n;c.e=e;c.elem='tenebres';c.rs=rs;T.push(c)};
+nv('mouche','Le moustique d’ombre','🦟',{tenebres:25,foudre:-25,lumiere:10,vent:-10});nv('mouton','Le blaireau de brume','🦡',{tenebres:25,foudre:-25,lumiere:-10,vent:10});
+const SL=[[10,3],[11,8],[9,10],[11,5],[10,7]],KH={1:1.7,2:1.25,3:1,4:.85,5:.75},KD={1:1.25,2:1.1,3:1,4:.95,5:.9},GP=[[9,5],[9,10]],SQ=[0,3,4,4,1,2,0,0,1,1,2,0];
+DATA.zones.forEach((z,zi)=>{const m=DATA.cartes[z.id];z.tailles.forEach((n,g)=>{const f=1+.06*(z.niv-8),ms=[];
+for(let i=0;i<n;i++){const t=JSON.parse(JSON.stringify(T[SQ[(zi*3+g*2+i)%SQ.length]%T.length]));t.x=SL[i][0];t.y=SL[i][1];t.hp=t.max=Math.round(t.hp*f*KH[n]);t.d=Math.round(t.d*f*KD[n]);ms.push(t)}
+R.push({n:'Landes des Lucioles',biome:'foret',niv:z.niv,loot:{champi:2+(zi+g)%3,laine:1+(g%2)},m:ms,drops:JSON.parse(JSON.stringify(R[1].drops||[]))});
+m.groups.push({x:GP[g][0],y:GP[g][1],renc:R.length-1})})})})();
