@@ -54,6 +54,7 @@ else t+=' ('+q.n+' : '+s.n+'/'+q.need+')'}});
 B.push([a.t,ok?a.sub:a.why,a.cls||'',()=>{if(a.fight!=null){EX.fightNpc(a.fight,p);return}if(a.open){openMenu(a.open);return}const g=a.rew?EX.gain(a.rew):'';EX.storyTrigger({quand:'action',id:a.id},()=>{EX.ui();EX.draw();if(g){msg(g.trim());toast(g.trim())}})},!ok])});
 (p.trade||[]).forEach(tr=>{const lab=o=>Object.keys(o).map(k=>o[k]+' '+DATA.res[k].split(' ')[0]).join(' '),ok=Object.keys(tr.give).every(k=>sv.res[k]>=tr.give[k]);
 B.push(['Échanger '+lab(tr.give),'contre '+lab(tr.get),'',()=>{Object.keys(tr.give).forEach(k=>sv.res[k]-=tr.give[k]);Object.keys(tr.get).forEach(k=>sv.res[k]+=tr.get[k]);store();EX.talk(p)},!ok])});
+if(p.zaap)(DATA.zaaps||[]).filter(z=>z!=EX.map&&sv.hist.flags['vu_'+z]).forEach(z=>B.push(['Voyager : '+DATA.cartes[z].n,'Gratuit : tu as déjà visité ce lieu','',()=>{hideBubble();EX.enter(z);msg('Tu voyages : '+DATA.cartes[z].n+'.');EX.ui();EX.draw();EX.storyTrigger({quand:'entree',carte:EX.map})}]));
 speak(p.n,t,{at:{x:p.x,y:p.y},stay:true});EX.hud();$('bar').innerHTML='';$('bar').className='talk';B.forEach(b=>mk(b[0],b[1],b[2],b[3],b[4]));const F=$('foot');F.innerHTML='';F.appendChild(btn('Fermer','','pri',()=>{hideBubble();EX.ui();EX.draw()}));msg('')};
 // Livraison : parler au destinataire d'une quête 'livre' active valide l'objectif.
 EX.deliver=p=>{const id=Object.keys(DATA.quetes).find(k=>{const q=DATA.quetes[k],s=qs()[k];return q.kind=='livre'&&[].concat(q.to).includes(p.n)&&s&&s.s==1&&!(s.got||[]).includes(p.n)&&(s.n||0)<q.need});if(!id)return false;

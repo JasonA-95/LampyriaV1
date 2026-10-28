@@ -129,6 +129,7 @@ const LOOKS={
 'Pèlerin Grelot':{r:'#6a8aaa',t:'#e0f0ff',h:'#3a3a3a',s:'#e8c0a0'},
 'Jardinier Cirier':{r:'#9a7a3a',t:'#ffe8b0',h:'#4a3a20',b:'mus',s:'#e8c0a0'},
 'Veilleur Égaré':{r:'#4a4a5a',t:'#d0d0e0',h:'#2a2a3a',s:'#e0c0a0'},
+'Passeur de Lanternes':{r:'#b07a2a',t:'#ffe8a0',h:'#3a2a20',hat:'kepi',hc:'#b07a2a',prop:'keys',s:'#e8c0a0'},
 'Insomniaque Mirette':{r:'#6a7ab0',t:'#e0e6ff',h:'#4a3a60',hs:'braid',mood:'sleep',s:'#f0cdb0'},
 'Jardinier Sans-Pousse':{r:'#5a6a4a',t:'#c8d8b0',h:'#b8b0a0',b:'short',hat:'straw',hc:'#8a7a50',prop:'shears'},
 'Mémé Lumignon':{old:1,r:'#a85a7a',t:'#f0d8e0',h:'#eeeef4',hs:'bun',s:'#f0cdb0',mood:'smile',sc:.92},

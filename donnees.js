@@ -991,6 +991,8 @@ sv2:{n:'Le roulement qui roule mal',desc:'Repousse le groupe du Jardin des Cierg
 sv3:{n:'Des cierges pour le Cloître',desc:'Porte le message du Sacristain Mèche à Sœur Veilleuse, au Temple.',need:1,kind:'livre',req:17,donneur:'Sacristain Mèche',to:'Sœur Veilleuse',say:'Ces cierges sont pour Sœur Veilleuse, au Temple. Dis-lui qu’ils sont déjà allumés. Je n’y peux rien.',recu:'Allumés d’avance ? Parfait, ça fait gagner du temps. Dis-lui merci et dis-lui de ne pas les éteindre.',fin:'Elle les garde allumés ? Très bien. Je me fais à l’idée que le feu a son avis.',rew:{xpq:[48,'normale'],res:{eclat:2}}}});
 }
 
+DATA.zaaps=['village','cb_place','sv_parvis'];
+DATA.cartes.village.npcs.push({x:9,y:5,e:'🏮',n:'Passeur de Lanternes',zaap:1,txt:'Une lanterne, un souhait, un trajet. Dis-moi où tu veux aller : je ne te promets que les endroits où tu es déjà passé.'});DATA.cartes.cb_place.npcs.push({x:9,y:8,e:'🏮',n:'Passeur de Lanternes',zaap:1,txt:'Une lanterne, un souhait, un trajet. Dis-moi où tu veux aller : je ne te promets que les endroits où tu es déjà passé.'});DATA.cartes.sv_parvis.npcs.push({x:3,y:5,e:'🏮',n:'Passeur de Lanternes',zaap:1,txt:'Une lanterne, un souhait, un trajet. Dis-moi où tu veux aller : je ne te promets que les endroits où tu es déjà passé.'});
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
 DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
