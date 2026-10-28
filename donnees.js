@@ -964,6 +964,33 @@ cb2:{n:'Rallumer la fonderie',desc:'Apporte 6 braises et 4 cendres au Fondeur Re
 cb3:{n:'Un message pour le cimetière',desc:'Porte le message du Chaudronnier Bosse à la Gardienne Cyprès, au Cimetière aux Cendres.',need:1,kind:'livre',req:6,donneur:'Chaudronnier Bosse',to:'Gardienne Cyprès',say:'Un chaudron du cimetière est à réparer. Dis à la Gardienne Cyprès que je passe demain. Enfin, un jour.',recu:'Demain ? Je vois. Les morts ont de la patience, mais pas moi. Dis-lui que je l’attends.',fin:'Elle attend ? Alors je passe demain. Cette fois, je le note quelque part.',rew:{xpq:[24,'normale'],res:{cendre:3}}}});
 }
 
+// Sainte-Veillée (niv ~44-50) : bourg de pèlerins entre le Chemin du Soleil Couchant et le Cloître
+{const R4=[[3,3],[9,3],[3,9],[9,9]],a=(x,y,e,n,txt,extra)=>({x,y,e,n,txt,...(extra||{})}),B='temple',T='rgba(255,210,140,.1)';
+DATA.cartes.chemin.exits.push({x:0,y:0,to:'sv_parvis',tx:0,ty:0});DATA.cartes.cloitre.exits.push({x:0,y:0,to:'sv_parvis',tx:0,ty:0});
+DATA.ville('sv_parvis',{n:'Parvis des Veilleurs',biome:B,pos:[-2,-3],tint:T,rocks:R4,exits:[{to:'chemin'},{to:'cloitre'},{to:'sv_chapelle'},{to:'sv_scriptorium'}],npcs:[
+a(6,4,'🕯️','Doyen Cierge','Sainte-Veillée veille pour que le soleil revienne. Nous veillons depuis longtemps. Nous commençons à avoir sommeil.',{quests:['sv1']}),
+a(3,7,'🌙','Veilleuse Insomnieuse','Je veille, je veille, je veille. Quelqu’un a-t-il dit que je pouvais arrêter ?'),
+a(9,6,'🧒','Enfant Chandelle','Je souffle les bougies pour rire. Les adultes pleurent. C’est un très bon jeu.'),
+a(7,9,'🙏','Pèlerin Troqueur','Je troque ce que j’ai contre ce qu’il me faut. Pour le reste, je prie.',{trade:[{give:{eclat:2},get:{gravat:3}},{give:{gravat:3},get:{eclat:1}},{give:{cendre:2},get:{eclat:1}}]})]});
+DATA.ville('sv_chapelle',{n:'Chapelle des Veilles',biome:B,pos:[-3,-3],tint:'rgba(255,230,170,.12)',rocks:R4,exits:[{to:'sv_parvis'},{to:'sv_hospice'},{to:'sv_cierges'}],npcs:[
+a(5,5,'📿','Prieur Murmure','Nous veillons par roulement. Enfin, nous veillions. Plusieurs ont trouvé que le roulement roulait mal.',{quests:['sv2'],variantes:[{si:{flag:'veille_dormir'},txt:'Les veilleurs dorment à tour de rôle. Le soleil n’est pas revenu, mais les cernes, si.'},{si:{flag:'veille_laisser'},txt:'Ils veillent encore. On ne dort plus, mais on tient. Le monde a besoin de nos yeux ouverts.'}],actions:[{id:'veille_laisser',t:'Laisser les veilleurs veiller',sub:'Respecter leur vœu : éclats et gravats',si:{quete:{id:'sv2',etat:'finie'},pasFlag:'veille_choix'},rew:{xpq:[48,'normale'],res:{eclat:3,gravat:2},set:{veille_laisser:true,veille_choix:true}}},{id:'veille_dormir',t:'Les envoyer dormir à tour de rôle',sub:'Les protéger d’eux-mêmes : éclats en plus',si:{quete:{id:'sv2',etat:'finie'},pasFlag:'veille_choix'},rew:{xpq:[48,'normale'],res:{eclat:5},set:{veille_dormir:true,veille_choix:true}}}]}),
+a(9,5,'🔔','Sacristain Mèche','J’éteins les cierges après la messe. Ils se rallument tout seuls. On dirait qu’ils veulent rester.',{quests:['sv3']}),
+a(6,9,'🧎','Pèlerine Sans-Vœu','Je suis venue veiller et j’ai oublié pourquoi. Je veille quand même : c’est déjà un début.')]});
+DATA.ville('sv_scriptorium',{n:'Scriptorium Éteint',biome:B,pos:[-2,-4],tint:'rgba(200,180,230,.1)',rocks:R4,exits:[{to:'sv_parvis'},{to:'sv_hospice'}],npcs:[
+a(5,5,'✒️','Copiste Pâlot','Je recopie la liste de ceux qui ont veillé. Elle est longue. Je crois que je suis dessus, sans l’avoir cherché.'),
+a(9,8,'📚','Archiviste Encre','Les archives disent que le soleil est parti un mardi. Elles ne disent pas pourquoi. Elles sont discrètes.')]});
+DATA.ville('sv_hospice',{n:'Hospice des Pèlerins',biome:B,pos:[-3,-4],tint:'rgba(180,230,190,.1)',rocks:R4,exits:[{to:'sv_chapelle'},{to:'sv_scriptorium'}],npcs:[
+a(5,5,'🌿','Infirmière Camomille','Soigner les veilleurs ? Facile : je leur dis de dormir. Ils me répondent qu’ils ont un vœu. Je réponds qu’ils ont des cernes.'),
+a(9,8,'🧣','Pèlerin Grelot','J’ai froid. Veiller par ce temps, c’est de l’héroïsme ou de la bêtise. Je n’arrive pas à trancher.')]});
+DATA.ville('sv_cierges',{n:'Jardin des Cierges',biome:B,pos:[-3,-2],tint:'rgba(255,190,110,.12)',rocks:R4,exits:[{to:'sv_chapelle'}],npcs:[
+a(4,4,'🕯️','Jardinier Cirier','Ici, les cierges poussent. Ils sortent de terre déjà allumés. Je cueille, mais ils repoussent plus vite que je ne cueille.'),
+a(8,9,'🕳️','Veilleur Égaré','Je cherchais la chapelle. J’ai trouvé un jardin. Je suis sûr d’avoir une bonne raison d’être là.')]}).groups=[{x:6,y:6,renc:11}];
+Object.assign(DATA.quetes,{
+sv1:{n:'La liste des veilleurs',desc:'Interroge le Copiste Pâlot et l’Infirmière Camomille pour savoir pourquoi les veilleurs s’endorment.',need:2,kind:'livre',req:15,donneur:'Doyen Cierge',to:['Copiste Pâlot','Infirmière Camomille'],say:'Les veilleurs s’endorment au poste. Va demander au Copiste Pâlot et à l’Infirmière Camomille : ils notent et soignent tout.',recu:{'Copiste Pâlot':'La liste montre que personne n’a dormi depuis des semaines. Ça n’est pas de la veille, c’est de l’entêtement. Dis-le au Doyen, doucement.','Infirmière Camomille':'Ils s’endorment parce qu’ils sont épuisés. Dis au Doyen que veiller ne veut pas dire ne jamais dormir.'},fin:'Épuisés. Évidemment. Je veillerai à ce qu’on veille mieux. Ou moins, ou autrement.',rew:{xpq:[44,'normale'],res:{eclat:3,gravat:2}}},
+sv2:{n:'Le roulement qui roule mal',desc:'Repousse le groupe du Jardin des Cierges, puis décide avec le Prieur de ce qu’on fait des veilleurs épuisés.',need:1,kind:'win',renc:11,req:16,donneur:'Prieur Murmure',say:'Des cierges ont pris vie dans le jardin et dérangent les veilleurs. Chasse-les, on parlera ensuite du roulement.',fin:'Le jardin est calme. Reste à savoir ce qu’on fait des veilleurs : reviens me parler.',rew:{xpq:[46,'courte'],res:{eclat:2}}},
+sv3:{n:'Des cierges pour le Cloître',desc:'Porte le message du Sacristain Mèche à Sœur Veilleuse, au Temple.',need:1,kind:'livre',req:17,donneur:'Sacristain Mèche',to:'Sœur Veilleuse',say:'Ces cierges sont pour Sœur Veilleuse, au Temple. Dis-lui qu’ils sont déjà allumés. Je n’y peux rien.',recu:'Allumés d’avance ? Parfait, ça fait gagner du temps. Dis-lui merci et dis-lui de ne pas les éteindre.',fin:'Elle les garde allumés ? Très bien. Je me fais à l’idée que le feu a son avis.',rew:{xpq:[48,'normale'],res:{eclat:2}}}});
+}
+
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
 // Fenêtre de jeu rectangulaire (style Dofus Touch) : les cases en losange remplissent tout l'écran
 DATA.in=(x,y)=>{const u=x-y,v=x+y;return u>=-15&&u<=15&&v>=0&&v<=24};
