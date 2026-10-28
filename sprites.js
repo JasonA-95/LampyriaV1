@@ -52,7 +52,7 @@ function mycelium(){return `<g>
 const VB='-16 -36 130 180',IW=260,IH=360,AN={mouche:[48,100],champignon:[48,90],mouton:[48,92],mycelium:[48,86]};
 const make={porte:HEROE.porte,archer:HEROE.archer,mage:HEROE.mage,mouche:[mouche,mouche],champignon:[champignon,champignon],mouton:[mouton,mouton],mycelium:[mycelium,mycelium]};
 // Registre : nom exact du monstre (DATA.rencontres[].m[].n) -> sprite. Ajouter un monstre = une ligne ici + une fonction de dessin.
-const MON={'La mouche à braise':'mouche','Le champignon bavard':'champignon','Le mouton-fantôme':'mouton','Mère Mycélium':'mycelium','Le moustique d’ombre':'mouche','Le blaireau de brume':'mouton'};
+const MON={'La mouche à braise':'mouche','Le champignon bavard':'champignon','Le mouton-fantôme':'mouton','Mère Mycélium':'mycelium'};
 const SC={mycelium:1.55,porte:1.2,archer:1.2,mage:1.2};
 const cache={};
 const cel=(key,g)=>/^(porte|archer|mage|pnj_)/.test(key)?g:'<g filter="url(#celE)">'+g+'</g>';
