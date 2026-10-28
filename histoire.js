@@ -370,3 +370,30 @@ somnambules_reveil:{once:true,declencheur:{quand:'action',id:'somnambules_reveil
 somnambules_sommeil:{once:true,declencheur:{quand:'action',id:'somnambules_sommeil'},etapes:[
 {qui:'Insomniaque Mirette',at:'pnj:Insomniaque Mirette',txt:'Qu’ils marchent, alors. À condition qu’ils ne piétinent plus mes roseaux. Je leur ai fait signe.'},
 {qui:'Têtue',at:'hero',txt:'Laisser dormir ceux qui dorment. Voilà une règle que je respecte.'}]}});
+
+// ---- Les 7 commandants du Roi et leurs Lueurs-miroirs (une scène courte après chaque commandant) ----
+// Bouc ↔ Gourmande, Chambellan ↔ Peureuse, Duchesse ↔ Têtue, Général ↔ Colérique, Amiral ↔ Rêveuse, Éclipse ↔ Mélancolique, Bouffon ↔ Farceuse.
+// La Colérique et la Mélancolique ne sont libérées qu'après leur commandant : leurs scènes suivent donc leur libération.
+Object.assign(DATA.scenes,{
+lien_bouc_gourmande:{once:true,declencheur:{quand:'apresCombat',renc:27,issue:'win'},etapes:[
+{qui:'Gourmande',at:'hero',txt:'Il mâchonnait ses fiches en comptant. Un bouc qui recense, c’est un bouc qui a faim de chiffres.'},
+{qui:'Gourmande',at:'hero',txt:'Je le comprends mieux que je ne voudrais. Moi aussi, j’avale tout pour me rassurer. Heureusement, moi, c’est de la tarte.'}]},
+lien_chambellan_peureuse:{once:true,declencheur:{quand:'apresCombat',renc:3,issue:'win'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'Il se cachait derrière son formulaire comme je me cachais dans ma cachette, dans la forêt.'},
+{qui:'Peureuse',at:'hero',txt:'Il avait aussi peur que moi. Il le cachait juste mieux, avec des tampons.'}]},
+lien_duchesse_tetue:{once:true,declencheur:{quand:'apresCombat',renc:6,issue:'win'},etapes:[
+{qui:'Têtue',at:'hero',txt:'Elle restait debout sur ses cendres pour ne pas admettre que le jardin était mort. Je connais.'},
+{qui:'Têtue',at:'hero',txt:'Moi, j’ai fini par m’asseoir sur un banc. Elle aurait pu en faire autant. Il suffisait de bouger.'}]},
+lien_bouffon_farceuse:{once:true,declencheur:{quand:'apresCombat',renc:16,issue:'win'},etapes:[
+{qui:'Farceuse',at:'hero',txt:'Il a ri ! Hihi ! J’avais peur qu’il ait oublié comment. Un farceur qui ne rit plus, c’est une farce qui a mal tourné.'},
+{qui:'Farceuse',at:'hero',txt:'On fait des blagues pour que quelqu’un rie à notre place. Lui, il n’avait plus personne.'}]},
+lien_general_colerique:{once:true,declencheur:{quand:'action',id:'colerique'},etapes:[
+{qui:'Colérique',at:'hero',txt:'Le Général Gréviste ? On avait le même problème : personne n’écoute quand on crie. Lui, au moins, il avait des pancartes.'},
+{qui:'Colérique',at:'hero',txt:'Si on s’était rencontrés, on aurait fondé un syndicat. Ou une bagarre. Je ne sais plus laquelle des deux.'}]},
+lien_eclipse_melancolique:{once:true,declencheur:{quand:'action',id:'melancolique'},etapes:[
+{qui:'Mélancolique',at:'hero',txt:'Éclipse, c’était la tristesse du Gardien qui s’est mise debout. Je l’ai reconnue : c’est la mienne, en plus fière.'},
+{qui:'Mélancolique',at:'hero',txt:'Elle restait pour prouver que le soleil ne reviendrait pas. Moi, pour qu’on se souvienne qu’il avait existé.'}]}});
+(()=>{const R=DATA.rencontres.findIndex(r=>r.n=='Épave de l’Amiral (boss)');if(R<0)return;
+DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc:R,issue:'win'},etapes:[
+{qui:'Rêveuse',at:'hero',txt:'Il attendait une marée qui ne revenait pas, les yeux sur l’horizon. Je connais : j’ai déjà attendu un rêve qui ne venait pas.'},
+{qui:'Rêveuse',at:'hero',txt:'Mais à force de rêver du même endroit, on oublie d’y aller. Il aurait pu simplement nager.'}]}})();
