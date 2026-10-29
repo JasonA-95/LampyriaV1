@@ -90,3 +90,14 @@ test('monde : les références des quêtes sont valides (PNJ, rencontres, ramass
   }
   assert.deepEqual(p, []);
 });
+
+test('quêtes de combat par cartes : les cartes existent et offrent assez de groupes non boss pour finir la quête', () => {
+  const D = ctx.D, p = [];
+  for (const [id, q] of Object.entries(D.quetes)) {
+    if (q.kind !== 'win' || !q.maps) continue;
+    if (q.defi) p.push('quête ' + id + ' : un défi de combat doit viser un groupe précis');
+    const groupes = q.maps.flatMap(m => { if (!D.cartes[m]) { p.push('quête ' + id + ' : carte inconnue ' + m); return []; } return (D.cartes[m].groups || []).filter(g => !D.rencontres[g.renc].n.includes('boss')); });
+    if (groupes.length < q.need) p.push('quête ' + id + ' : seulement ' + groupes.length + ' groupe(s) pour ' + q.need);
+  }
+  assert.deepEqual(p, []);
+});

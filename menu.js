@@ -174,7 +174,7 @@ const chk=(ok,t)=>'<div class="qg'+(ok?' ok':'')+'">'+(ok?'✔':'☐')+' '+t+'</
 if(q.kind=='livre'){[].concat(q.to).forEach(x=>L.push(chk(done||got.includes(x),'Voir '+x)))}
 else if(q.kind=='pick'){L.push(chk(done||n>=q.need,'Ramasser '+q.need+' objets'+(qMapOf(id,'picks')?' — '+qMapOf(id,'picks'):'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
 else if(q.kind=='hide'){L.push(chk(done||n>=q.need,'Trouver '+q.need+' cachettes 🌿'+(qMapOf(id,'hides')?' — '+qMapOf(id,'hides'):'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
-else if(q.kind=='win'){const r=DATA.rencontres[q.renc];L.push(chk(done||n>=q.need,'Repousser '+q.need+' groupe'+(q.need>1||!q.defi?'s':'')+(q.defi?' en '+q.defi.tours+' tours max':'')+(r?' — '+r.n:'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
+else if(q.kind=='win'){const r=DATA.rencontres[q.renc];L.push(chk(done||n>=q.need,'Repousser '+q.need+' groupe'+(q.need>1||!q.defi?'s':'')+(q.defi?' en '+q.defi.tours+' tours max':'')+(q.maps?' — '+q.maps.map(m=>(DATA.cartes[m]||{}).n).filter(Boolean).join(', '):r?' — '+r.n:'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
 else if(q.kind=='don'){}
 if(q.cost)L.push(chk(done,'Apporter '+rl(q.cost)));
 return L.join('')}

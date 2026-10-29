@@ -1174,3 +1174,15 @@ DATA.rencontres.forEach(r=>{const k=K[r.m.length];if(!k||!G.includes(r.n))return
 r.m.forEach(m=>{if(m.form||m.boss)return;m.hp=m.max=Math.max(1,Math.round(m.max*kh));m.d=Math.round(m.d*kd);
 if(m.sort){m.sort=JSON.parse(JSON.stringify(m.sort));if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
 if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)}})})}
+
+// ---- Quêtes de combat variées : n'importe quel groupe (non boss) des cartes indiquées compte, au lieu d'un groupe fixe ----
+Object.entries({
+f1:{maps:['foret','sentier','clairiere'],desc:'Repousse 2 groupes de monstres dans la forêt, sur le Sentier des Lucioles ou dans la Clairière.'},
+c5:{maps:['bergerie','paturage'],desc:'Repousse un groupe de monstres dans la Bergerie abandonnée ou le Pâturage Brumeux, puis décide du sort des moutons enrôlés avec la Bergère Brume.',say:'On a enrôlé mes moutons de force : un tampon royal sur le dos, et hop, « soldats ». Des monstres les gardent, vers la bergerie et le pâturage. Libère-les.'},
+m1:{maps:['hall','bureaux'],desc:'Repousse un groupe de monstres dans le Hall des Guichets ou les Bureaux des Tampons, puis décide du sort du courrier avec le Concierge Ficelle.',say:'Le courrier s’entasse devant les guichets, gardé par des monstres du Hall et des Bureaux. Dégage le passage : je déciderai ensuite avec toi de ce qu’on en fait.'},
+o1:{maps:['mirage','puits'],desc:'Repousse un groupe de monstres au Mirage Changeant ou au Puits aux Mille Pieds, puis décide avec le Guide de ce qu’on fait des touristes.',say:'Des monstres squattent mon mirage et le puits d’à côté. Dégage-les : on décidera ensuite ce qu’on fait des touristes.'},
+ro2:{maps:['roseliere','marais'],desc:'Repousse un groupe de monstres dans la Roselière ou le Marais de Cendres, puis décide du sort des somnambules avec Mirette.'},
+d3:{maps:['camp','oasis'],desc:'Repousse 3 groupes de monstres au Camp des Grévistes ou à l’Oasis aux Chaussettes.'},
+e2:{maps:['parvis','chemin'],desc:'Repousse un groupe de monstres éplorés sur le Parvis du Temple ou le Chemin du Soleil Couchant, puis décide avec le Gardien de ce qu’on fait des pèlerins.'},
+sv2:{maps:['sv_cierges','chemin'],desc:'Repousse un groupe de monstres au Jardin des Cierges ou sur le Chemin du Soleil Couchant, puis décide avec le Prieur de ce qu’on fait des veilleurs épuisés.'}
+}).forEach(([k,v])=>Object.assign(DATA.quetes[k],v));

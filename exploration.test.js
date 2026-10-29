@@ -110,3 +110,15 @@ test('déplacements : un appui pendant la marche l’annule ; une case proche d�
   run(ctx, `EX.pend=null;EX.x=${libres[0][0]};EX.y=${libres[0][1]};${tap(libres[1])}`);
   assert.ok(!run(ctx, 'EX.pend&&EX.pend.ent'), 'près de la sortie, une case voisine reste une simple case');
 });
+
+test('quête de combat par cartes : un groupe non boss d\'une des cartes compte, pas ailleurs ni un boss', () => {
+  const ctx = loadExploration(baseSave);
+  run(ctx, "EX.map='sentier'");
+  const g = run(ctx, 'DATA.cartes.sentier.groups[0].renc'), boss = run(ctx, "DATA.rencontres.findIndex(r=>r.n.includes('boss'))");
+  assert.equal(run(ctx, `EX.winOf(DATA.quetes.f1,{renc:${g}})`), true, 'groupe du sentier');
+  assert.equal(run(ctx, `EX.winOf(DATA.quetes.f1,{renc:${g},hide:1})`), false, 'cachette ignorée');
+  assert.equal(run(ctx, `EX.winOf(DATA.quetes.f1,{renc:${boss}})`), false, 'boss ignoré');
+  run(ctx, "EX.map='village'");
+  assert.equal(run(ctx, `EX.winOf(DATA.quetes.f1,{renc:${g}})`), false, 'carte hors liste');
+  assert.equal(run(ctx, "EX.winOf(DATA.quetes.q2,{renc:0})"), true, 'quête à groupe fixe inchangée');
+});

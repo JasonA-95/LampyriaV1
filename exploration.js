@@ -87,13 +87,15 @@ EX.fight=q=>{const begin=()=>{EX.walking=false;EX.on=false;EX.pend=null;EX.group
 EX.fightNpc=(i,p)=>EX.fight({x:p.x,y:p.y,renc:i,npc:1});
 EX.storyResumeAction=action=>{if(action.kind!='fight')return;const q=EX.groups.find(g=>!g.dead&&g.x==action.x&&g.y==action.y&&g.renc==action.renc);if(q)EX.fight(q)};
 // Défi de combat : une quête 'win' avec defi:{tours:N} ne progresse que si la victoire arrive au tour N au plus.
+// Quête de combat : soit un groupe précis (renc), soit n'importe quel groupe non boss des cartes listées (maps)
+EX.winOf=(q,g)=>q.kind=='win'&&!g.hide&&(q.maps?q.maps.includes(EX.map)&&!DATA.rencontres[g.renc].n.includes('boss'):q.renc==(DATA.rencontres[g.renc].base??g.renc));
 EX.defi=renc=>{const b=DATA.rencontres[renc].base??renc,id=Object.keys(DATA.quetes).find(k=>{const q=DATA.quetes[k];return q.defi&&q.kind=='win'&&q.renc==b&&(qs()[k]||{}).s==1});return id?DATA.quetes[id]:null};
 EX.defiMiss=(id,turns)=>{const q=DATA.quetes[id],s=qs()[id];return !!(q&&q.defi&&s&&s.s==1&&turns!=null&&turns>q.defi.tours)};
 EX.back=(res,turns)=>{const g0=EX.group;if(res=='win'&&g0)g0.dead=true;if(res=='lose'){sv.map='village';sv.dj=null;store();EX.map=null}
 const djm=res=='win'&&g0?DJ.after():'';EX.start();
 if(res=='lose')msg('Tu te réveilles au village, sans rien avoir perdu.');
 else if(g0){if(g0.hide)EX.prog(g0.quest,g0.id);
-Object.keys(DATA.quetes).forEach(id=>{const q=DATA.quetes[id];if(q.kind=='win'&&q.renc==(DATA.rencontres[g0.renc].base??g0.renc)&&!g0.hide){if(EX.defiMiss(id,turns))toast('Défi manqué : gagne en '+q.defi.tours+' tours maximum.');else EX.prog(id)}})}
+Object.keys(DATA.quetes).forEach(id=>{const q=DATA.quetes[id];if(EX.winOf(q,g0)){if(EX.defiMiss(id,turns))toast('Défi manqué : gagne en '+q.defi.tours+' tours maximum.');else EX.prog(id)}})}
 if(res=='win'){const rr=g0?g0.renc:cfg.renc;sv.hist.flags['vaincu_'+(DATA.rencontres[rr].base??rr)]=true;store()}
 if(djm)msg(djm);EX.hud();if(g0)EX.storyGroup=g0;EX.storyTrigger({quand:'apresCombat',renc:g0?g0.renc:cfg.renc,issue:res});if(!EX.sceneActive)startScreenTransition()};
 EX.draw=()=>{const N=DATA.taille,d=DATA.cartes[EX.map],rocks=new Set(d.rocks.map(r=>exK(r[0],r[1]))),avatar=displayPosition(EX.avatar,EX.x,EX.y,rocks);cam(avatar.x,avatar.y);g.clearRect(0,0,W,H);
@@ -137,7 +139,7 @@ boss=k=>(C[k].groups||[]).some(g=>R[g.renc].n.includes('boss')&&!F['vaincu_'+bs(
 marks=k=>{const m=C[k],o=[];if(k=='village')o.push('🏠');if(m.exits.some(e=>e.don))o.push('🕳️');if(boss(k))o.push('💀');
 const act=Object.keys(Q).filter(id=>Q[id].s==1&&DATA.quetes[id]);
 if((m.npcs||[]).some(n=>(n.quests||[]).some(id=>{const q=DATA.quetes[id];return q&&!Q[id]&&(q.req||0)<=sv.renc&&(!q.apres||(Q[q.apres]||{}).s==2)})))o.push('❗');
-if(act.some(id=>{const q=DATA.quetes[id];return(m.npcs||[]).some(n=>n.n==q.donneur||[].concat(q.to||[]).includes(n.n))||(m.picks||[]).concat(m.hides||[]).some(p=>p.quest==id)||(q.kind=='win'&&(m.groups||[]).some(g=>bs(g.renc)==q.renc))}))o.push('🎯');return o},
+if(act.some(id=>{const q=DATA.quetes[id];return(m.npcs||[]).some(n=>n.n==q.donneur||[].concat(q.to||[]).includes(n.n))||(m.picks||[]).concat(m.hides||[]).some(p=>p.quest==id)||(q.kind=='win'&&(q.maps?q.maps.includes(k):(m.groups||[]).some(g=>bs(g.renc)==q.renc)))}))o.push('🎯');return o},
 xs=ks.map(k=>L[k][0]),ys=ks.map(k=>L[k][1]),x0=Math.min(...xs),y0=Math.min(...ys),S=56,
 cv2=el('canvas'),g2=cv2.getContext('2d'),info=el('p'),view={x:0,y:0,z:1},ptr=new Map(),reduce=!!(matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches);
 cv2.style.cssText='position:static;inset:auto;width:100%;height:100%;display:block;touch-action:none;cursor:grab';
