@@ -1105,7 +1105,7 @@ DATA.monstreElem={'La mouche à braise':'foudre','Le champignon bavard':'lumiere
 'Le crabe-lanterne':'foudre','La mouette pillarde':'vent','La méduse luisante':'lumiere','Le marin fantôme':'tenebres','Amiral Marée-Basse':'vent'};
 // Résistances en % (positif = résiste, négatif = vulnérable) : élément du monstre +R, celui qui le bat −R (R = 25, boss 20), et un profil secondaire
 // de ±10 sur les deux autres éléments (profils choisis pour que chaque élément soit, en moyenne sur toutes les rencontres, ni plus ni moins résisté) : 'A' = résiste à l'élément qu'il bat et craint l'opposé, 'B' = l'inverse. Un monstre Neutre reçoit ±15 (boss ±10)
-// sur deux éléments [résiste, craint]. Chaque profil est équilibré : la somme de ses résistances vaut 0, et rien n'est jamais en Neutre.
+// sur deux éléments [résiste, craint]. Chaque profil élémentaire est équilibré (somme nulle sur les 4 éléments) ; le Neutre est ajouté à part, fixe (15 %, boss 10 %), en fin de fichier.
 DATA.monstreRs={'La mouche à braise':'A','Le champignon bavard':'B','Le mouton-fantôme':'B','Le berger-fantôme':'B','Chambellan Poussière':'B','Le crapaud cendreux':'B','Le grillon de cendre':'B',
 'Le sac de cendres':['lumiere','vent'],'La Duchesse des Cendres':'A','Duchesse des Cendres':'A','Squelette gréviste':['tenebres','lumiere'],'Scorpion de sable':'A','Chaussette lanceuse':'A','Chameau-infirmier':'B',
 'Chaussette sale':['vent','tenebres'],'Général Gréviste':['lumiere','foudre'],'Pèlerin éteint':'A','Luciole terne':'B','Statue de soleil':'B','Prêtre aveugle':'B','Éclipse':'A','Garde fantôme':'A',
@@ -1162,3 +1162,15 @@ m.groups.push({x:GP[g][0],y:GP[g][1],renc:R.length-1})})})})();
 {const C=DATA.cartes,pk=(m,x,y,q)=>(C[m].picks=C[m].picks||[]).push({x,y,quest:q});
 pk('foret',6,11,'f2');pk('sentier',7,10,'f2');pk('paturage',12,2,'c4');pk('bergerie',7,11,'c4');
 Object.entries({L3:'📦',L5:'📦',d1:'🧦',e1:'🌸',f2:'🍄',c2:'🔔',c4:'📄',n2:'🎵',t2:'🌼',r3:'⚓'}).forEach(([k,i])=>{DATA.quetes[k].ico=i})}
+
+// ---- Résistance au Neutre : tous les monstres (hors formulaires) résistent un peu au Neutre (15 %, boss 10 %), pour que les sorts Neutres ne dominent plus ----
+// Hors de la règle « somme nulle » des 4 éléments : le Neutre est un 5e profil fixe.
+DATA.rencontres.forEach(r=>r.m.forEach(m=>{if(m.rs&&!m.form&&m.rs.neutre==null)m.rs.neutre=m.boss?10:15}));
+
+// ---- Difficulté des groupes générés (Landes, Friches, Désert Profond, Rivages) : les petits groupes étaient trop faciles (mesuré au simulateur : 13 % de PV perdus pour 1 monstre, 37 % pour 2, contre ~55 % visés) ----
+// Facteur de menace par taille de groupe, réparti en PV (k^1,3) et dégâts (k^0,7) pour éviter les coups trop forts ; les groupes de 4 et 5 restent inchangés.
+{const K={1:1.65,2:1.25,3:1.06},G=['Landes des Lucioles','Friches du Sud','Désert Profond','Rivages Perdus'];
+DATA.rencontres.forEach(r=>{const k=K[r.m.length];if(!k||!G.includes(r.n))return;const kh=Math.pow(k,1.3),kd=Math.pow(k,.7);
+r.m.forEach(m=>{if(m.form||m.boss)return;m.hp=m.max=Math.max(1,Math.round(m.max*kh));m.d=Math.round(m.d*kd);
+if(m.sort){m.sort=JSON.parse(JSON.stringify(m.sort));if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}
+if(m.mort)m.mort={...m.mort,dmg:Math.round(m.mort.dmg*kd)}})})}

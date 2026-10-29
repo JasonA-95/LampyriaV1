@@ -147,7 +147,7 @@ test('affaibli reduit les degats infliges avec arrondi et minimum', () => {
   game.addEtat(game.hero, { id: 'affaibli', t: 2, v: 25 });
   const before = target.hp;
   game.cast(0, target.x, target.y);
-  assert.equal(before - target.hp, 11);
+  assert.equal(before - target.hp, 9);   // dégât affaibli (−25 %) puis résistance Neutre du monstre (15 %)
   assert.equal(game.damageFrom(game.hero, 1), 1);
 });
 

@@ -136,21 +136,21 @@ test('chaque monstre élémentaire résiste à son élément (+R), craint celui 
     assert.ok(DC.elements[m.elem] && m.elem !== 'neutre', 'élément invalide : ' + m.n);
     const R = m.boss ? 20 : 25, faible = DC.elements[m.elem].faiblesse, rs = m.rs;
     assert.equal(rs[m.elem], R, m.n); assert.equal(rs[faible], -R, m.n);
-    const autres = Object.keys(rs).filter(k => k !== m.elem && k !== faible);
+    const autres = Object.keys(rs).filter(k => k !== m.elem && k !== faible && k !== 'neutre');
     assert.equal(autres.length, 2, m.n + ' : deux éléments secondaires attendus');
     assert.deepEqual(autres.map(k => Math.abs(rs[k])), [10, 10], m.n);
   }
   assert.ok(vus > 100);
 });
 
-test('les profils de résistance sont équilibrés : somme nulle, jamais de résistance au Neutre, et chaque monstre a un point faible', () => {
+test('les profils de résistance sont équilibrés : somme nulle sur les 4 éléments, résistance au Neutre fixe (15 %, boss 10 %), et chaque monstre a un point faible', () => {
   let avec = 0;
   for (const r of DC.rencontres) for (const m of r.m) {
     if (!m.rs) { assert.ok(m.form, 'monstre sans profil : ' + m.n); continue; }
     avec++;
-    const v = Object.values(m.rs);
+    const v = Object.entries(m.rs).filter(([k]) => k !== 'neutre').map(([, x]) => x);
     assert.equal(v.reduce((a, b) => a + b, 0), 0, 'somme non nulle : ' + m.n);
-    assert.ok(!('neutre' in m.rs), 'résistance au Neutre interdite : ' + m.n);
+    assert.equal(m.rs.neutre, m.boss ? 10 : 15, 'résistance au Neutre attendue : ' + m.n);
     assert.ok(v.some(x => x < 0) && v.some(x => x > 0), 'profil sans faiblesse ou sans résistance : ' + m.n);
     assert.ok(v.every(x => Math.abs(x) <= 25), 'résistance trop forte : ' + m.n);
   }
@@ -185,7 +185,7 @@ test('un sort du même élément que le monstre fait moins de dégâts, celui de
   const loupM = DC.rencontres[loup].m.find(m => m.n === 'Le loup de brume');
   const attendu = (el, x) => (loupM.rs[el] ? Math.max(1, Math.round(x.base * (1 - loupM.rs[el] / 100))) : x.base);
   const neutre = tire(null);
-  assert.equal(neutre.perdu, neutre.base);
+  assert.equal(neutre.perdu, attendu('neutre', neutre), 'le Neutre est réduit par la résistance Neutre du monstre');
   for (const el of ['vent', 'lumiere', 'foudre', 'tenebres']) { const x = tire(el); assert.equal(x.perdu, attendu(el, x), el); }
   assert.ok(tire('vent').perdu < neutre.base && tire('lumiere').perdu > neutre.base);
 });
