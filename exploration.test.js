@@ -91,3 +91,22 @@ test('défi de combat : EX.defi retrouve la quête à défi liée à la rencontr
   assert.equal(val(actif, 'EX.defi(' + idx + ').defi.tours'), 6);
   assert.equal(val(loadExploration(baseSave), 'EX.defi(' + idx + ')'), null);
 });
+
+test('déplacements : un appui pendant la marche l’annule ; une case proche d’une sortie vise la sortie sauf si le héros en est tout près', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 99 });   // sorties ouvertes
+  run(ctx, "var DIRS=[[1,0],[-1,0],[0,1],[0,-1]];var cv={getBoundingClientRect:()=>({left:0,top:0})},ox=0,oy=0,tw=2,th=2;EX.draw=()=>{};");
+  run(ctx, "EX.enter('village',6,6,true)");
+  run(ctx, 'EX.walking=true;EX.tok=5;EX.click({clientX:0,clientY:0})');
+  assert.equal(run(ctx, 'EX.walking'), false);
+  assert.equal(run(ctx, 'EX.tok'), 6);
+  const ex = val(ctx, "DATA.cartes.village.exits.find(e=>e.to=='foret')");
+  // deux cases libres (ni rocher ni objet) à 2 pas ou moins de la sortie
+  const libres = val(ctx, `(()=>{const e=DATA.cartes.village.exits.find(e=>e.to=='foret'),R=DATA.cartes.village.rocks,o=[];for(const [a,b] of [[-1,0],[0,1],[-1,1],[0,-1],[-2,0],[-1,-1],[0,2],[0,-2]]){const x=e.x+a,y=e.y+b;if(DATA.in(x,y)&&!R.some(r=>r[0]==x&&r[1]==y)&&!exEnt(x,y))o.push([x,y])}return o})()`);
+  assert.ok(libres.length >= 2, 'cases libres près de la sortie');
+  const tap = ([x, y]) => `EX.click({clientX:${x - y},clientY:${x + y}})`;
+  run(ctx, `EX.pend=null;EX.x=6;EX.y=6;${tap(libres[0])}`);
+  assert.equal(run(ctx, 'EX.pend&&EX.pend.ent&&EX.pend.ent.t'), 'e', 'une case voisine de la sortie vise la sortie');
+  assert.equal(run(ctx, 'EX.pend.x'), ex.x);
+  run(ctx, `EX.pend=null;EX.x=${libres[0][0]};EX.y=${libres[0][1]};${tap(libres[1])}`);
+  assert.ok(!run(ctx, 'EX.pend&&EX.pend.ent'), 'près de la sortie, une case voisine reste une simple case');
+});

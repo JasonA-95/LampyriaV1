@@ -60,18 +60,20 @@ speak(p.n,t,{at:{x:p.x,y:p.y},stay:true});EX.hud();$('bar').innerHTML='';$('bar'
 EX.deliver=p=>{const id=Object.keys(DATA.quetes).find(k=>{const q=DATA.quetes[k],s=qs()[k];return q.kind=='livre'&&[].concat(q.to).includes(p.n)&&s&&s.s==1&&!(s.got||[]).includes(p.n)&&(s.n||0)<q.need});if(!id)return false;
 const q=DATA.quetes[id],line=typeof q.recu=='object'?q.recu[p.n]:q.recu;EX.prog(id,p.n);const played=EX.storyTrigger({quand:'livraison',id},()=>{EX.ui();EX.draw()});if(!played){speak(p.n,line,{at:{x:p.x,y:p.y}});EX.ui();EX.draw()}return true};
 EX.talk=p=>exStory({quand:'parle',pnj:p.n},()=>{if(!EX.deliver(p))EX.talkNormal(p)});
-EX.click=e=>{if(EX.walking)return;const rc=cv.getBoundingClientRect(),a=(e.clientX-rc.left-ox)/(tw/2),b=(e.clientY-rc.top-oy)/(th/2),
+EX.click=e=>{if(EX.walking){if(EX.sceneActive)return;EX.tok++;EX.walking=false;EX.pend=null;msg('Déplacement annulé.');EX.draw();return}let rc=cv.getBoundingClientRect(),a=(e.clientX-rc.left-ox)/(tw/2),b=(e.clientY-rc.top-oy)/(th/2),
 x=Math.round((a+b)/2),y=Math.round((b-a)/2),N=DATA.taille,d=DATA.cartes[EX.map];
 if(EX.sceneActive){EX.storyNext();return}if(!DATA.in(x,y)||(x==EX.x&&y==EX.y))return;
 if(d.rocks.some(r=>r[0]==x&&r[1]==y)){EX.pend=null;msg('Un rocher bloque le passage.');EX.draw();return}
-const ent=exEnt(x,y);
+let ent=exEnt(x,y);
+// Sortie élargie : une case libre à 2 pas ou moins d'une sortie (si le héros en est à plus de 3) compte comme la sortie
+if(!ent){const ex=(d.exits||[]).find(q=>Math.abs(q.x-x)+Math.abs(q.y-y)<=2&&Math.abs(q.x-EX.x)+Math.abs(q.y-EX.y)>3),en=ex&&exEnt(ex.x,ex.y);if(en&&en.t=='e'){ent=en;x=ex.x;y=ex.y}}
 if(ent&&ent.t=='e'&&!cfg.test&&exLock(ent.o)){EX.pend=null;msg(exLock(ent.o));EX.draw();return}
 const path=exPath(x,y,ent);if(!path){EX.pend=null;msg('Aucun chemin vers cette case.');EX.draw();return}
 if(!EX.pend||EX.pend.x!=x||EX.pend.y!=y){EX.pend={x,y,ent,path};
 msg(!ent?'Touche encore la case pour t\'y rendre ('+path.length+' cases).':ent.t=='g'?'Groupe de monstres : touche encore pour engager le combat.':ent.t=='n'?'Ressource : touche encore pour la récolter.':ent.t=='p'?'Touche encore pour parler à '+ent.o.n+'.':'Touche encore pour '+(ent.o.don?'entrer dans '+ent.o.lbl+' ('+ent.o.nv+')':'partir vers '+DATA.cartes[ent.o.to].n)+'.'+DJ.warn(ent.o));EX.draw();return}
 EX.pend=null;EX.go(path,ent)};
 EX.go=async(path,ent)=>{const t=++EX.tok;EX.walking=true;
-for(const [px,py] of path){await new Promise(r=>setTimeout(r,130));if(t!=EX.tok)return;
+const ms=path.length>8?90:130;for(const [px,py] of path){await new Promise(r=>setTimeout(r,ms));if(t!=EX.tok)return;
 const from={x:EX.x,y:EX.y};EX.face={right:(px-py)>(from.x-from.y),back:(px+py)<(from.x+from.y)};EX.x=px;EX.y=py;EX.steps++;if(typeof playSound=='function')playSound('step');animateUnitMove(EX.avatar,from,{x:px,y:py},new Set(DATA.cartes[EX.map].rocks.map(r=>exK(r[0],r[1]))));EX.draw()}
 EX.walking=false;if(!ent){msg('');return}
 if(ent.t=='n')EX.harvest(ent.o);else if(ent.t=='p')EX.talk(ent.o)
