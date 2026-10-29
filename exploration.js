@@ -99,7 +99,7 @@ const pp={},ex={},E={};
 if(EX.pend&&EX.pend.path)EX.pend.path.forEach(t=>pp[exK(t[0],t[1])]=1);
 d.exits.forEach(e=>ex[exK(e.x,e.y)]=e);
 EX.groups.forEach(q=>{if(!q.dead)E[exK(q.x,q.y)]=q.hide?{e:'🌿',b:'?',visual:q}:{e:DATA.rencontres[q.renc].m[0].e,n:DATA.rencontres[q.renc].m[0].n,b:'×'+DATA.rencontres[q.renc].m.length,visual:q}});
-EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?'🏮':n.coffre?'🎁':DATA.resE[n.res],a:n.until>EX.steps?.25:1,visual:n});
+EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>EX.steps?.25:1,visual:n});
 d.npcs.forEach(n=>E[exK(n.x,n.y)]={e:n.e,n:n.n,npc:1,visual:n});
 EX.storyActors.forEach(a=>E[exK(a.x,a.y)]={e:a.e,visual:a});
 E[exK(EX.x,EX.y)]={e:heroEmoji(),visual:EX.avatar};
