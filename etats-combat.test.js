@@ -229,3 +229,12 @@ test('un sort peut appliquer un etat sans infliger de degats', () => {
   assert.equal(result.ok, true);
   assert.equal(game.hasEtat(target, 'poison'), true);
 });
+test('ligne de vue : un rocher qui frôle le trajet bloque, un trajet dégagé reste libre, et le résultat est symétrique', () => {
+  const game = combat();
+  game.rocks = new Set(['3,2']);
+  const a = { x: 0, y: 0 }, libre = { x: 6, y: 0 }, derriere = { x: 6, y: 4 };
+  assert.equal(game.los(a, libre), true, 'trajet sans rocher');
+  assert.equal(game.los(a, derriere), false, 'le rocher traversé bloque le tir');
+  assert.equal(game.los(derriere, a), false, 'symétrique');
+  assert.equal(game.los(a, { x: 3, y: 2 }), true, 'viser le rocher lui-même ne compte pas comme obstacle');
+});

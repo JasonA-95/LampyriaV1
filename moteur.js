@@ -48,7 +48,15 @@ los(a,b){if(a.x>b.x||(a.x==b.x&&a.y>b.y)){const t=a;a=b;b=t}   // symétrique : 
 let x=a.x,y=a.y;const dx=Math.abs(b.x-x),dy=Math.abs(b.y-y),sx=x<b.x?1:-1,sy=y<b.y?1:-1;let e=dx-dy;
 while(x!=b.x||y!=b.y){const px=x,py=y,e2=2*e;if(e2>-dy){e-=dy;x+=sx}if(e2<dx){e+=dx;y+=sy}
 if(x!=px&&y!=py&&this.rocks.has(x+','+py)&&this.rocks.has(px+','+y))return false;   // pas de tir entre deux rochers en diagonale
-if((x!=b.x||y!=b.y)&&this.rocks.has(x+','+y))return false}return true}
+if((x!=b.x||y!=b.y)&&this.rocks.has(x+','+y))return false}
+// test exact : le segment centre à centre ne doit traverser aucun rocher (case de demi-côté .45), même en le frôlant
+if(this._rk!==this.rocks||this._rn!==this.rocks.size){this._rk=this.rocks;this._rn=this.rocks.size;this._ra=[...this.rocks].map(k=>k.split(',').map(Number))}
+const X0=a.x,Y0=a.y,DX=b.x-a.x,DY=b.y-a.y,H=.45;
+for(const [rx,ry] of this._ra){if((rx==a.x&&ry==a.y)||(rx==b.x&&ry==b.y))continue;let t0=0,t1=1,ok=true;
+const P=[-DX,DX,-DY,DY],Q=[X0-(rx-H),(rx+H)-X0,Y0-(ry-H),(ry+H)-Y0];
+for(let i=0;i<4;i++){if(P[i]==0){if(Q[i]<0){ok=false;break}}else{const r=Q[i]/P[i];if(P[i]<0){if(r>t1){ok=false;break}if(r>t0)t0=r}else{if(r<t0){ok=false;break}if(r<t1)t1=r}}}
+if(ok&&t0<t1)return false}
+return true}
 ranged(i){const s=this.S[i],h=this.hero,r=[];
 for(const [x,y] of this.cells){const m=this.dist(h,{x,y}),u=this.at(x,y);
 if(m<s.r[0]||m>s.r[1]||!this.ok(x,y)||(s.los&&!this.los(h,{x,y})))continue;
