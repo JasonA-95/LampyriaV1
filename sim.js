@@ -6,7 +6,7 @@ const G=__dirname+'/';
 function load(dir){const ctx={console,Math};vm.createContext(ctx);
 for(const f of ['donnees','histoire','xp','moteur'])try{vm.runInContext(fs.readFileSync(dir+f+'.js','utf8').replace(/^const /gm,'var ').replace(/^class Combat/m,'var Combat=class Combat'),ctx)}catch(e){}
 return ctx}
-function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(3,Math.floor(rang||1)));
+function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(5,Math.floor(rang||1)));
 for(let i=0;i<rank-1;i++){const b=(sort.rg||[])[i]||{};if(b.dmg)s.dmg=(s.dmg||0)+b.dmg;if(b.pa)s.pa+=b.pa;if(b.cd)s.cd=Math.max(0,(s.cd||0)+b.cd);if(b.rmax)s.r[1]+=b.rmax;if(b.push)s.push=(s.push||0)+b.push;if(b.garde)s.garde=(s.garde||0)+b.garde}s.rang=rank;return s}
 // équipement typique : meilleurs objets déjà obtenus à l'étape i (zone vaincue)
 const ZONES=[['tisonnier','chaussons','echarpe'],['chapeau','amulette','clochette','capuche','manteau','gilet','epee_braise'],['bague','sceptre','cape','casquette','veste_liv','bottes_liv'],['plume','bottes_cha','lanterne_cha'],['lame_roseau','capuchon_cendre','tunique_roseau','sandales_roseau','bracelet_cendre','voile_brume','perle_marais','bottes_vase'],['lance_libellule','manteau_brume'],['baguette_duchesse','couronne_cendre','robe_duchesse','eventail_cendre'],['turban_sable','tunique_fil','sandales_dunes','bracelet_chaussette','amulette_grain'],[],[],['pancarte_general','casque_negociateur']];
@@ -23,7 +23,7 @@ const rank=s=>(s.dmg||0)*(s.aoe!=null?1.6:1)/s.pa;
 let main='neutre',bs=-1;for(const e of Object.keys(D.elements)){if(e=='neutre')continue;const sc=D.classes[classe].sorts.filter(s=>s.niv<=niv&&(!s.elem||s.elem==e)).reduce((a,s)=>a+rank(s),0);if(sc>bs){bs=sc;main=e}}
 if(left>0)gear[main]=(gear[main]||0)+Math.min(left,D.regleElem.cap);
 const base=D.classes[classe].sorts.filter(s=>s.niv<=niv&&(!s.elem||s.elem==main)),rg={};let sp=niv-1;const ord=[...base].sort((a,b)=>rank(b)-rank(a));
-for(const s of ord){if(sp>=1){rg[s.id]=2;sp-=1}}for(const s of ord){if(rg[s.id]==2&&sp>=2){rg[s.id]=3;sp-=2}}
+for(const s of ord){if(sp>=1){rg[s.id]=2;sp-=1}}for(let r=3;r<=5;r++)for(const s of ord){if(rg[s.id]==r-1&&sp>=r-1){rg[s.id]=r;sp-=r-1}}
 let sorts=base.map(s=>applyRang(s,rg[s.id]||1));
 // barre de 6 : la lanterne contient la Gourmande (3 de capacité) ; on garde les 5 meilleurs sorts de classe
 const lueurs=['gourmande'];const rest=sorts.slice(1).sort((a,b)=>rank(b)-rank(a)),aoe=rest.find(x=>x.aoe!=null&&x.dmg);let keep=rest.slice(0,4);if(aoe&&!keep.includes(aoe))keep[3]=aoe;sorts=sorts.slice(0,1).concat(keep);

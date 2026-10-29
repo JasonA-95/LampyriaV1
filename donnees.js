@@ -1186,3 +1186,9 @@ d3:{maps:['camp','oasis'],desc:'Repousse 3 groupes de monstres au Camp des Grév
 e2:{maps:['parvis','chemin'],desc:'Repousse un groupe de monstres éplorés sur le Parvis du Temple ou le Chemin du Soleil Couchant, puis décide avec le Gardien de ce qu’on fait des pèlerins.'},
 sv2:{maps:['sv_cierges','chemin'],desc:'Repousse un groupe de monstres au Jardin des Cierges ou sur le Chemin du Soleil Couchant, puis décide avec le Prieur de ce qu’on fait des veilleurs épuisés.'}
 }).forEach(([k,v])=>Object.assign(DATA.quetes[k],v));
+
+// Sorts de classe : recharges réduites (3→2, 4→3) et rangs 4-5 (rang 4 : +dégâts/garde ; rang 5 : −1 recharge si possible, sinon +dégâts/garde)
+for(const c of Object.values(DATA.classes))for(const s of c.sorts){if(s.cd>=3)s.cd--;
+const b1=s.rg[0]||{},up=s.garde&&!s.dmg?{garde:1}:{dmg:(s.rg.find(b=>b.dmg)||{dmg:3}).dmg};
+const cdNow=(s.cd||0)+s.rg.reduce((n,b)=>n+(b.cd||0),0);
+s.rg.push({...up},cdNow>=2?{cd:-1}:{...up})}

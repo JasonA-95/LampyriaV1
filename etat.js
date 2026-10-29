@@ -23,7 +23,7 @@ if(!sv.sp.rg||typeof sv.sp.rg!='object'||Array.isArray(sv.sp.rg))sv.sp.rg={};
 if(!Array.isArray(sv.sp.seen))sv.sp.seen=[];
 sv.sp.eq=[...new Set(sv.sp.eq.filter(id=>ALL_SORT_IDS.has(id)))];
 sv.sp.seen=[...new Set(sv.sp.seen.filter(id=>ALL_SORT_IDS.has(id)))];
-for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg[id]!='number')delete sv.sp.rg[id];else sv.sp.rg[id]=Math.max(1,Math.min(3,Math.floor(sv.sp.rg[id])))}
+for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg[id]!='number')delete sv.sp.rg[id];else sv.sp.rg[id]=Math.max(1,Math.min(5,Math.floor(sv.sp.rg[id])))}
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 if(typeof DJ!='undefined')DJ.norm();
 if(!sv.tal||typeof sv.tal!='object'||Array.isArray(sv.tal))sv.tal={};
@@ -51,11 +51,11 @@ const saveCfg=()=>{sv.classe=cfg.classe;sv.lueurs=[...cfg.lueurs];store()};
 const sum=()=>cfg.lueurs.reduce((a,k)=>a+DATA.lueurs[k].t,0);
 const avail=()=>cfg.test?Object.keys(DATA.lueurs):sv.deb;
 const capNow=()=>cfg.test?12:sv.cap;
-function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(3,Math.floor(rang||1)));
+function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(5,Math.floor(rang||1)));
 for(let i=0;i<rank-1;i++){const b=sort.rg[i]||{};if(b.dmg)s.dmg=(s.dmg||0)+b.dmg;if(b.pa)s.pa+=b.pa;if(b.cd)s.cd=Math.max(0,(s.cd||0)+b.cd);if(b.rmax)s.r[1]+=b.rmax;if(b.push)s.push=(s.push||0)+b.push;if(b.garde)s.garde=(s.garde||0)+b.garde}
 s.rang=rank;return s}
-function sortsDispo(){return DATA.classes[cfg.classe].sorts.filter(s=>cfg.test||s.niv<=sv.niv).map(s=>applyRang(s,cfg.test?3:(sv.sp.rg[s.id]||1)))}
-const spSpent=()=>Object.values(sv.sp.rg).reduce((n,r)=>n+(r>=3?3:r>=2?1:0),0),spLeft=()=>Math.max(0,sv.niv-1-spSpent());
+function sortsDispo(){return DATA.classes[cfg.classe].sorts.filter(s=>cfg.test||s.niv<=sv.niv).map(s=>applyRang(s,cfg.test?5:(sv.sp.rg[s.id]||1)))}
+const RG_COUT=[0,0,1,3,6,10],spSpent=()=>Object.values(sv.sp.rg).reduce((n,r)=>n+(RG_COUT[Math.min(5,r|0)]||0),0),spLeft=()=>Math.max(0,sv.niv-1-spSpent());
 function sortsEquipes(){const available=new Map(sortsDispo().map(s=>[s.id,s]));return sv.sp.eq.map(id=>available.get(id)).filter(Boolean)}
 function syncSorts(){const all=DATA.classes[cfg.classe].sorts,available=new Set(sortsDispo().map(s=>s.id)),unlocked=all.filter(s=>s.niv<=sv.niv),first=all[0].id;
 sv.sp.eq=sv.sp.eq.filter(id=>available.has(id));if(!sv.sp.eq.includes(first))sv.sp.eq.unshift(first);
