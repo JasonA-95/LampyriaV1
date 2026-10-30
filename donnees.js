@@ -175,7 +175,7 @@ DATA.rencontres[3].drops=[{id:'plume',p:35},{id:'bottes_cha',p:35},{id:'lanterne
 DATA.res.cendre='🌫️ Cendres';DATA.res.roseau='🌾 Roseaux';DATA.resE.cendre='🌫️';DATA.resE.roseau='🌾';
 DATA.repliques.cendres=['Gourmande',"Cette dame se tient toujours sur un tas de cendres qui grandit… Disperse-la d’un sort, puis frappe vite !"];
 DATA.repliques.duchesse_vic=['Têtue',"Elle ne voulait pas bouger non plus. On aurait pu s'entendre."];
-const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:5,pull:2,etats:[{id:'poison',v:3,t:2}],cd:2}}),gri=(x,y)=>({x,y,hp:34,max:34,pm:4,d:12,e:'🦗',n:'Le grillon de cendre',ia:'dist',garde:[3,4],sort:{n:'Stridulation',r:[2,5],los:1,dmg:9,cd:0}}),sac=(x,y)=>({x,y,hp:56,max:56,pm:2,d:15,e:'⚱️',n:'Le sac de cendres',mort:{n:'Éclatement',r:1,dmg:12}}),duch=(x,y)=>({x,y,hp:110,max:110,pm:2,d:14,e:'👸',n:'La Duchesse des Cendres',boss:1,cendre:1,spread:2,sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:9,etats:[{id:'brule',v:3,t:2}],cd:1}});
+const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',ia:'dist',garde:[3,4],sort:{n:'Langue gluante',r:[2,4],los:1,dmg:10,pull:2,etats:[{id:'poison',v:3,t:2}],cd:1}}),gri=(x,y)=>({x,y,hp:34,max:34,pm:4,d:12,e:'🦗',n:'Le grillon de cendre',ia:'dist',garde:[3,4],sort:{n:'Stridulation',r:[2,5],los:1,dmg:9,cd:0}}),sac=(x,y)=>({x,y,hp:56,max:56,pm:2,d:15,e:'⚱️',n:'Le sac de cendres',mort:{n:'Éclatement',r:1,dmg:12}}),duch=(x,y)=>({x,y,hp:110,max:110,pm:2,d:14,e:'👸',n:'La Duchesse des Cendres',boss:1,cendre:1,spread:2,sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:9,etats:[{id:'brule',v:3,t:2}],cd:1}});
 DATA.rencontres.push({n:'Marais de Cendres',biome:'marais',niv:22,loot:{cendre:4,roseau:2},m:[cra(10,3),cra(11,8),gri(9,10)]});
 DATA.rencontres.push({n:'Roselière Fantôme',biome:'roseliere',niv:26,loot:{roseau:5,cendre:3},m:[gri(10,3),gri(11,8),sac(9,10),cra(11,5)]});
 DATA.rencontres.push({n:'Serre de la Duchesse (boss)',biome:'serre',niv:30,loot:{cendre:8,roseau:5,braise:6},say:'cendres',vic:'duchesse_vic',m:[duch(11,7),gri(9,3),gri(10,9)]});
@@ -336,7 +336,7 @@ voi=(x,y)=>({x,y,hp:20,max:20,pm:0,d:0,e:'🌑',n:'Le voile d’ombre',form:1,pc
 gar=(x,y)=>({x,y,hp:95,max:95,pm:3,d:25,e:'🛡️',n:'Garde fantôme',sort:{n:'Charge spectrale',r:[1,1],push:1,dmg:25,cd:2}}),
 arc=(x,y)=>({x,y,hp:70,max:70,pm:4,d:22,e:'🏹',n:'Archer osseux',ia:'dist',garde:[3,4],sort:{n:'Flèche rouillée',r:[2,6],los:1,dmg:24,cd:0}}),
 che=(x,y)=>({x,y,hp:120,max:120,pm:2,d:27,e:'🤺',n:'Chevalier brisé',sort:{n:'Coup de pommeau',r:[1,1],push:1,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
-lch=(x,y)=>({x,y,hp:130,max:130,pm:2,d:24,e:'👻',n:'Chambellan Poussière',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:24,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),
+lch=(x,y)=>({x,y,hp:130,max:130,pm:2,d:24,e:'👻',n:'Chambellan Poussière',ia:'dist',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:24,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),
 ldu=(x,y)=>({x,y,hp:120,max:120,pm:2,d:22,e:'👸',n:'Duchesse des Cendres',ia:'dist',garde:[3,4],sort:{n:'Pluie de cendres',r:[2,4],los:1,dmg:26,cd:1}}),
 lge=(x,y)=>({x,y,hp:150,max:150,pm:2,d:26,e:'🪖',n:'Général Gréviste',sort:{n:'Appel à la grève',r:[1,1],push:1,dmg:26,etatsSoi:[{id:'bouclier',v:20,t:2}],cd:2}}),
 bou=(x,y)=>({x,y,hp:260,max:260,pm:3,d:27,e:'🤡',n:'Bouffon Sans Rire',boss:1,alerte:{every:3,r:1,mult:1.4,n:'Blague sans rire',vul:1},sort:{n:'Blague sans rire',r:[1,3],los:1,dmg:27,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),
@@ -645,7 +645,7 @@ m3:{n:'Les Archives du Chambellan',desc:'Pénètre dans les Archives, au fond de
 const B=DATA.rencontres.length;
 const pap=(x,y)=>({x,y,hp:30,max:30,pm:4,d:11,e:'🦋',n:'Le papillon de nuit',ia:'dist',garde:[3,4],sort:{n:'Poudre soporifique',r:[2,4],los:1,dmg:6,etats:[{id:'ralenti',v:1,t:1}],cd:1}}),
 ore=(x,y)=>({x,y,hp:60,max:60,pm:2,d:14,e:'🛏️',n:'L’oreiller hanté',mort:{n:'Explosion de plumes',r:1,dmg:12}}),
-chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:2}}),
+chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',ia:'dist',garde:[3,4],sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:11,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),
 bar=(x,y)=>({x,y,hp:160,max:160,pm:2,d:13,e:'🦉',n:'Baronne Insomnie',boss:1,cycle:{a:2,b:2},prot:'elle rêve encore',sort:{n:'Bâillement',r:[1,3],los:1,dmg:11,etats:[{id:'ralenti',v:1,t:2}],cd:1}});
 DATA.rencontres.push(
 {n:'Gué des Crapauds',biome:'marais',niv:22,loot:{cendre:4,roseau:2},m:[cra(10,3),pap(11,8),cra(9,10)]},
@@ -836,7 +836,7 @@ const B=DATA.rencontres.length;
 const cra=(x,y)=>({x,y,hp:72,max:72,pm:3,d:19,e:'🦀',n:'Le crabe-lanterne',sort:{n:'Pince de lanterne',r:[1,1],etats:[{id:'affaibli',v:20,t:2}],cd:1}}),
 mou=(x,y)=>({x,y,hp:52,max:52,pm:4,d:17,e:'🐦',n:'La mouette pillarde',ia:'dist',garde:[3,4],sort:{n:'Piqué du sandwich',r:[2,4],los:1,dmg:16,cd:1}}),
 med=(x,y)=>({x,y,hp:60,max:60,pm:2,d:12,e:'🪼',n:'La méduse luisante',sort:{n:'Voile urticant',r:[1,3],los:1,dmg:10,etats:[{id:'poison',v:4,t:2}],cd:1}}),
-mar=(x,y)=>({x,y,hp:88,max:88,pm:3,d:22,e:'🏴‍☠️',n:'Le marin fantôme',sort:{n:'Grappin',r:[2,4],los:1,dmg:12,pull:2,cd:2}}),
+mar=(x,y)=>({x,y,hp:88,max:88,pm:3,d:22,e:'🏴‍☠️',n:'Le marin fantôme',ia:'dist',garde:[3,4],sort:{n:'Grappin',r:[2,4],los:1,dmg:18,pull:2,cd:1}}),
 ami=(x,y)=>({x,y,hp:190,max:190,pm:2,d:22,e:'⚓',n:'Amiral Marée-Basse',boss:1,boussole:1,cycle:{a:3,b:2,h:'La marée monte : l’Amiral est submergé et protégé.',l:'La marée descend ! L’Amiral est à découvert (dégâts ×1,5).'},prot:'la marée est haute',sort:{n:'Lame de marée',r:[1,3],los:1,dmg:24,push:1,cd:1}}),
 bou=(x,y)=>({x,y,hp:22,max:22,pm:0,d:0,e:'🧭',n:'La boussole',form:1,pct:.12,regen:.03}),
 gro=(x,y)=>({...cra(x,y),hp:130,max:130,d:24});
@@ -891,8 +891,8 @@ r5:{n:'L’Amiral qui attend la marée',desc:'Entre dans l’Épave au bout du P
 // ============ ÉTAPE 3 (quêtes variées) : chasse au crapaud-roi (n1) et conséquences des berceuses (n2) ============
 (()=>{
 const HB=DATA.rencontres.length;
-const roi=(x,y)=>({x,y,hp:85,max:85,pm:3,d:15,e:'🐸',n:'Le crapaud cendreux',sort:{n:'Langue gluante',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'poison',v:3,t:2}],cd:2}}),
-chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:6,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:2}});
+const roi=(x,y)=>({x,y,hp:85,max:85,pm:3,d:15,e:'🐸',n:'Le crapaud cendreux',ia:'dist',garde:[3,4],sort:{n:'Langue gluante',r:[2,4],los:1,dmg:12,pull:2,etats:[{id:'poison',v:3,t:2}],cd:1}}),
+chr=(x,y)=>({x,y,hp:44,max:44,pm:3,d:14,e:'🕸️',n:'Le chasseur de rêves',ia:'dist',garde:[3,4],sort:{n:'Filet de rêve',r:[2,4],los:1,dmg:11,pull:2,etats:[{id:'affaibli',v:25,t:2}],cd:1}});
 DATA.rencontres.push({n:'Chasse au crapaud-roi',biome:'marais',niv:23,type:'elite',loot:{cendre:5,roseau:3},m:[roi(10,6),chr(9,3),chr(9,9)]});
 {const k=4.8,kd=Math.pow(k,.7);DATA.rencontres[HB].m.forEach(m=>{m.hp=m.max=Math.max(1,Math.round(m.max*k));m.d=Math.round(m.d*kd);
 if(m.sort){m.sort={...m.sort};if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd)}})}
