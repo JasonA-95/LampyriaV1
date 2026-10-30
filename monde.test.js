@@ -101,3 +101,8 @@ test('quêtes de combat par cartes : les cartes existent et offrent assez de gro
   }
   assert.deepEqual(p, []);
 });
+
+test('lanterne : chaque palier du Maître Lampiste exige un niveau et une quête existante, et le PNJ du village porte lampiste:1', () => {
+  assert.ok(D.lampiste.every(u => u.niv > 0 && (!u.quete || D.quetes[u.quete])));
+  assert.ok(D.cartes.village.npcs.some(n => n.n === 'Maître Lampiste' && n.lampiste));
+});

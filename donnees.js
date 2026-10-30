@@ -108,14 +108,14 @@ DATA.rencontres=[
 {n:'Village des Lanternes',biome:'village',niv:2,loot:{braise:4},m:[mou(10,3),mou(11,8)]},
 {n:'Forêt des Champignons Lumineux',biome:'foret',niv:7,loot:{champi:4,laine:2},m:[cha(10,3),cha(11,8),mot(9,10)]},
 {n:'Collines aux Moutons-Fantômes',biome:'collines',niv:13,loot:{laine:5,braise:3},m:[mot(10,3),mot(11,8),ber(9,10),cha(11,5)]}];
-DATA.lampiste=[{cap:5,cout:{braise:4}},{cap:8,cout:{champi:4,laine:4}},{cap:12,cout:{braise:8,champi:6,laine:8}}];
+DATA.lampiste=[{cap:5,cout:{braise:4},niv:5,quete:'q3'},{cap:8,cout:{champi:4,laine:4},niv:12,quete:'f3'},{cap:12,cout:{braise:8,champi:6,laine:8},niv:24,quete:'n1'}];
 const boss=(x,y)=>({x,y,hp:90,max:90,pm:2,d:12,e:'👻',n:'Chambellan Poussière',boss:1,prot:'le formulaire flotte sur lui',sort:{n:'Tampon officiel',r:[2,3],los:1,dmg:8,etats:[{id:'affaibli',v:25,t:2}],cd:1}}),frm=(x,y)=>({x,y,hp:15,max:15,pm:0,d:0,e:'📜',n:'Le formulaire',form:1,pct:.14,regen:.03});
 DATA.rencontres.push({n:'Manoir du Chambellan (boss)',biome:'manoir',niv:18,loot:{braise:8,laine:4,champi:4},say:'formulaire',m:[boss(11,7),frm(11,6),mou(9,3),mou(10,9)]});
 DATA.resE={braise:'🔥',champi:'🍄',laine:'🧶'};
 DATA.cartes={
 village:{n:'Village des Lanternes',biome:'village',need:0,start:[3,6],tint:'rgba(255,170,80,.08)',
 rocks:[[5,2],[5,3],[7,9],[8,9],[2,9],[10,3],[9,2],[6,10],[11,10]],
-npcs:[{x:6,y:4,e:'🧓',n:'Maître Lampiste',quests:['q1','q2','q3'],txt:"Ta lanterne réagit à cette Lueur… fascinant ! Rapporte-moi des ressources et je lui ferai de la place (menu, onglet Lanterne).",variantes:[{si:{quete:{id:'q1',etat:'finie'}},txt:'Trois lanternes retrouvées, et pas une seule cabossée ! Je vais finir par croire que tu sais livrer.'}]},
+npcs:[{x:6,y:4,e:'🧓',n:'Maître Lampiste',lampiste:1,quests:['q1','q2','q3'],txt:"Ta lanterne réagit à cette Lueur… fascinant ! Rapporte-moi des ressources, un peu d'expérience et quelques services rendus, et je lui ferai de la place.",variantes:[{si:{quete:{id:'q1',etat:'finie'}},txt:'Trois lanternes retrouvées, et pas une seule cabossée ! Je vais finir par croire que tu sais livrer.'}]},
 {x:4,y:8,e:'🧔',n:'Le marchand',txt:"Je ne prends pas de braises en pièces, mais j'échange volontiers !",trade:[{give:{laine:2},get:{braise:1}},{give:{braise:2},get:{champi:1}},{give:{champi:2},get:{laine:1}},{give:{braise:1},get:{laine:1}}]}],
 picks:[{x:1,y:2,quest:'q1'},{x:9,y:10,quest:'q1'},{x:12,y:2,quest:'q1'}],
 groups:[{x:10,y:4,renc:0},{x:10,y:8,renc:0}],
@@ -179,7 +179,7 @@ const cra=(x,y)=>({x,y,hp:40,max:40,pm:3,d:13,e:'🐸',n:'Le crapaud cendreux',s
 DATA.rencontres.push({n:'Marais de Cendres',biome:'marais',niv:22,loot:{cendre:4,roseau:2},m:[cra(10,3),cra(11,8),gri(9,10)]});
 DATA.rencontres.push({n:'Roselière Fantôme',biome:'roseliere',niv:26,loot:{roseau:5,cendre:3},m:[gri(10,3),gri(11,8),sac(9,10),cra(11,5)]});
 DATA.rencontres.push({n:'Serre de la Duchesse (boss)',biome:'serre',niv:30,loot:{cendre:8,roseau:5,braise:6},say:'cendres',vic:'duchesse_vic',m:[duch(11,7),gri(9,3),gri(10,9)]});
-DATA.lampiste.push({cap:15,cout:{cendre:8,roseau:8,braise:8}});
+DATA.lampiste.push({cap:15,cout:{cendre:8,roseau:8,braise:8},niv:36,quete:'o2'});
 DATA.cartes.manoir.exits.push({x:12,y:6,to:'marais',tx:1,ty:6});
 DATA.cartes.marais={n:'Marais de Cendres',biome:'marais',need:4,start:[1,6],tint:'rgba(120,125,115,.22)',
 rocks:[[3,3],[3,4],[6,2],[6,9],[7,9],[9,4],[10,4],[4,10],[11,10],[8,7]],
