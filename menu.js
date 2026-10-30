@@ -188,12 +188,12 @@ const rw=qRew(q.rew);if(rw)c.appendChild(el('p','mt',(st=='fini'?'Récompense re
 return c}
 function questPart(B){const Q=sv.q||{},g={rendre:[],cours:[],dispo:[],fini:[]};
 for(const id in DATA.quetes){const q=DATA.quetes[id],s=Q[id];
-if(!s){if((q.req||0)<=sv.renc&&(!q.apres||((Q[q.apres]||{}).s==2)))g.dispo.push(id);continue}
+if(!s)continue;
 if(s.s==2)g.fini.push(id);else if((s.n||0)>=q.need&&(q.need>0||!q.cost||Object.keys(q.cost).every(k=>(sv.res[k]||0)>=q.cost[k])))g.rendre.push(id);else g.cours.push(id)}
 const tot=Object.keys(DATA.quetes).length;
-B.appendChild(card('Journal','<b style="color:var(--ink)">'+g.fini.length+' quête'+(g.fini.length>1?'s':'')+' terminée'+(g.fini.length>1?'s':'')+'</b> · '+(g.rendre.length+g.cours.length)+' en cours · '+g.dispo.length+' disponible'+(g.dispo.length>1?'s':'')));
-['rendre','cours','dispo'].forEach(k=>g[k].forEach(id=>B.appendChild(questCard(id,k))));
-if(!g.rendre.length&&!g.cours.length&&!g.dispo.length)B.appendChild(card('Quêtes','Rien à faire pour l\'instant. Explore de nouvelles zones : de nouveaux habitants auront du travail pour toi.'));
+B.appendChild(card('Journal','<b style="color:var(--ink)">'+g.fini.length+' quête'+(g.fini.length>1?'s':'')+' terminée'+(g.fini.length>1?'s':'')+'</b> · '+(g.rendre.length+g.cours.length)+' en cours · repère les « ! » sur la carte pour trouver de nouvelles quêtes'));
+['rendre','cours'].forEach(k=>g[k].forEach(id=>B.appendChild(questCard(id,k))));
+if(!g.rendre.length&&!g.cours.length)B.appendChild(card('Quêtes','Aucune quête en cours. Explore : les habitants qui ont du travail pour toi portent un « ! » (rouge pour l\'histoire principale).'));
 if(g.fini.length){B.appendChild(row('<span class="em">📚</span><span class="tx"><span class="nm">Quêtes terminées ('+g.fini.length+')</span><span class="mt">'+(showDone?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showDone=!showDone;renderMenu()}));
 if(showDone)g.fini.forEach(id=>B.appendChild(questCard(id,'fini')))}}
 
