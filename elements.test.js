@@ -96,13 +96,13 @@ test('plus aucun objet ni panoplie n\'utilise l\'ancienne stat dmg', () => {
 });
 
 // ---------- sorts de classe par élément (étape 4) ----------
-test('chaque classe a 10 sorts : exactement 2 par élément, ids uniques, niveaux croissants, départ Neutre', () => {
+test('chaque classe a 10 ou 15 sorts : au moins 2 par élément, ids uniques, niveaux croissants, départ Neutre', () => {
   const D = load(), ids = new Set();
   for (const k of Object.keys(D.classes)) {
     const S = D.classes[k].sorts, par = {};
-    assert.equal(S.length, 10, k);
+    assert.ok(S.length == 10 || S.length == 15, k);
     S.forEach((s, i) => { assert.ok(!ids.has(s.id), 'id en double : ' + s.id); ids.add(s.id); par[s.elem || 'neutre'] = (par[s.elem || 'neutre'] || 0) + 1; if (i) assert.ok(s.niv >= S[i - 1].niv, 'ordre des niveaux : ' + s.id); assert.ok(!s.elem || D.elements[s.elem], 'élément inconnu : ' + s.id) });
-    for (const e of Object.keys(D.elements)) assert.equal(par[e], 2, k + ' : 2 sorts attendus en ' + e);
+    for (const e of Object.keys(D.elements)) assert.ok(par[e] >= 2, k + ' : 2 sorts minimum en ' + e);
     assert.ok(!S[0].elem && !S[1].elem && S[0].niv === 1 && S[1].niv === 1, k + ' : sorts de départ Neutres');
   }
 });
@@ -256,4 +256,10 @@ test('le héros a 0 % de résistance de base à chaque élément (Neutre compris
   assert.equal(d({}), 100);
   assert.equal(d({ rneutre: 25 }), 75);
   assert.equal(d({ rvent: 25 }), 100);
+});
+
+test('sorts déjà débloqués conservés après déplacement des niveaux (migration keep)', () => {
+  const D = load(), moved = D.classes.porte.sorts.filter(s => s.old != null);
+  assert.ok(moved.length >= 7);
+  for (const s of D.classes.porte.sorts) assert.ok(s.rg.length === 4, s.id + ' : 4 bonus de rang');
 });

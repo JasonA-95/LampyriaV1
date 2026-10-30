@@ -23,6 +23,7 @@ if(!sv.sp.rg||typeof sv.sp.rg!='object'||Array.isArray(sv.sp.rg))sv.sp.rg={};
 if(!Array.isArray(sv.sp.seen))sv.sp.seen=[];
 sv.sp.eq=[...new Set(sv.sp.eq.filter(id=>ALL_SORT_IDS.has(id)))];
 sv.sp.seen=[...new Set(sv.sp.seen.filter(id=>ALL_SORT_IDS.has(id)))];
+if(!Array.isArray(sv.sp.keep)){sv.sp.keep=[];for(const c of Object.values(DATA.classes))for(const s of c.sorts)if(s.old!=null&&s.old<=sv.niv)sv.sp.keep.push(s.id)}
 for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg[id]!='number')delete sv.sp.rg[id];else sv.sp.rg[id]=Math.max(1,Math.min(5,Math.floor(sv.sp.rg[id])))}
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 if(typeof DJ!='undefined')DJ.norm();
@@ -54,10 +55,11 @@ const capNow=()=>cfg.test?12:sv.cap;
 function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(5,Math.floor(rang||1)));
 for(let i=0;i<rank-1;i++){const b=sort.rg[i]||{};if(b.dmg)s.dmg=(s.dmg||0)+b.dmg;if(b.pa)s.pa+=b.pa;if(b.cd)s.cd=Math.max(0,(s.cd||0)+b.cd);if(b.rmax)s.r[1]+=b.rmax;if(b.push)s.push=(s.push||0)+b.push;if(b.garde)s.garde=(s.garde||0)+b.garde}
 s.rang=rank;return s}
-function sortsDispo(){return DATA.classes[cfg.classe].sorts.filter(s=>cfg.test||s.niv<=sv.niv).map(s=>applyRang(s,cfg.test?5:(sv.sp.rg[s.id]||1)))}
+const sortOuvert=s=>cfg.test||s.niv<=sv.niv||sv.sp.keep.includes(s.id);
+function sortsDispo(){return DATA.classes[cfg.classe].sorts.filter(sortOuvert).map(s=>applyRang(s,cfg.test?5:(sv.sp.rg[s.id]||1)))}
 const RG_COUT=[0,0,1,3,6,10],spSpent=()=>Object.values(sv.sp.rg).reduce((n,r)=>n+(RG_COUT[Math.min(5,r|0)]||0),0),spLeft=()=>Math.max(0,sv.niv-1-spSpent());
 function sortsEquipes(){const available=new Map(sortsDispo().map(s=>[s.id,s]));return sv.sp.eq.map(id=>available.get(id)).filter(Boolean)}
-function syncSorts(){const all=DATA.classes[cfg.classe].sorts,available=new Set(sortsDispo().map(s=>s.id)),unlocked=all.filter(s=>s.niv<=sv.niv),first=all[0].id;
+function syncSorts(){const all=DATA.classes[cfg.classe].sorts,available=new Set(sortsDispo().map(s=>s.id)),unlocked=all.filter(sortOuvert),first=all[0].id;
 sv.sp.eq=sv.sp.eq.filter(id=>available.has(id));if(!sv.sp.eq.includes(first))sv.sp.eq.unshift(first);
 for(const s of unlocked)if(!sv.sp.seen.includes(s.id)&&!sv.sp.eq.includes(s.id)&&sv.sp.eq.length+cfg.lueurs.length<6)sv.sp.eq.push(s.id);
 sv.sp.seen=[...new Set([...sv.sp.seen,...unlocked.map(s=>s.id)])];

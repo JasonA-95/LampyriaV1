@@ -63,7 +63,7 @@ function heroPart(B,part){const cl=el('div','grid');
 if(part=='heros'){for(const k in DATA.classes){if(!cfg.test&&cfg.classe!=k)continue;const c=DATA.classes[k];cl.appendChild(btn(c.e+' '+c.n,c.info,cfg.classe==k?'on':'',()=>{if(!cfg.test)return;cfg.classe=k;normL();saveCfg();renderMenu()}))}
 B.appendChild(card('Classe',cl,cfg.test?'Mode test : tu peux changer de classe.':'Ta classe est définitive. Seul le mode test permet d\'en changer.'));}
 if(part=='sorts'){const spellCard=card('Sorts','Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b>'),current=DATA.classes[cfg.classe].sorts,first=current[0].id;
-for(const base of current){const unlocked=cfg.test||base.niv<=sv.niv,rank=cfg.test?5:(sv.sp.rg[base.id]||1),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),entry=el('div','pick');
+for(const base of current){const unlocked=sortOuvert(base),rank=cfg.test?5:(sv.sp.rg[base.id]||1),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),entry=el('div','pick');
 const name=s.n+(rank>1?' ★'+rank:'')+(base.id==first?' 🔒':'');
 const status=!unlocked?'Niveau '+base.niv:base.id==first?'Toujours équipé':equipped?'Équipé · touche pour retirer':'Libre · touche pour équiper';
 const E0=DATA.elements[base.elem||'neutre'],chips='<span class="chips"><span class="chip el">'+E0.e+' '+E0.n+'</span><span class="chip">'+s.pa+' PA</span><span class="chip">Recharge '+(s.cd||0)+'</span></span>';
