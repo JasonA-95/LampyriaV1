@@ -1043,6 +1043,10 @@ Z('rp',['Anse des Perdus','Récif aux Cierges','Banc de l’Oubli','Falaise des 
 [[-3,5,41],[-4,4,41],[-4,5,42],[-2,5,42],[-3,6,43],[-4,6,43],[-2,6,44],[-3,7,44],[-4,7,45],[-2,7,45]],['gravat','eclat','roseau'],
 [[],[{x:5,y:6,e:'🎣',n:'Pêcheur Sans-Ligne',txt:'J’ai perdu ma ligne. Ou c’est elle qui m’a perdu. La mer ne tranche pas.',quests:['rp_q1']}],[],[],[],[],[],[{x:6,y:5,e:'🔦',n:'Gardienne du Phare Brisé',txt:'Mon phare est brisé, mais il éclaire quand même. De travers, certes. Les bateaux perdus apprécient l’originalité.'}]],
 {rp_q1:{n:'Une ligne pour le phare',desc:'Porte le mot du Pêcheur Sans-Ligne à la Gardienne du Phare Brisé, au Rivage de Brume.',need:1,kind:'livre',req:24,donneur:'Pêcheur Sans-Ligne',to:'Gardienne du Phare Brisé',say:'La Gardienne du Phare Brisé a peut-être ma ligne. Elle a tout ce qui flotte. Demande-lui, poliment.',recu:'Une ligne ? Elle s’est enroulée autour de mon phare. Elle éclaire mieux qu’avant. Dis-lui qu’il peut la garder.',fin:'Elle éclaire le phare ? Alors c’est une promotion. Merci, je pêcherai sans.',rew:{xpq:[43,'normale'],res:{gravat:3,eclat:2}}}});
+Z('os',['Seuil des Orgues','Orgues Murmurantes','Gorge des Tuyaux','Plateau Grésillant','Orgues du Couchant','Basalte Chantant','Falaise des Sonneurs','Arche de Cendre Froide','Corniche des Échos','Dernier Tuyau'],'marais','rgba(110,100,130,.20)','cendres','plage',
+[[-4,2,27],[-5,2,28],[-4,3,28],[-5,3,29],[-6,2,29],[-6,3,30],[-7,2,30],[-5,4,31],[-7,3,31],[-6,4,32]],['cendre','roseau','braise'],
+[[],[{x:5,y:6,e:'🎺',n:'Sonneur de Basalte',txt:'Je souffle dans les orgues depuis ce matin. Elles répondent toujours un ton trop bas. On dit que c’est le basalte qui boude.',quests:['os_q1']}],[],[],[],[],[],[],[],[{x:6,y:5,e:'🪨',n:'Tailleuse d’Orgues',txt:'Je taille les tuyaux à la main, un par un. Ils chantent faux, mais ils chantent. C’est déjà plus que les miens.'}]],
+{os_q1:{n:'Un ton plus haut',desc:'Porte le mot du Sonneur de Basalte à la Tailleuse d’Orgues, au Dernier Tuyau.',need:1,kind:'livre',req:13,donneur:'Sonneur de Basalte',to:'Tailleuse d’Orgues',say:'Dis à la Tailleuse d’Orgues que mes tuyaux sonnent un ton trop bas. Qu’elle en taille un plus court, ou que je souffle plus fort.',recu:'Un ton trop bas ? Ah, c’est mon dernier tuyau qui est trop long. Dis-lui de venir l’écouter, il pleure en mi bémol.',fin:'Mi bémol ? Ça explique tout. Je vais le recouper, merci de la visite.',rew:{xpq:[29,'normale'],res:{cendre:3,roseau:2}}}});
 }
 
 // ============ CARTE DU MONDE ÉTENDUE : les zones forment une grille (4 directions), donjons signalés ============
@@ -1161,7 +1165,7 @@ m.groups.push({x:GP[g][0],y:GP[g][1],renc:R.length-1})})})})();
 // ---- Phase C : rencontres des zones 2 : composition choisie pour garder le bestiaire équilibré (résistance moyenne ~0 par élément) ----
 (()=>{const R=DATA.rencontres,E=['vent','foudre','tenebres','lumiere'],S={},cnt={};let N=0;
 const add=m=>{if(!m.rs)return;N++;E.forEach(e=>S[e]=(S[e]||0)+(m.rs[e]||0))};R.forEach(r=>r.m.forEach(add));
-const hp0=n=>100+4.5*n,d0=n=>20+.7*n,KH={1:1.7,2:1.25,3:1,4:.85,5:.75},KD={1:1.25,2:1.1,3:1,4:.95,5:.9},SL=[[10,3],[11,8],[9,10],[11,5],[10,7]],GP=[[9,5],[9,10]],TL=[[1,3],[2,4],[3,5],[1,2],[4,2],[5,3],[2,1],[3,4],[1,5],[2,3]],NM={collines:'Friches du Sud',desert:'Désert Profond',mer:'Rivages Perdus'};
+const hp0=n=>100+4.5*n,d0=n=>20+.7*n,KH={1:1.7,2:1.25,3:1,4:.85,5:.75},KD={1:1.25,2:1.1,3:1,4:.95,5:.9},SL=[[10,3],[11,8],[9,10],[11,5],[10,7]],GP=[[9,5],[9,10]],TL=[[1,3],[2,4],[3,5],[1,2],[4,2],[5,3],[2,1],[3,4],[1,5],[2,3]],NM={collines:'Friches du Sud',desert:'Désert Profond',mer:'Rivages Perdus',marais:'Orgues de Basalte'};
 const orig=R.length,base={};
 R.slice(0,orig).forEach(r=>{if(r.n.includes('boss')||r.type=='elite'||r.base!=null)return;r.m.forEach(m=>{if(m.boss||m.form||!m.rs)return;const k=r.biome+'|'+m.n;if(!base[k])base[k]={m,niv:r.niv,biome:r.biome}})});
 DATA.zonesB.forEach((z,zi)=>{const P=Object.values(base).filter(b=>b.biome==z.pool&&b.niv<=z.niv+4),m=DATA.cartes[z.id],T=TL.slice(zi%10).concat(TL.slice(0,zi%10));
@@ -1169,7 +1173,7 @@ const sz=T[parseInt(z.id.replace(/\D/g,''))-1];
 sz.forEach((n,g)=>{const ms=[],used={};for(let i=0;i<n;i++){let best=null;P.forEach((b,bi)=>{const w=Math.max(...E.map(e=>Math.abs((S[e]+(b.m.rs[e]||0))/(N+1))))+.04*(used[bi]||0)+((bi+zi+g+i)%P.length)*1e-4;if(!best||w<best.w)best={w,bi,b}});
 used[best.bi]=(used[best.bi]||0)+1;const t=JSON.parse(JSON.stringify(best.b.m)),f=hp0(z.niv)/hp0(best.b.niv),fd=d0(z.niv)/d0(best.b.niv);t.x=SL[i][0];t.y=SL[i][1];
 t.hp=t.max=Math.round(t.hp*f*KH[n]);t.d=Math.round(t.d*fd*KD[n]);ms.push(t);add(t)}
-const loot=z.pool=='desert'?{sable:2+g,chaussette:1}:z.pool=='mer'?{gravat:2+g,eclat:1}:{laine:2+g,champi:1};
+const loot=z.pool=='desert'?{sable:2+g,chaussette:1}:z.pool=='mer'?{gravat:2+g,eclat:1}:z.pool=='marais'?{cendre:2+g,roseau:1}:{laine:2+g,champi:1};
 R.push({n:NM[z.pool],biome:z.pool,niv:z.niv,loot,m:ms,drops:JSON.parse(JSON.stringify((R.find(r=>r.biome==z.pool&&r.drops&&r.drops.length)||{}).drops||[]))});
 m.groups.push({x:GP[g][0],y:GP[g][1],renc:R.length-1})})})})();
 
@@ -1184,7 +1188,7 @@ DATA.rencontres.forEach(r=>r.m.forEach(m=>{if(m.rs&&!m.form&&m.rs.neutre==null)m
 
 // ---- Difficulté des groupes générés (Landes, Friches, Désert Profond, Rivages) : les petits groupes étaient trop faciles (mesuré au simulateur : 13 % de PV perdus pour 1 monstre, 37 % pour 2, contre ~55 % visés) ----
 // Facteur de menace par taille de groupe, réparti en PV (k^1,3) et dégâts (k^0,7) pour éviter les coups trop forts ; les groupes de 4 et 5 restent inchangés.
-{const K={1:1.65,2:1.25,3:1.06},G=['Landes des Lucioles','Friches du Sud','Désert Profond','Rivages Perdus'];
+{const K={1:1.65,2:1.25,3:1.06},G=['Landes des Lucioles','Friches du Sud','Désert Profond','Rivages Perdus','Orgues de Basalte'];
 DATA.rencontres.forEach(r=>{const k=K[r.m.length];if(!k||!G.includes(r.n))return;const kh=Math.pow(k,1.3),kd=Math.pow(k,.7);
 r.m.forEach(m=>{if(m.form||m.boss)return;m.hp=m.max=Math.max(1,Math.round(m.max*kh));m.d=Math.round(m.d*kd);
 if(m.sort){m.sort=JSON.parse(JSON.stringify(m.sort));if(m.sort.dmg!=null)m.sort.dmg=Math.round(m.sort.dmg*kd);if(m.sort.heal)m.sort.heal=Math.round(m.sort.heal*kd)}

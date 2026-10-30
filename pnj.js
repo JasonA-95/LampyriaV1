@@ -136,6 +136,8 @@ const LOOKS={
 'Meunière Farine':{r:'#c8b890',t:'#fff8e8',h:'#7a5a3a',hs:'braid',s:'#f0cdb0'},
 'Caravanier Perdu':{r:'#b8884a',t:'#ffe0a8',h:'#3a2a20',b:'mus',hat:'kepi',hc:'#b8884a',s:'#d8a888'},
 'Nomade Sablier':{r:'#a87a3a',t:'#f8d890',h:'#2a1a10',hs:'braid',s:'#d8a888'},
+'Sonneur de Basalte':{r:'#5a4a6a',t:'#e8dcf0',h:'#2a2030',b:'mus',hat:'kepi',hc:'#5a4a6a',s:'#e8c0a0'},
+'Tailleuse d’Orgues':{r:'#7a7a8a',t:'#f0f0f8',h:'#4a3a3a',hs:'braid',s:'#f0cdb0'},
 'Pêcheur Sans-Ligne':{r:'#3a6a8a',t:'#d8f0ff',h:'#4a3a2a',b:'mus',hat:'kepi',hc:'#3a6a8a',s:'#e8c0a0'},
 'Gardienne du Phare Brisé':{r:'#5a7a9a',t:'#e8f4ff',h:'#2a2a3a',hs:'braid',s:'#f0cdb0'},
 'Insomniaque Mirette':{r:'#6a7ab0',t:'#e0e6ff',h:'#4a3a60',hs:'braid',mood:'sleep',s:'#f0cdb0'},
