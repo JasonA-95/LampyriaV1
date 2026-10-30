@@ -238,3 +238,15 @@ test('ligne de vue : un rocher qui frôle le trajet bloque, un trajet dégagé r
   assert.equal(game.los(derriere, a), false, 'symétrique');
   assert.equal(game.los(a, { x: 3, y: 2 }), true, 'viser le rocher lui-même ne compte pas comme obstacle');
 });
+
+test('encerclement : à coût égal, un monstre de mêlée évite la case voisine d\'un autre monstre', () => {
+  const game = combat(1);
+  const [a, b] = game.foes;
+  assert.ok(!a.ia && !b.ia && !a.boss && !b.boss, 'deux monstres de mêlée ordinaires');
+  game.hero.x = 2; game.hero.y = 2;
+  a.x = 1; a.y = 3; a.sortCd = 9;
+  b.x = 3; b.y = 3; b.sortCd = 9;
+  game.foeTurn(b);
+  assert.deepEqual([b.x, b.y], [3, 2], 'prend (3,2), loin de l\'autre monstre, et non (2,3) voisin de lui');
+  assert.equal(game.dist(b, game.hero), 1);
+});

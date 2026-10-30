@@ -98,7 +98,8 @@ while(q.length){const [x,y]=q.shift(),k=x+','+y;if(steps[k]>=this.N*this.N)conti
 for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy,n=nx+','+ny,u=this.at(nx,ny);if(steps[n]!=null||!this.ok(nx,ny)||(u&&u!==f))continue;steps[n]=steps[k]+1;previous[n]=k;q.push([nx,ny])}}
 let choices=Object.keys(steps).map(k=>{const [x,y]=k.split(',').map(Number),p={x,y};return{k,p,cost:steps[k],d:this.dist(p,target)}}).filter(v=>v.d>=range[0]&&v.d<=range[1]&&(!o.los||this.los(v.p,target)));
 if(o.safeHero){const safe=choices.filter(v=>this.dist(v.p,this.hero)>=o.safeHero);if(safe.length)choices=safe}
-if(!choices.length)return false;const mid=(range[0]+range[1])/2;choices.sort((a,b)=>a.cost-b.cost||Math.abs(a.d-mid)-Math.abs(b.d-mid));let k=choices[0].k,path=[];
+if(!choices.length)return false;const mid=(range[0]+range[1])/2;const oth=range[1]==1&&!f.boss?this.foes.filter(g=>g!==f&&g.hp>0&&!g.form):[],spr=p=>oth.length?Math.min(...oth.map(g=>this.dist(g,p))):0;   // encerclement : à coût égal, la mêlée prend la case adjacente la plus éloignée des autres monstres
+choices.sort((a,b)=>a.cost-b.cost||Math.abs(a.d-mid)-Math.abs(b.d-mid)||spr(b.p)-spr(a.p));let k=choices[0].k,path=[];
 while(k!==start){path.unshift(k.split(',').map(Number));k=previous[k]}for(const [x,y] of path.slice(0,f.pmActif??f.pm)){if(!this.free(x,y))break;f.x=x;f.y=y}return true}
 inSpellRange(f,target,s){const d=this.dist(f,target);return d>=s.r[0]&&d<=s.r[1]&&(!s.los||this.los(f,target))}
 injuredAlly(f){return this.foes.filter(g=>g!==f&&!g.form&&g.hp>0&&g.hp/g.max<.7).sort((a,b)=>a.hp/a.max-b.hp/b.max)[0]}
