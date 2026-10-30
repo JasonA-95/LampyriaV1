@@ -115,7 +115,7 @@ DATA.resE={braise:'🔥',champi:'🍄',laine:'🧶'};
 DATA.cartes={
 village:{n:'Village des Lanternes',biome:'village',need:0,start:[3,6],tint:'rgba(255,170,80,.08)',
 rocks:[[5,2],[5,3],[7,9],[8,9],[2,9],[10,3],[9,2],[6,10],[11,10]],
-npcs:[{x:6,y:4,e:'🧓',n:'Maître Lampiste',lampiste:1,quests:['q1','q2','q3'],txt:"Ta lanterne réagit à cette Lueur… fascinant ! Rapporte-moi des ressources, un peu d'expérience et quelques services rendus, et je lui ferai de la place.",variantes:[{si:{quete:{id:'q1',etat:'finie'}},txt:'Trois lanternes retrouvées, et pas une seule cabossée ! Je vais finir par croire que tu sais livrer.'}]},
+npcs:[{x:6,y:4,e:'🧓',n:'Maître Lampiste',lampiste:1,quests:['q1','q2','q3','q_atelier'],txt:"Ta lanterne réagit à cette Lueur… fascinant ! Rapporte-moi des ressources, un peu d'expérience et quelques services rendus, et je lui ferai de la place.",variantes:[{si:{quete:{id:'q1',etat:'finie'}},txt:'Trois lanternes retrouvées, et pas une seule cabossée ! Je vais finir par croire que tu sais livrer.'}]},
 {x:4,y:8,e:'🧔',n:'Le marchand',txt:"Je ne prends pas de braises en pièces, mais j'échange volontiers !",trade:[{give:{laine:2},get:{braise:1}},{give:{braise:2},get:{champi:1}},{give:{champi:2},get:{laine:1}},{give:{braise:1},get:{laine:1}}]}],
 picks:[{x:1,y:2,quest:'q1'},{x:9,y:10,quest:'q1'},{x:12,y:2,quest:'q1'}],
 groups:[{x:10,y:4,renc:0},{x:10,y:8,renc:0}],
@@ -1207,3 +1207,6 @@ for(const c of Object.values(DATA.classes))for(const s of c.sorts){if(s.cd>=3)s.
 const b1=s.rg[0]||{},up=s.garde&&!s.dmg?{garde:1}:{dmg:(s.rg.find(b=>b.dmg)||{dmg:3}).dmg};
 const cdNow=(s.cd||0)+s.rg.reduce((n,b)=>n+(b.cd||0),0);
 s.rg.push({...up},cdNow>=2?{cd:-1}:{...up})}
+
+// Quête de tutoriel (principale) : fabriquer un objet dans un atelier de la capitale, puis recevoir une petite panoplie de départ
+DATA.quetes.q_atelier={n:'Premier métier',desc:'Fabrique un Tisonnier (4 braise) à La Braise Vive, la forge de la capitale (Cour des Ouvrages).',need:1,kind:'craft',item:'tisonnier',req:2,princ:1,say:"Tu te bats avec tes mains nues, ou presque. Va à La Braise Vive, dans la capitale, et fais-toi forger un Tisonnier : 4 braise suffisent. Chaque atelier fabrique son type d'objet, tu verras.",fin:"Un vrai tisonnier ! Tiens, un chapeau, un gilet et des chaussons : ta première panoplie. Les autres ateliers sauront t'en faire d'autres.",rew:{xpq:[4,'normale'],items:['chapeau','gilet','chaussons']}};

@@ -106,3 +106,12 @@ test('lanterne : chaque palier du Maître Lampiste exige un niveau et une quête
   assert.ok(D.lampiste.every(u => u.niv > 0 && (!u.quete || D.quetes[u.quete])));
   assert.ok(D.cartes.village.npcs.some(n => n.n === 'Maître Lampiste' && n.lampiste));
 });
+
+test('quête tutoriel q_atelier : principale, donnée par le Maître Lampiste, objet à fabriquer et récompenses existants et fabricables à la forge', () => {
+  const q = D.quetes.q_atelier;
+  assert.ok(q && q.princ && q.kind === 'craft');
+  assert.ok(D.cartes.village.npcs.find(n => n.n === 'Maître Lampiste').quests.includes('q_atelier'));
+  assert.equal(D.objets[q.item].slot, 'arme');
+  assert.ok(D.cartes.v_forge.atelier.slots.includes('arme'));
+  assert.ok(q.rew.items.every(i => D.objets[i]));
+});

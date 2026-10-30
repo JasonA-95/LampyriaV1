@@ -6,7 +6,7 @@ const TUTO=[
 {id:'quete',spk:'Peureuse',ok:()=>EX.on&&Object.keys(sv.q||{}).length>0,txt:'La barre d\'icônes du bas garde tes quêtes dans l\'onglet 📜. Tu y verras quoi faire, pour qui, et où aller.'},
 {id:'niveau',spk:'Têtue',ok:()=>EX.on&&sv.niv>=2,txt:'Tu as gagné un niveau ! Passe par l\'onglet Héros : points de talent, nouveaux sorts, rangs d\'amélioration.'},
 {id:'lanterne',spk:'Rêveuse',ok:()=>EX.on&&sv.deb.length>1,txt:'Une nouvelle Lueur nous a rejoints… Dans l\'onglet Lanterne, tu choisis lesquelles emporter. Seulement hors combat, et la place est comptée.'},
-{id:'atelier',spk:'Farceuse',ok:()=>EX.on&&typeof canCraftAny=='function'&&canCraftAny(),txt:'Hé hé, tu as de quoi fabriquer quelque chose ! File à l\'onglet Atelier, c\'est gratuit de regarder.'}
+{id:'atelier',spk:'Farceuse',ok:()=>EX.on&&typeof canCraftAny=='function'&&canCraftAny(),txt:'Hé hé, tu as de quoi fabriquer quelque chose ! Chaque atelier de la capitale fait un type d\'objet : forge = armes, tôlerie = armures, cordonnerie = bottes, bijouterie = accessoires. Entre dans l\'un d\'eux pour fabriquer.'}
 ];
 const tutoOn=()=>{try{return localStorage.getItem('lampyria_tuto')!=='0'}catch(e){return true}};
 function tutoToggle(){try{localStorage.setItem('lampyria_tuto',tutoOn()?'0':'1')}catch(e){}if(!tutoOn())tutoHide()}
