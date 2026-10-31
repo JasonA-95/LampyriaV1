@@ -403,3 +403,9 @@ DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc
 {qui:'Gourmande',at:'hero',txt:'Il laissait toujours la moitié. Je croyais qu’il n’avait pas faim.'},
 {qui:'Gourmande',at:'hero',txt:'Il gardait la place pour quelqu’un. Pour nous, peut-être. Ou pour moi.'},
 {qui:'Gourmande',at:'hero',txt:'Ça me donne faim. Et ça me donne envie de pleurer. Les deux ensemble, c’est très mauvais pour une tarte.'}]}})();
+
+// PASSÉ DES LUEURS : Peureuse (L'aube en retard)
+(()=>{DATA.scenes.peureuse_passe={once:true,declencheur:{quand:'quete',id:'lu_p',etat:'terminee'},etapes:[
+{qui:'Peureuse',at:'hero',txt:'Je me levais en retard pour qu’il dorme une heure de plus. Il s’en servait pour surveiller encore.'},
+{qui:'Peureuse',at:'hero',txt:'J’avais peur de ce que je verrais en arrivant : lui, debout, et personne pour le relever.'},
+{qui:'Peureuse',at:'hero',txt:'C’est la première fois que ma peur me semble avoir eu raison. Je déteste ça.'}]}})();
