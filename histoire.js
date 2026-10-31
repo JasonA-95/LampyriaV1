@@ -409,3 +409,9 @@ DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc
 {qui:'Peureuse',at:'hero',txt:'Je me levais en retard pour qu’il dorme une heure de plus. Il s’en servait pour surveiller encore.'},
 {qui:'Peureuse',at:'hero',txt:'J’avais peur de ce que je verrais en arrivant : lui, debout, et personne pour le relever.'},
 {qui:'Peureuse',at:'hero',txt:'C’est la première fois que ma peur me semble avoir eu raison. Je déteste ça.'}]}})();
+
+// PASSÉ DES LUEURS : Têtue (Le banc du Gardien)
+(()=>{DATA.scenes.tetue_passe={once:true,declencheur:{quand:'quete',id:'lu_t',etat:'terminee'},etapes:[
+{qui:'Têtue',at:'hero',txt:'Je lui ai dit de tenir. Il a tenu. C’était mon rôle : le midi ne se couche pas.'},
+{qui:'Têtue',at:'hero',txt:'J’aurais dû lui dire de s’asseoir. Il y avait un banc. Il y avait toujours un banc.'},
+{qui:'Têtue',at:'hero',txt:'Alors je m’assois. Pour lui. Et ne me dis pas que je bouge, je suis juste en train de changer de position.'}]}})();
