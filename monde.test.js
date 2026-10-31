@@ -143,3 +143,14 @@ test('quêtes d\'escorte : le PNJ suivi se cache pendant l\'escorte, la carte d\
     assert.ok(!occ.has(key(copie.x, copie.y)), id + ' : la copie du PNJ suivi doit être sur une case libre');
   }
 });
+
+test('potions : ressources connues, soins valides, atelier ouvert et lieux de repos existants', () => {
+  for (const [k, o] of Object.entries(D.conso)) {
+    assert.ok(o.n && o.e && o.pct > 0 && o.pct <= 100, k + ' : soin invalide');
+    for (const r of Object.keys(o.cout)) assert.ok(D.res[r], k + ' : ressource inconnue ' + r);
+  }
+  const at = C.v_apothicairerie.atelier;
+  assert.ok(at.conso && !at.bientot, 'La Fiole Tiède doit être ouverte');
+  for (const m of Object.keys(C).filter(k => C[k].repos)) assert.ok(C[m].npcs !== undefined || C[m].n, m);
+  for (const m of ['v_auberge', 'cb_taverne', 'sv_hospice']) assert.ok(C[m].repos, m + ' : lieu de repos');
+});

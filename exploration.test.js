@@ -172,3 +172,14 @@ test('escorte : le « Terminer » n\'est proposé qu\'au PNJ de remise et seulem
   run(ctx, "sv.q.cb6.n=1");
   assert.equal(marque('cb_cimetiere', 'Gardienne Cyprès'), '?', 'après l\'embuscade, la quête se rend à la Gardienne');
 });
+
+test('repos : entrer dans une auberge remet les PV au maximum, pas ailleurs ; la défaite aussi', () => {
+  const ctx = loadExploration({ ...baseSave, pv: 5 });
+  run(ctx, "globalThis.setTimeout=()=>0;toast=()=>{}");
+  run(ctx, "EX.enter('poste',6,6,true)");
+  assert.equal(val(ctx, 'sv.pv'), 5, 'pas de soin hors lieu de repos');
+  run(ctx, "EX.enter('v_auberge',6,6,true)");
+  assert.equal(val(ctx, 'sv.pv'), null);
+  run(ctx, "sv.pv=5;EX.group=null;EX.escortFail=()=>{};EX.start=()=>{};EX.hud=()=>{};EX.storyTrigger=()=>{};startScreenTransition=()=>{};EX.back('lose',3)");
+  assert.equal(val(ctx, 'sv.pv'), null, 'défaite : PV au maximum');
+});

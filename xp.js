@@ -33,7 +33,7 @@ quete(niv,k){return Math.round(XP.gain*XP.cmb(niv)*k)},
 add(s,gain){let up=0;if(s.niv>=XP.max){s.niv=XP.max;s.xp=0;return 0}
 s.xp+=Math.max(0,Math.round(gain));
 while(s.niv<XP.max&&s.xp>=XP.next(s.niv)){s.xp-=XP.next(s.niv);s.niv++;up++}
-if(s.niv>=XP.max)s.xp=0;return up},
+if(s.niv>=XP.max)s.xp=0;if(up)s.pv=null;return up},
 // Anciennes sauvegardes (seuil 40 × niveau) : conversion proportionnelle, une seule fois (marque s.xpv=2)
 migrer(s){if(s.xpv===2)return;s.xpv=2;s.niv=Math.min(Math.max(1,Math.floor(s.niv)||1),XP.max);
 if(s.niv>=XP.max){s.xp=0;return}const old=40*s.niv,part=Math.min(Math.max(0,s.xp||0)/old,.999);

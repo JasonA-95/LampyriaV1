@@ -4,7 +4,7 @@ const DF0=()=>(typeof XP!='undefined'&&XP.diff)||{};   // réglages de difficult
 class Combat{
 constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,res:0,pm:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0,rneutre:0,rvent:0,rfoudre:0,rtenebres:0,rlumiere:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.in=D.in;this.cells=D.cells;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
 this.S=[...(cfg.sorts||c.sorts),...cfg.lueurs.map(id=>D.lueurs[id].sort)];
-this.hero={x:D.heros.x,y:D.heros.y,hp:c.hp+8*(cfg.niv-1)+G.pv,max:c.hp+8*(cfg.niv-1)+G.pv,e:c.e,rage:false,mur:0,garde:0,etats:[]};
+const mx=c.hp+8*(cfg.niv-1)+G.pv;this.hero={x:D.heros.x,y:D.heros.y,hp:cfg.hp>0?Math.min(Math.round(cfg.hp),mx):mx,max:mx,e:c.e,rage:false,mur:0,garde:0,etats:[]};
 const DF=DF0();this.foes=D.rencontres[cfg.renc].m.map(m=>{const f={...m,sortCd:0,etats:[]};if(!f.form){const big=!!f.boss,kh=big?DF.bossHp||1:DF.hp||1,kd=big?DF.bossD||1:DF.d||1;f.hp=Math.round(f.hp*kh);f.max=Math.round(f.max*kh);f.d=Math.round(f.d*kd)}return f});this.bonus=cfg.niv-1;this.RE=D.regleElem;this.hres={neutre:G.rneutre,vent:G.rvent,foudre:G.rfoudre,tenebres:G.rtenebres,lumiere:G.rlumiere};this.elem={neutre:G.neutre,vent:G.vent,foudre:G.foudre,tenebres:G.tenebres,lumiere:G.lumiere};this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
 this.ash=new Set(this.foes.filter(f=>f.cendre).map(f=>f.x+','+f.y));this.turn=1;this.cd=this.S.map(()=>0);this.result=null;this.noMove=0;this.malus=0;this.vuln=0;this.warn=new Set()}
 addEtat(u,e){if(!u||u.form||!e||!DATA.etats[e.id]||(e.id=='etourdi'&&u.boss))return false;

@@ -4,7 +4,7 @@ const TABS=[['heros','Héros','🛡️'],['equip','Inventaire','🎒'],['sorts',
 const craftables=()=>{const A=EX.atelier();return A?Object.keys(DATA.objets).filter(id=>DATA.objets[id].cout&&!sv.inv.includes(id)&&A.slots.includes(DATA.objets[id].slot)):[]};
 const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout));
 const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];return s&&s.s==1&&(s.n||0)>=DATA.quetes[id].need});
-const heroMax=()=>DATA.classes[cfg.classe].hp+8*(sv.niv-1)+gear().t.pv;
+const heroMax=pvMax;
 
 function itemRow(id,extra){const o=DATA.objets[id];
 return '<span class="em">'+o.e+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
@@ -116,7 +116,7 @@ const d=el('div','idet');if(sel){d.innerHTML='<div class="row" style="pointer-ev
 if(sel.slot)d.appendChild(btn('Retirer','','',()=>{equip(sel.slot,null);invSel={id:sel.id,slot:null};renderMenu()}));
 else{const f=SLOTS.filter(s=>slotType(s[0])==o.slot).map(s=>s[0]),to=f.find(s=>!sv.eq[s])||f[0];d.appendChild(btn('Équiper','Ou glisse l\'objet sur un emplacement.','pri',()=>{equip(to,sel.id);invSel={id:sel.id,slot:to};renderMenu()}))}}
 else d.appendChild(el('p','','Glisse un objet du sac sur un emplacement, ou touche-le pour le détail. Glisse un objet équipé dans le sac pour le retirer.'));right.appendChild(d)}
-else if(invCat=='conso')right.appendChild(el('p','','Aucun consommable pour l\'instant.'));
+else if(invCat=='conso'){right.appendChild(el('p','mt','PV : <b>'+pvNow()+' / '+pvMax()+'</b>. Les potions se boivent hors combat ; la montée de niveau et les auberges soignent aussi.'));const ks=Object.keys(DATA.conso).filter(k=>sv.conso[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune potion. Fabrique-les à La Fiole Tiède (Cour des Ouvrages).'));ks.forEach(k=>{const o=DATA.conso[k];right.appendChild(row('<span class="em">'+o.e+'</span><span class="tx"><span class="nm">'+o.n+'</span><span class="mt">'+o.d+'</span></span><span class="chip">×'+sv.conso[k]+'</span>',()=>usePotion(k)))})}
 else if(invCat=='res'){const ks=Object.keys(DATA.res).filter(k=>sv.res[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune ressource. Elles se récoltent en explorant et en combattant.'));ks.forEach(k=>{const[e,...n]=DATA.res[k].split(' ');right.appendChild(row('<span class="em">'+e+'</span><span class="tx"><span class="nm">'+n.join(' ')+'</span></span><span class="chip">×'+sv.res[k]+'</span>'))})}
 else{const q=questItems();if(!q.length)right.appendChild(el('p','','Aucun objet de quête pour l\'instant.'));q.forEach(x=>right.appendChild(row('<span class="em">'+x.e+'</span><span class="tx"><span class="nm">'+escHtml(x.n)+'</span><span class="mt">'+x.m+'</span></span>')))}
 wrap.append(left,right);B.appendChild(wrap)}
@@ -142,8 +142,11 @@ B.appendChild(L)}
 // ---------- onglet Atelier ----------
 function craft(id){const o=DATA.objets[id];if(sv.inv.includes(id)||!canPay(o.cout)){toast('Impossible');return}
 pay(o.cout);sv.inv.push(id);const e=autoEquip(id);const Qc=sv.q||{};for(const qid in Qc){const qq=DATA.quetes[qid];if(qq&&qq.kind=='craft'&&qq.item==id&&Qc[qid].s==1)Qc[qid].n=qq.need}store();toast(o.n+' fabriqué'+(e?' et équipé':''));renderMenu()}
+function usePotion(k){const o=DATA.conso[k];if(!o||!(sv.conso[k]>0))return;if(pvNow()>=pvMax()){toast('PV déjà au maximum');return}
+sv.pv=Math.min(pvMax(),pvNow()+Math.ceil(pvMax()*o.pct/100));if(sv.pv>=pvMax())sv.pv=null;if(--sv.conso[k]<=0)delete sv.conso[k];store();toast(o.n+' : PV '+pvNow()+' / '+pvMax());renderMenu()}
+function craftPotion(k){const o=DATA.conso[k];if((sv.conso[k]||0)>=50||!canPay(o.cout)){toast('Impossible');return}pay(o.cout);sv.conso[k]=(sv.conso[k]||0)+1;store();toast(o.n+' fabriquée');renderMenu()}
 let atOnly=false;
-function tabAtelier(B){const A=EX.atelier();if(!A){B.appendChild(card('Fabrication','La fabrication se fait uniquement dans les ateliers de la Cour des Ouvrages, au Village des Lanternes. Va y rencontrer les artisans.'));return}if(A.bientot){B.appendChild(card(A.n,'L’atelier n’est pas encore prêt : les fioles refroidissent. Reviens plus tard.'));return}const all=craftables(),list=atOnly?all.filter(id=>canPay(DATA.objets[id].cout)):all;
+function tabAtelier(B){const A=EX.atelier();if(!A){B.appendChild(card('Fabrication','La fabrication se fait uniquement dans les ateliers de la Cour des Ouvrages, au Village des Lanternes. Va y rencontrer les artisans.'));return}if(A.conso){const c=card(A.n,'Transforme tes ressources en potions. Elles se boivent hors combat (Inventaire, Consommables), 50 par pile.');Object.keys(DATA.conso).forEach(k=>{const o=DATA.conso[k],n=sv.conso[k]||0,ok=n<50&&canPay(o.cout);c.appendChild(row('<span class="em">'+o.e+'</span><span class="tx"><span class="nm">'+o.n+' ×'+n+'</span><span class="mt">'+o.d+'</span></span><span class="mt">'+costChips(o.cout)+'</span>',()=>craftPotion(k),ok?'':'lock'))});B.appendChild(c);return}if(A.bientot){B.appendChild(card(A.n,'L’atelier n’est pas encore prêt : les fioles refroidissent. Reviens plus tard.'));return}const all=craftables(),list=atOnly?all.filter(id=>canPay(DATA.objets[id].cout)):all;
 B.appendChild(row('<span class="em">🔎</span><span class="tx"><span class="nm">Afficher : '+(atOnly?'ce que je peux fabriquer maintenant':'tout')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{atOnly=!atOnly;renderMenu()}));
 const c=card(A.n,'Transforme tes ressources en équipement. Chaque objet se fabrique une seule fois. Les panoplies donnent un bonus à partir de 2 pièces portées.');
 if(!all.length)c.appendChild(el('p','','Tout est fabriqué !'));else if(!list.length)c.appendChild(el('p','','Rien n’est fabricable pour l’instant : récolte des ressources.'));

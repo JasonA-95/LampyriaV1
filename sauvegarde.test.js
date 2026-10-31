@@ -115,3 +115,18 @@ test('l\'ancien talent Endurance est supprimé : ses points sont rendus et la r�
   assert.equal(vm.runInContext('talLeft()', ctx), 19 - 4);
   assert.equal(vm.runInContext('gear().t.res', ctx), 0);
 });
+
+test('PV persistants et potions : valeurs invalides nettoyées, piles plafonnées à 50, montée de niveau = PV max', () => {
+  const ctx = loadState(JSON.stringify({ niv: 3, pv: 'x', conso: { tisane: 99, inconnue: 4, baume: -2 } }));
+  assert.equal(val(ctx, 'sv.pv'), null);
+  assert.deepEqual(val(ctx, 'sv.conso'), { tisane: 50 });
+  const ok = loadState(JSON.stringify({ niv: 3, pv: 12 }));
+  assert.equal(val(ok, 'sv.pv'), 12);
+  assert.equal(val(ok, 'pvNow()'), 12);
+  vm.runInContext('sv.pv=999999', ok);
+  assert.equal(val(ok, 'pvNow()'), val(ok, 'pvMax()'));
+  vm.runInContext('sv.pv=12;XP.add(sv,1)', ok);
+  assert.equal(val(ok, 'sv.pv'), 12, 'sans montée de niveau, les PV ne changent pas');
+  vm.runInContext('XP.add(sv,XP.next(sv.niv))', ok);
+  assert.equal(val(ok, 'sv.pv'), null, 'montée de niveau : PV au maximum');
+});

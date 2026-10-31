@@ -250,3 +250,13 @@ test('encerclement : à coût égal, un monstre de mêlée évite la case voisin
   assert.deepEqual([b.x, b.y], [3, 2], 'prend (3,2), loin de l\'autre monstre, et non (2,3) voisin de lui');
   assert.equal(game.dist(b, game.hero), 1);
 });
+
+test('PV persistants : le héros démarre avec les PV sauvegardés (plafonnés au max, au moins 1), sinon au maximum', () => {
+  const mk = hp => new Combat(DATA, { classe: 'porte', renc: 0, niv: 1, lueurs: [], gear: {}, hp });
+  const plein = mk(0).hero.max;
+  assert.equal(mk(undefined).hero.hp, plein);
+  assert.equal(mk(null).hero.hp, plein);
+  assert.equal(mk(7).hero.hp, 7);
+  assert.equal(mk(7).hero.max, plein);
+  assert.equal(mk(plein + 500).hero.hp, plein);
+});

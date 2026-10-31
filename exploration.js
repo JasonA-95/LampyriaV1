@@ -27,13 +27,13 @@ EX.marks=name=>{const d=DATA.cartes[name],Q=qs(),on=(p,i)=>{const s=Q[p.quest];r
 (d.picks||[]).forEach((p,i)=>{if(on(p,i))EX.nodes.push({x:p.x,y:p.y,pick:1,quest:p.quest,id:name+i,until:0})});
 (d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})})};
 EX.atelier=()=>(DATA.cartes[EX.map]||{}).atelier||null;
-EX.enter=(name,x,y,quiet=false)=>{exPrune();sv.hist.flags['vu_'+name]=true;const d=DATA.cartes[name],previous=EX.map,chg=previous!==name;if(chg){EX.avatar={};EX.fol=null}EX.map=name;sv.map=name;if(!quiet)store();if(chg&&previous)setTimeout(()=>{if(!EX.sceneActive)startScreenTransition(d.n)},0);
+EX.enter=(name,x,y,quiet=false)=>{exPrune();sv.hist.flags['vu_'+name]=true;const d=DATA.cartes[name],previous=EX.map,chg=previous!==name;if(chg){EX.avatar={};EX.fol=null;if(d.repos&&sv.pv!=null){sv.pv=null;if(!quiet)toast('Tu te reposes : PV au maximum.')}}EX.map=name;sv.map=name;if(!quiet)store();if(chg&&previous)setTimeout(()=>{if(!EX.sceneActive)startScreenTransition(d.n)},0);
 EX.x=x??d.start[0];EX.y=y??d.start[1];EX.groups=d.groups.map(q=>({...q}));EX.nodes=d.nodes.map(n=>({...n,until:0}));EX.marks(name);(d.coffres||[]).forEach(c=>{if(sv.deb.includes('farceuse')&&!sv.hist.flags['coffre_'+name])EX.nodes.push({x:c.x,y:c.y,coffre:1,res:c.res,id:name,until:0})});if(chg&&W)resetView()}
 EX.start=options=>{options=options||{};DJ.guard();const entering=EX.map!==(sv.map||'village');hideBubble();EX.on=true;EX.tok++;EX.walking=false;EX.group=null;hideMenu();closeModal();$('game').classList.remove('hide');size();
 if(entering)EX.enter(sv.map||'village',undefined,undefined,!!(options.storyId&&cfg.test));resetView();
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
 msg('Tu es : '+DATA.cartes[EX.map].n+'.');EX.ui();EX.draw();if(options.storyId)EX.storyPlay(options.storyId);else if(!EX.storyResume()&&entering)EX.storyTrigger({quand:'entree',carte:EX.map})};
-EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span>'+DJ.chips()+'<span class="chip">Niv '+sv.niv+(sv.niv<XP.max?' · '+Math.round(100*XP.part(sv))+'%':' max')+'</span>'};
+EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span>'+DJ.chips()+'<span class="chip">PV '+pvNow()+'/'+pvMax()+'</span><span class="chip">Niv '+sv.niv+(sv.niv<XP.max?' · '+Math.round(100*XP.part(sv))+'%':' max')+'</span>'};
 EX.ui=()=>{exPrune();const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';EX.dock(F)};
 EX.gain=r=>{let t='';const xp=r.xpq?XP.quete(r.xpq[0],XP.k[r.xpq[1]]||XP.k.normale):r.xp;if(xp){const lv=XP.add(sv,xp);t+=' +'+xp+' XP';if(lv){t+=' Niveau '+sv.niv+' !';if(typeof playSound=='function')playSound('level')}}
 for(const k in (r.res||{})){sv.res[k]+=r.res[k];t+=' +'+r.res[k]+' '+DATA.res[k].split(' ')[0]}
@@ -101,7 +101,7 @@ EX.storyResumeAction=action=>{if(action.kind!='fight')return;const q=EX.groups.f
 EX.winOf=(q,g)=>q.kind=='win'&&!g.hide&&(q.maps?q.maps.includes(EX.map)&&!DATA.rencontres[g.renc].n.includes('boss'):q.renc==(DATA.rencontres[g.renc].base??g.renc));
 EX.defi=renc=>{const b=DATA.rencontres[renc].base??renc,id=Object.keys(DATA.quetes).find(k=>{const q=DATA.quetes[k];return q.defi&&q.kind=='win'&&q.renc==b&&(qs()[k]||{}).s==1});return id?DATA.quetes[id]:null};
 EX.defiMiss=(id,turns)=>{const q=DATA.quetes[id],s=qs()[id];return !!(q&&q.defi&&s&&s.s==1&&turns!=null&&turns>q.defi.tours)};
-EX.back=(res,turns)=>{const g0=EX.group;if(res=='win'&&g0)g0.dead=true;if(res=='lose'){EX.escortFail();sv.map='village';sv.dj=null;store();EX.map=null}
+EX.back=(res,turns)=>{const g0=EX.group;if(res=='win'&&g0)g0.dead=true;if(res=='lose'){EX.escortFail();sv.pv=null;sv.map='village';sv.dj=null;store();EX.map=null}
 const djm=res=='win'&&g0?DJ.after():'';EX.start();
 if(res=='lose')msg('Tu te réveilles au village, sans rien avoir perdu.');
 else if(g0){if(g0.escort&&res=='win')EX.prog(g0.escort);if(g0.hide)EX.prog(g0.quest,g0.id);

@@ -948,7 +948,7 @@ art(9,8,'🦶','Client Pied-Plat','Je cherche des bottes qui me rendent plus gra
 DATA.ville('v_bijouterie',{n:'L’Écrin des Étincelles',pos:[4,2],tint:'rgba(230,200,255,.14)',rocks:R4,exits:[{to:'v_forge'}],atelier:{n:'L’Écrin des Étincelles',slots:['acc']},npcs:[
 atl(4,5,'💍','Bijoutière Éclat','Un bijou ne protège de rien, mais il rend le malheur plus élégant. Apportez-moi vos éclats.','Fabriquer des accessoires'),
 art(9,8,'🕶️','Garde Sourcilleux','Je surveille les bijoux. Les bijoux me surveillent aussi. Nous nous respectons.')]});
-DATA.ville('v_apothicairerie',{n:'La Fiole Tiède',pos:[4,4],tint:'rgba(150,220,170,.12)',rocks:R4,exits:[{to:'v_cordonnerie'}],atelier:{n:'La Fiole Tiède',slots:[],bientot:1},npcs:[
+DATA.ville('v_apothicairerie',{n:'La Fiole Tiède',pos:[4,4],tint:'rgba(150,220,170,.12)',rocks:R4,exits:[{to:'v_cordonnerie'}],atelier:{n:'La Fiole Tiède',slots:[],conso:1},npcs:[
 art(5,5,'⚗️','Apothicaire Alambic','Mes fioles refroidissent… Elles arrivent bientôt. Revenez : je vous réchaufferai une potion, ou presque.')]});
 }
 
@@ -1297,3 +1297,8 @@ const v=npc('cb_place','Veuve Cendreuse');v.quests=(v.quests||[]).concat('cb6');
 const g=npc('cb_cimetiere','Gardienne Cyprès');g.quests=(g.quests||[]).concat('cb6');
 // la veuve réapparaît près de la tombe une fois la quête rendue
 DATA.cartes.cb_cimetiere.npcs.push({x:6,y:9,e:'👵',n:'Veuve Cendreuse',cache:[{pasFlag:'esc_fin_cb6'}],txt:'Il est enfin entouré de fleurs de cendre. Merci, voyageur. Il aurait ri de me voir arriver avec une escorte.'})})();
+
+// Potions (phase 5) : soignent un pourcentage des PV max, hors combat uniquement. Piles de 50 max. Fabriquées à La Fiole Tiède.
+DATA.conso={tisane:{n:'Tisane de braise',e:'🍵',pct:30,cout:{braise:2},d:'Rend 30 % des PV max.'},baume:{n:'Baume de champignon',e:'🧴',pct:55,cout:{champi:3},d:'Rend 55 % des PV max.'},elixir:{n:'Élixir de cendres',e:'⚗️',pct:80,cout:{cendre:3,roseau:1},d:'Rend 80 % des PV max.'},fiole:{n:'Fiole de lumière',e:'🔆',pct:100,cout:{eclat:2,champi:2},d:'Rend tous les PV.'}};
+// Lieux de repos : entrer remet les PV au maximum.
+['v_auberge','cb_taverne','sv_hospice'].forEach(k=>{DATA.cartes[k].repos=1});
