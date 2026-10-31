@@ -122,3 +122,53 @@ test('quête de combat par cartes : un groupe non boss d\'une des cartes compte,
   assert.equal(run(ctx, `EX.winOf(DATA.quetes.f1,{renc:${g}})`), false, 'carte hors liste');
   assert.equal(run(ctx, "EX.winOf(DATA.quetes.q2,{renc:0})"), true, 'quête à groupe fixe inchangée');
 });
+
+test('escorte : le PNJ se cache pendant l\'escorte, une défaite l\'annule, l\'embuscade n\'a lieu que sur la carte d\'arrivée et tant qu\'elle n\'est pas vaincue', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 5 });
+  const npcsOf = m => val(ctx, "DATA.cartes['" + m + "'].npcs.map(n=>n.n)");
+  run(ctx, "exPrune()");
+  assert.ok(npcsOf('cb_place').includes('Veuve Cendreuse'), 'avant la quête, la veuve est sur la place');
+  assert.ok(!npcsOf('cb_cimetiere').includes('Veuve Cendreuse'), 'avant la quête, pas de copie au cimetière');
+  assert.equal(run(ctx, 'EX.escort()'), undefined);
+  // acceptation (état de la quête + drapeau posé par le bouton « Accepter »)
+  run(ctx, "sv.q.cb6={s:1,n:0,got:[]};sv.hist.flags.esc_cb6=true;exPrune()");
+  assert.equal(run(ctx, 'EX.escort()'), 'cb6');
+  assert.ok(!npcsOf('cb_place').includes('Veuve Cendreuse'), 'pendant l\'escorte, elle a quitté la place');
+  assert.equal(run(ctx, "EX.escortNpc('cb6').n"), 'Veuve Cendreuse', 'le suiveur est retrouvé même caché');
+  // embuscade : seulement sur la carte d'arrivée, une fois
+  run(ctx, "globalThis.F=[];globalThis.setTimeout=()=>0;EX.fight=q=>F.push(q);toast=()=>{}");
+  run(ctx, "EX.enter('cb_place',6,6,true);EX.ambush()");
+  assert.equal(val(ctx, 'F.length'), 0, 'pas d\'embuscade ailleurs');
+  run(ctx, "EX.enter('cb_cimetiere',6,11,true);EX.ambush()");
+  assert.equal(val(ctx, 'F.length'), 1);
+  assert.equal(val(ctx, 'F[0].renc'), 4);
+  assert.equal(val(ctx, 'F[0].escort'), 'cb6');
+  run(ctx, "sv.q.cb6.n=1;EX.ambush()");
+  assert.equal(val(ctx, 'F.length'), 1, 'plus d\'embuscade une fois vaincue');
+  // défaite : escorte annulée, quête à reprendre, la veuve rentre chez elle
+  run(ctx, "sv.q.cb6.n=0;EX.escortFail();exPrune()");
+  assert.equal(run(ctx, 'EX.escort()'), undefined);
+  assert.equal(run(ctx, 'sv.q.cb6'), undefined, 'la quête est à reprendre');
+  assert.ok(npcsOf('cb_place').includes('Veuve Cendreuse'), 'la veuve est de retour sur la place');
+});
+
+test('escorte : une fois la quête rendue, la veuve apparaît au cimetière et plus sur la place', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 5 });
+  run(ctx, "sv.q.cb6={s:2,n:1,got:[]};sv.hist.flags.esc_cb6=false;sv.hist.flags.esc_fin_cb6=true;exPrune()");
+  const npcsOf = m => val(ctx, "DATA.cartes['" + m + "'].npcs.map(n=>n.n)");
+  assert.ok(!npcsOf('cb_place').includes('Veuve Cendreuse'));
+  assert.ok(npcsOf('cb_cimetiere').includes('Veuve Cendreuse'));
+  assert.equal(run(ctx, 'EX.escort()'), undefined);
+});
+
+test('escorte : le « Terminer » n\'est proposé qu\'au PNJ de remise et seulement après l\'embuscade, l\'« Accepter » seulement au donneur', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 5 });
+  run(ctx, "exPrune()");
+  const marque = (m, nom) => val(ctx, "EX.markInfo(DATA.cartes['" + m + "'].npcs.find(n=>n.n=='" + nom + "')).m");
+  assert.equal(marque('cb_place', 'Veuve Cendreuse'), '!', 'le donneur propose la quête');
+  assert.equal(marque('cb_cimetiere', 'Gardienne Cyprès'), '!', 'la Gardienne propose cb4 (pas encore cb6)');
+  run(ctx, "sv.q.cb4={s:2,n:1,got:[]};sv.q.cb6={s:1,n:0,got:[]};sv.hist.flags.esc_cb6=true");
+  assert.equal(marque('cb_cimetiere', 'Gardienne Cyprès'), '', 'avant l\'embuscade, rien à rendre');
+  run(ctx, "sv.q.cb6.n=1");
+  assert.equal(marque('cb_cimetiere', 'Gardienne Cyprès'), '?', 'après l\'embuscade, la quête se rend à la Gardienne');
+});

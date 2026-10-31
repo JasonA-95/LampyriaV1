@@ -115,3 +115,31 @@ test('quête tutoriel q_atelier : principale, donnée par le Maître Lampiste, o
   assert.ok(D.cartes.v_forge.atelier.slots.includes('arme'));
   assert.ok(q.rew.items.every(i => D.objets[i]));
 });
+
+test('quêtes d\'escorte : le PNJ suivi se cache pendant l\'escorte, la carte d\'arrivée est atteignable, l\'embuscade et le PNJ de remise existent, la fin libère le drapeau', () => {
+  const esc = Object.entries(D.quetes).filter(([, q]) => q.kind === 'escorte');
+  assert.ok(esc.length >= 1, 'au moins une quête d\'escorte');
+  for (const [id, q] of esc) {
+    const proposeur = Object.entries(C).find(([, m]) => (m.npcs || []).some(n => n.n === q.donneur && (n.quests || []).includes(id)));
+    assert.ok(proposeur, id + ' : le donneur doit proposer la quête');
+    const [home, hm] = proposeur, suivi = hm.npcs.find(n => n.n === q.suit);
+    assert.ok(suivi, id + ' : le PNJ suivi doit être sur la carte du donneur');
+    assert.ok((suivi.cache || []).some(c => c.flag === 'esc_' + id) && (suivi.cache || []).some(c => c.flag === 'esc_fin_' + id), id + ' : le PNJ suivi doit se cacher pendant l\'escorte et après la remise');
+    assert.ok(C[q.vers], id + ' : carte d\'arrivée inconnue');
+    assert.ok(D.rencontres[q.emb] && !D.rencontres[q.emb].m.some(m => m.boss), id + ' : embuscade inconnue ou boss');
+    assert.ok(C[q.vers].npcs.some(n => n.n === q.rend && (n.quests || []).includes(id)), id + ' : le PNJ de remise doit être sur la carte d\'arrivée et proposer la quête');
+    assert.ok(C[q.vers].npcs.some(n => n.n === q.suit && (n.cache || []).some(c => c.pasFlag === 'esc_fin_' + id)), id + ' : le PNJ suivi doit réapparaître à l\'arrivée après la remise');
+    assert.equal(q.rew.set['esc_' + id], false, id + ' : la fin doit libérer le drapeau d\'escorte');
+    assert.equal(q.rew.set['esc_fin_' + id], true);
+    assert.ok(q.need >= 1);
+    // chemin entre les deux cartes
+    const vu = new Set([home]), file = [home];
+    while (file.length) { const k = file.shift(); for (const e of C[k].exits || []) if (C[e.to] && !vu.has(e.to)) { vu.add(e.to); file.push(e.to); } }
+    assert.ok(vu.has(q.vers), id + ' : la carte d\'arrivée doit être atteignable depuis ' + home);
+    // le PNJ suivi n'a pas de quête qui bloquerait son retour : la carte d'arrivée l'accueille sur une case libre
+    const occ = new Set((C[q.vers].rocks || []).map(r => key(r[0], r[1])));
+    for (const f of ENTS) for (const o of C[q.vers][f] || []) if (!(f === 'npcs' && o.n === q.suit)) occ.add(key(o.x, o.y));
+    const copie = C[q.vers].npcs.find(n => n.n === q.suit);
+    assert.ok(!occ.has(key(copie.x, copie.y)), id + ' : la copie du PNJ suivi doit être sur une case libre');
+  }
+});

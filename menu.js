@@ -174,6 +174,7 @@ else if(q.kind=='pick'){L.push(chk(done||n>=q.need,'Ramasser '+q.need+' objets'+
 else if(q.kind=='hide'){L.push(chk(done||n>=q.need,'Trouver '+q.need+' cachettes 🌿'+(qMapOf(id,'hides')?' — '+qMapOf(id,'hides'):'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
 else if(q.kind=='win'){const r=DATA.rencontres[q.renc];L.push(chk(done||n>=q.need,'Repousser '+q.need+' groupe'+(q.need>1||!q.defi?'s':'')+(q.defi?' en '+q.defi.tours+' tours max':'')+(q.maps?' — '+q.maps.map(m=>(DATA.cartes[m]||{}).n).filter(Boolean).join(', '):r?' — '+r.n:'')+' ('+(done?q.need:n)+'/'+q.need+')'))}
 else if(q.kind=='craft'){L.push(chk(done||n>=q.need,'Fabriquer : '+DATA.objets[q.item].n+' (atelier de la capitale)'))}
+else if(q.kind=='escorte'){L.push(chk(done||n>=q.need,'Escorter '+q.suit+' jusqu’à '+((DATA.cartes[q.vers]||{}).n||'?')+', puis repousser l’embuscade'));L.push(chk(done,'Voir '+q.rend))}
 else if(q.kind=='don'){}
 if(q.cost)L.push(chk(done,'Apporter '+rl(q.cost)));
 return L.join('')}
