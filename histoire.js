@@ -421,3 +421,9 @@ DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc
 {qui:'Rêveuse',at:'hero',txt:'Je le rêvais chaque soir, assis, vivant. Si j’arrêtais de rêver, j’avais peur qu’il disparaisse pour de bon.'},
 {qui:'Rêveuse',at:'hero',txt:'Il disparaissait quand même, au matin. Mais c’était moi qui me réveillais, ça ne comptait pas.'},
 {qui:'Rêveuse',at:'hero',txt:'Je vais essayer de rêver de quelqu’un d’autre. Quelqu’un qui tombe avec des lanternes, par exemple.'}]}})();
+
+// PASSÉ DES LUEURS : Farceuse (La chaussette dépareillée)
+(()=>{DATA.scenes.farceuse_passe={once:true,declencheur:{quand:'quete',id:'lu_f',etat:'terminee'},etapes:[
+{qui:'Farceuse',at:'hero',txt:'C’était moi, la chaussette dans sa botte. Je voulais juste voir s’il savait rire.'},
+{qui:'Farceuse',at:'hero',txt:'Il a ri. Un petit rire rouillé. Et il a passé sa vie à chercher la paire. Je n’avais pas prévu ça.'},
+{qui:'Farceuse',at:'hero',txt:'Toute bonne farce a une suite qu’on n’avait pas prévue. Celle-là, je ne la referai pas. Enfin, pas tout de suite.'}]}})();
