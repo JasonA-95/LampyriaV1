@@ -397,3 +397,9 @@ lien_eclipse_melancolique:{once:true,declencheur:{quand:'action',id:'melancoliqu
 DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc:R,issue:'win'},etapes:[
 {qui:'Rêveuse',at:'hero',txt:'Il attendait une marée qui ne revenait pas, les yeux sur l’horizon. Je connais : j’ai déjà attendu un rêve qui ne venait pas.'},
 {qui:'Rêveuse',at:'hero',txt:'Mais à force de rêver du même endroit, on oublie d’y aller. Il aurait pu simplement nager.'}]}})();
+
+// PASSÉ DES LUEURS : Gourmande (La tarte du soir)
+(()=>{DATA.scenes.gourmande_passe={once:true,declencheur:{quand:'quete',id:'lu_g',etat:'terminee'},etapes:[
+{qui:'Gourmande',at:'hero',txt:'Il laissait toujours la moitié. Je croyais qu’il n’avait pas faim.'},
+{qui:'Gourmande',at:'hero',txt:'Il gardait la place pour quelqu’un. Pour nous, peut-être. Ou pour moi.'},
+{qui:'Gourmande',at:'hero',txt:'Ça me donne faim. Et ça me donne envie de pleurer. Les deux ensemble, c’est très mauvais pour une tarte.'}]}})();
