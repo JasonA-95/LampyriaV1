@@ -415,3 +415,9 @@ DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc
 {qui:'Têtue',at:'hero',txt:'Je lui ai dit de tenir. Il a tenu. C’était mon rôle : le midi ne se couche pas.'},
 {qui:'Têtue',at:'hero',txt:'J’aurais dû lui dire de s’asseoir. Il y avait un banc. Il y avait toujours un banc.'},
 {qui:'Têtue',at:'hero',txt:'Alors je m’assois. Pour lui. Et ne me dis pas que je bouge, je suis juste en train de changer de position.'}]}})();
+
+// PASSÉ DES LUEURS : Rêveuse (Le rêve du crépuscule)
+(()=>{DATA.scenes.reveuse_passe={once:true,declencheur:{quand:'quete',id:'lu_r',etat:'terminee'},etapes:[
+{qui:'Rêveuse',at:'hero',txt:'Je le rêvais chaque soir, assis, vivant. Si j’arrêtais de rêver, j’avais peur qu’il disparaisse pour de bon.'},
+{qui:'Rêveuse',at:'hero',txt:'Il disparaissait quand même, au matin. Mais c’était moi qui me réveillais, ça ne comptait pas.'},
+{qui:'Rêveuse',at:'hero',txt:'Je vais essayer de rêver de quelqu’un d’autre. Quelqu’un qui tombe avec des lanternes, par exemple.'}]}})();
