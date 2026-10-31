@@ -8,7 +8,7 @@ const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem(slotKey(SLOT));savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
 const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],pv:null,conso:{},q:{},hist:{vus:[],flags:{}}};
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],pv:null,conso:{},met:{},q:{},hist:{vus:[],flags:{}}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
 function normaliseStoryHistory(save,existed,hadHistory){if(!save.hist||typeof save.hist!='object'||Array.isArray(save.hist))save.hist={vus:[],flags:{}};
 if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save.hist.vus.filter(id=>typeof id=='string'))];
@@ -28,6 +28,8 @@ for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 // PV persistants (null = au maximum) et potions en piles (50 max par potion).
 if(!Number.isFinite(sv.pv)||sv.pv<1)sv.pv=null;
+if(!sv.met||typeof sv.met!='object'||Array.isArray(sv.met))sv.met={};
+for(const k of Object.keys(sv.met)){const t=sv.met[k];if(!DATA.metiers[k]||!t||typeof t!='object'){delete sv.met[k];continue}t.niv=Number.isFinite(t.niv)?Math.max(1,Math.min(DATA.metMax,Math.floor(t.niv))):1;t.xp=Number.isFinite(t.xp)&&t.xp>=0&&t.niv<DATA.metMax?Math.floor(t.xp):0}
 if(!sv.conso||typeof sv.conso!='object'||Array.isArray(sv.conso))sv.conso={};
 for(const k of Object.keys(sv.conso)){if(!(DATA.conso&&Object.prototype.hasOwnProperty.call(DATA.conso,k))||!Number.isFinite(sv.conso[k])||sv.conso[k]<1)delete sv.conso[k];else sv.conso[k]=Math.min(50,Math.floor(sv.conso[k]))}
 if(typeof DJ!='undefined')DJ.norm();
@@ -123,6 +125,9 @@ const SLOTS=[['arme','Arme','⚔️'],['tete','Tête','🎩'],['corps','Corps','
 const slotType=s=>s.startsWith('acc')?'acc':s;
 const fmtSt=st=>Object.keys(st).map(k=>'+'+st[k]+(k=='pv'?' PV':DATA.elements[k]?' '+DATA.elements[k].n:k[0]=='r'&&k!='res'&&DATA.elements[k.slice(1)]?' % rés. '+DATA.elements[k.slice(1)].n:k=='res'?' % rés.':' PM')).join(' · ');
 const pvMax=()=>DATA.classes[cfg.classe].hp+8*(sv.niv-1)+gear().t.pv,pvNow=()=>sv.pv==null?pvMax():Math.max(1,Math.min(sv.pv,pvMax()));
+// Métiers de récolte : 5 xp par récolte, niveau 1 à 20, quantité +1 tous les 5 niveaux, bonus rare de +1 (2 % par niveau).
+const metOf=res=>Object.keys(DATA.metiers).find(m=>DATA.metiers[m].res.includes(res)),metNiv=m=>(sv.met[m]&&sv.met[m].niv)||1,metNext=n=>5*n;
+function metRecolte(res){const m=metOf(res);if(!m)return{qte:2,m:null,up:0,bonus:0};const t=sv.met[m]||(sv.met[m]={xp:0,niv:1}),n=t.niv,bonus=Math.random()<n*.02?1:0,qte=2+Math.floor((n-1)/5)+bonus;let up=0;if(n<DATA.metMax){t.xp+=5;while(t.niv<DATA.metMax&&t.xp>=metNext(t.niv)){t.xp-=metNext(t.niv);t.niv++;up++}if(t.niv>=DATA.metMax)t.xp=0}return{qte,m,up,bonus}}
 function gear(){const t={pv:0,res:0,pm:0},cnt={};for(const k of EL_IDS){t[k]=0;t['r'+k]=0}
 for(const [s] of SLOTS){const id=sv.eq[s];if(!id||!sv.inv.includes(id))continue;const o=DATA.objets[id];for(const k in o.st)t[k]+=o.st[k];if(o.set)cnt[o.set]=(cnt[o.set]||0)+1}
 for(const k in cnt){const b=DATA.sets[k].bonus;for(const n in b)if(cnt[k]>=+n)for(const s in b[n])t[s]+=b[n][s]}

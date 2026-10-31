@@ -86,7 +86,7 @@ else EX.fight(ent.o)};
 EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
 if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');if(typeof playSound=='function')playSound('harvest');EX.draw();return}
 if(n.until>EX.steps){msg('Déjà cueilli : ça repoussera bientôt.');return}
-const k=n.res;sv.res[k]+=2;n.until=EX.steps+30;store();pop(n,'+2 '+DATA.res[k].split(' ')[0],'#7fd18b');if(typeof playSound=='function')playSound('harvest');msg('Récolte : +2 '+DATA.res[k]);EX.ui();EX.draw()};
+const k=n.res,r=metRecolte(k);sv.res[k]+=r.qte;n.until=EX.steps+30;store();pop(n,'+'+r.qte+' '+DATA.res[k].split(' ')[0],'#7fd18b');if(r.up)toast(DATA.metiers[r.m].n+' niveau '+sv.met[r.m].niv+' !');if(typeof playSound=='function')playSound('harvest');msg('Récolte : +'+r.qte+' '+DATA.res[k]+(r.bonus?' (bonus !)':''));EX.ui();EX.draw()};
 EX.fight=q=>{const begin=()=>{EX.walking=false;EX.on=false;EX.pend=null;EX.group=q;cfg.renc=q.renc;hideMenu();$('game').classList.remove('hide');startScreenTransition();init()};EX.storyGroup=q;EX.storyTrigger({quand:'avantCombat',renc:q.renc},begin,{kind:'fight',x:q.x,y:q.y,renc:q.renc})};
 EX.fightNpc=(i,p)=>EX.fight({x:p.x,y:p.y,renc:i,npc:1});
 // Escorte : le PNJ (`suit`) quitte sa carte (cache par le drapeau esc_<id>) et suit le héros ; à l'arrivée sur la carte `vers`, une embuscade (rencontre `emb`) l'attend ;

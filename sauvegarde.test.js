@@ -130,3 +130,23 @@ test('PV persistants et potions : valeurs invalides nettoyées, piles plafonnée
   vm.runInContext('XP.add(sv,XP.next(sv.niv))', ok);
   assert.equal(val(ok, 'sv.pv'), null, 'montée de niveau : PV au maximum');
 });
+
+test('métiers : sauvegarde nettoyée, XP et niveaux, quantité récoltée selon le niveau', () => {
+  const ctx = loadState(JSON.stringify({ niv: 3, met: { mine: { xp: 3, niv: 99 }, herbo: { xp: 'x', niv: 'a' }, faux: { xp: 1, niv: 2 } } }));
+  assert.deepEqual(val(ctx, 'sv.met'), { mine: { xp: 0, niv: 20 }, herbo: { xp: 0, niv: 1 } });
+  const n = loadState(JSON.stringify({ niv: 3 }));
+  vm.runInContext('Math.random=()=>0.99', n);
+  assert.equal(val(n, "metRecolte('braise').qte"), 2);
+  assert.deepEqual(val(n, 'sv.met.mine'), { xp: 0, niv: 2 }, 'niveau 1 : 5 XP suffisent pour le niveau 2');
+  assert.equal(val(n, "metRecolte('gravat').up"), 0, 'niveau 2 demande 10 XP');
+  assert.deepEqual(val(n, 'sv.met.mine'), { xp: 5, niv: 2 });
+  assert.equal(val(n, "metRecolte('gravat').up"), 1);
+  assert.equal(val(n, 'metNiv("mine")'), 3);
+  vm.runInContext("sv.met.mine={xp:0,niv:6}", n);
+  assert.equal(val(n, "metRecolte('eclat').qte"), 3, 'niveau 6 : +1');
+  vm.runInContext("sv.met.mine={xp:0,niv:11}", n);
+  assert.equal(val(n, "metRecolte('eclat').qte"), 4);
+  vm.runInContext("sv.met.mine={xp:0,niv:20};Math.random=()=>0", n);
+  assert.deepEqual(val(n, "(()=>{const r=metRecolte('eclat');return[r.qte,r.bonus,sv.met.mine.xp,sv.met.mine.niv]})()"), [6, 1, 0, 20], 'niveau max : bonus, pas d\'XP');
+  assert.equal(val(n, "metRecolte('inconnue').m"), null);
+});

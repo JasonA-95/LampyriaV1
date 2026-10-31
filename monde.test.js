@@ -154,3 +154,13 @@ test('potions : ressources connues, soins valides, atelier ouvert et lieux de re
   for (const m of Object.keys(C).filter(k => C[k].repos)) assert.ok(C[m].npcs !== undefined || C[m].n, m);
   for (const m of ['v_auberge', 'cb_taverne', 'sv_hospice']) assert.ok(C[m].repos, m + ' : lieu de repos');
 });
+
+test('métiers : chaque ressource appartient à un seul métier, et les potions exigent un métier et un niveau valides', () => {
+  const owner = {};
+  for (const [m, M] of Object.entries(D.metiers)) for (const r of M.res) { assert.ok(D.res[r], m + ' : ressource inconnue ' + r); assert.equal(owner[r], undefined, r + ' est dans deux métiers'); owner[r] = m; }
+  for (const r of Object.keys(D.res)) assert.ok(owner[r], r + ' : aucune récolte ne la fait progresser');
+  for (const [k, o] of Object.entries(D.conso)) {
+    assert.ok(D.metiers[o.met[0]], k + ' : métier inconnu');
+    assert.ok(o.met[1] >= 1 && o.met[1] <= D.metMax, k + ' : niveau requis hors limites');
+  }
+});

@@ -1299,6 +1299,7 @@ const g=npc('cb_cimetiere','Gardienne Cyprès');g.quests=(g.quests||[]).concat('
 DATA.cartes.cb_cimetiere.npcs.push({x:6,y:9,e:'👵',n:'Veuve Cendreuse',cache:[{pasFlag:'esc_fin_cb6'}],txt:'Il est enfin entouré de fleurs de cendre. Merci, voyageur. Il aurait ri de me voir arriver avec une escorte.'})})();
 
 // Potions (phase 5) : soignent un pourcentage des PV max, hors combat uniquement. Piles de 50 max. Fabriquées à La Fiole Tiède.
-DATA.conso={tisane:{n:'Tisane de braise',e:'🍵',pct:30,cout:{braise:2},d:'Rend 30 % des PV max.'},baume:{n:'Baume de champignon',e:'🧴',pct:55,cout:{champi:3},d:'Rend 55 % des PV max.'},elixir:{n:'Élixir de cendres',e:'⚗️',pct:80,cout:{cendre:3,roseau:1},d:'Rend 80 % des PV max.'},fiole:{n:'Fiole de lumière',e:'🔆',pct:100,cout:{eclat:2,champi:2},d:'Rend tous les PV.'}};
+DATA.metiers={herbo:{n:'Herboriste',e:'🌿',res:['champi','roseau']},mine:{n:'Mineur',e:'⛏️',res:['braise','gravat','eclat']},cendre:{n:'Cendrier',e:'🌫️',res:['cendre']},tiss:{n:'Tisserand',e:'🧵',res:['laine','fil','chaussette']},sable:{n:'Sablier',e:'🏜️',res:['sable']}};DATA.metMax=20;
+DATA.conso={tisane:{n:'Tisane de braise',e:'🍵',pct:30,cout:{braise:2},met:['mine',1],d:'Rend 30 % des PV max.'},baume:{n:'Baume de champignon',e:'🧴',pct:55,cout:{champi:3},met:['herbo',3],d:'Rend 55 % des PV max.'},elixir:{n:'Élixir de cendres',e:'⚗️',pct:80,cout:{cendre:3,roseau:1},met:['cendre',5],d:'Rend 80 % des PV max.'},fiole:{n:'Fiole de lumière',e:'🔆',pct:100,cout:{eclat:2,champi:2},met:['mine',10],d:'Rend tous les PV.'}};
 // Lieux de repos : entrer remet les PV au maximum.
 ['v_auberge','cb_taverne','sv_hospice'].forEach(k=>{DATA.cartes[k].repos=1});
