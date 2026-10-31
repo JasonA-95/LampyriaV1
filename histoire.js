@@ -433,3 +433,9 @@ DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc
 {qui:'Colérique',at:'hero',txt:'Il fallait JUSTE demander. Un mot ! J’aurais tout brûlé pour lui. Il a préféré tout porter.'},
 {qui:'Colérique',at:'hero',txt:'Et maintenant je suis furieuse contre un mort. Tu sais à quel point c’est frustrant ? On ne peut même pas lui crier dessus correctement.'},
 {qui:'Colérique',at:'hero',txt:'Toi, quand tu auras besoin d’aide, tu demandes. Sinon, je te brûle. Doucement. Avec amour.'}]}})();
+
+// PASSÉ DES LUEURS : Mélancolique (Le veilleur jamais relevé)
+(()=>{DATA.scenes.melancolique_passe={once:true,declencheur:{quand:'quete',id:'lu_m',etat:'terminee'},etapes:[
+{qui:'Mélancolique',at:'hero',txt:'Il m’a demandé si le soleil se souviendrait de lui. J’ai dit oui. C’était vrai.'},
+{qui:'Mélancolique',at:'hero',txt:'Mais il ne demandait pas ça. Il voulait qu’on lui dise qu’il pouvait poser sa charge. Je l’ai compris trop tard.'},
+{qui:'Mélancolique',at:'hero',txt:'Un veilleur qu’on ne relève pas devient roi, apparemment. Il suffit peut-être de venir le relever, avec des mots justes. On essaiera.'}]}})();
