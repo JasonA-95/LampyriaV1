@@ -439,3 +439,21 @@ DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc
 {qui:'Mélancolique',at:'hero',txt:'Il m’a demandé si le soleil se souviendrait de lui. J’ai dit oui. C’était vrai.'},
 {qui:'Mélancolique',at:'hero',txt:'Mais il ne demandait pas ça. Il voulait qu’on lui dise qu’il pouvait poser sa charge. Je l’ai compris trop tard.'},
 {qui:'Mélancolique',at:'hero',txt:'Un veilleur qu’on ne relève pas devient roi, apparemment. Il suffit peut-être de venir le relever, avec des mots justes. On essaiera.'}]}})();
+
+// RÉACTION DU ROI AUX PASSÉS DES LUEURS : scène ajoutée à l'entrée de la Salle du Trône, après trone_entree (la scène du combat et les fins A/B ne changent pas).
+// Chaque Lueur ne parle que si sa quête du passé (flag *_passe) est terminée.
+Object.assign(DATA.scenes,{
+trone_passes:{once:true,declencheur:{quand:'entree',carte:'trone'},etapes:[
+{hero:'🏮',act:'Dans ta lanterne, les Lueurs se taisent. Chacune a quelque chose à dire à cet homme.'},
+{qui:'Gourmande',at:'hero',si:{flag:'gourmande_passe'},txt:'Il laissait toujours la moitié. C’était pour moi, je crois. Tiens : ta tarte, elle est encore tiède.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'gourmande_passe'},txt:'Une tarte ? Je ne mange plus depuis trois siècles. Pose-la là. Je la regarderai, ça compte.'},
+{qui:'Peureuse',at:'hero',si:{flag:'peureuse_passe'},txt:'Je me levais en retard pour que tu dormes. Tu veillais plus longtemps. J’avais peur de te voir debout.'},
+{qui:'Têtue',at:'hero',si:{flag:'tetue_passe'},txt:'Je t’ai dit de tenir. Il y avait un banc. Assieds-toi, Gardien, pour une fois.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'tetue_passe'},txt:'Un Gardien ne s’assoit pas. Il… quel banc ? Je n’ai jamais regardé où était le banc.'},
+{qui:'Rêveuse',at:'hero',si:{flag:'reveuse_passe'},txt:'Je te rêvais chaque soir pour que tu restes. Cette fois, je suis éveillée, et tu es là.'},
+{qui:'Farceuse',at:'hero',si:{flag:'farceuse_passe'},txt:'La chaussette dans ta botte, c’était moi. Tu as ri. Tu as cherché la paire toute ta vie. Je l’ai.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'farceuse_passe'},txt:'Ma chaussette ! Trois siècles ! Donne… non. Garde-la. Je ne veux pas qu’on voie que je pleure.'},
+{qui:'Colérique',at:'hero',si:{flag:'colerique_passe'},txt:'Tu aurais pu demander ! UN MOT ! J’aurais tout brûlé pour toi. Je suis encore furieuse.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'colerique_passe'},txt:'Demander… Je n’ai jamais su. Je croyais que ça dérangeait. Que ça faisait de moi un autre.'},
+{qui:'Mélancolique',at:'hero',si:{flag:'melancolique_passe'},txt:'Tu m’as demandé si le soleil se souviendrait de toi. Oui. Et tu peux poser ta charge. On vient te relever.'},
+{qui:'Le Roi Éteint',at:'hero',si:{flag:'melancolique_passe'},txt:'Me relever ? Personne ne m’a jamais… Non. Pas de larmes. D’abord le combat : c’est la tradition.'}]}});
