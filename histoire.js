@@ -427,3 +427,9 @@ DATA.scenes.lien_amiral_reveuse={once:true,declencheur:{quand:'apresCombat',renc
 {qui:'Farceuse',at:'hero',txt:'C’était moi, la chaussette dans sa botte. Je voulais juste voir s’il savait rire.'},
 {qui:'Farceuse',at:'hero',txt:'Il a ri. Un petit rire rouillé. Et il a passé sa vie à chercher la paire. Je n’avais pas prévu ça.'},
 {qui:'Farceuse',at:'hero',txt:'Toute bonne farce a une suite qu’on n’avait pas prévue. Celle-là, je ne la referai pas. Enfin, pas tout de suite.'}]}})();
+
+// PASSÉ DES LUEURS : Colérique (Ce qu'il n'a pas demandé)
+(()=>{DATA.scenes.colerique_passe={once:true,declencheur:{quand:'quete',id:'lu_c',etat:'terminee'},etapes:[
+{qui:'Colérique',at:'hero',txt:'Il fallait JUSTE demander. Un mot ! J’aurais tout brûlé pour lui. Il a préféré tout porter.'},
+{qui:'Colérique',at:'hero',txt:'Et maintenant je suis furieuse contre un mort. Tu sais à quel point c’est frustrant ? On ne peut même pas lui crier dessus correctement.'},
+{qui:'Colérique',at:'hero',txt:'Toi, quand tu auras besoin d’aide, tu demandes. Sinon, je te brûle. Doucement. Avec amour.'}]}})();
