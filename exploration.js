@@ -195,3 +195,7 @@ wr.append(cv2,zc);const box=el('div');box.style.flex='none';box.appendChild(wr);
 
 // ===== Interface en jeu : la barre d'icônes ouvre les panneaux (menu.js) =====
 EX.dock=F=>{const D=el('div','dock');TABS.forEach(([id,n,ic])=>{const dot=(id=='heros'&&talLeft()>0)||(id=='sorts'&&spLeft()>0)||(id=='atelier'&&canCraftAny())||(id=='quetes'&&questReady()),b=el('button','','<span class="ic">'+ic+'</span><span>'+n+'</span>');b.setAttribute('aria-label',n);if(dot)b.appendChild(el('span','dot'));b.onclick=()=>openMenu(id);D.appendChild(b)});F.appendChild(D)};
+
+// Régénération lente hors combat : 1 PV par seconde en exploration, jamais en combat.
+EX.regen=()=>{if(!EX.on||sv.pv==null)return;const m=pvMax();sv.pv+=1;if(sv.pv>=m)sv.pv=null;store();EX.hud()};
+if(typeof setInterval=='function')setInterval(()=>{if(typeof document=='undefined'||!document.hidden)EX.regen()},1000);

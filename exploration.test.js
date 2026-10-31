@@ -183,3 +183,17 @@ test('repos : entrer dans une auberge remet les PV au maximum, pas ailleurs ; la
   run(ctx, "sv.pv=5;EX.group=null;EX.escortFail=()=>{};EX.start=()=>{};EX.hud=()=>{};EX.storyTrigger=()=>{};startScreenTransition=()=>{};EX.back('lose',3)");
   assert.equal(val(ctx, 'sv.pv'), null, 'défaite : PV au maximum');
 });
+
+test('régénération lente : 1 PV par tick (1 s) en exploration seulement, plafonnée', () => {
+  const ctx = loadExploration({ ...baseSave, pv: 5 });
+  run(ctx, "EX.hud=()=>{}");
+  const max = val(ctx, 'pvMax()'), pas = 1;
+  run(ctx, "EX.on=false;EX.regen()");
+  assert.equal(val(ctx, 'sv.pv'), 5, 'rien hors exploration (combat, menu de titre)');
+  run(ctx, "EX.on=true;EX.regen();EX.regen()");
+  assert.equal(val(ctx, 'sv.pv'), 5 + 2 * pas);
+  run(ctx, "sv.pv=" + (max - 1) + ";EX.regen()");
+  assert.equal(val(ctx, 'sv.pv'), null, 'plafonné au max');
+  run(ctx, "EX.regen()");
+  assert.equal(val(ctx, 'sv.pv'), null);
+});
