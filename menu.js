@@ -2,12 +2,12 @@
 let tab='heros',resume=null,combatLive=false;
 const TABS=[['heros','Héros','🛡️'],['equip','Inventaire','🎒'],['sorts','Sorts','✨'],['lanterne','Lanterne','🏮'],['atelier','Atelier','🔨'],['quetes','Quêtes','📜'],['carte','Carte','🗺️'],['options','Options','⚙️']];
 const craftables=()=>{const A=EX.atelier();return A?Object.keys(DATA.objets).filter(id=>DATA.objets[id].cout&&!sv.inv.includes(id)&&A.slots.includes(DATA.objets[id].slot)):[]};
-const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout));
+const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout)&&metOk(DATA.objets[id]));
 const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];return s&&s.s==1&&(s.n||0)>=DATA.quetes[id].need});
 const heroMax=pvMax;
 
 function itemRow(id,extra){const o=DATA.objets[id];
-return '<span class="em">'+o.e+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
+return '<span class="em">'+o.e+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
 function card(title,...kids){const c=el('div','card',title?'<h3>'+title+'</h3>':'');kids.forEach(k=>{if(k)c.appendChild(typeof k=='string'?el('p','',k):k)});return c}
 function row(html,fn,cls){const r=el(fn?'button':'div','row '+(cls||''),html);if(fn)r.onclick=fn;return r}
 function bonusLabel(s,rank){const b=s.rg[rank-2]||{},parts=[];if(b.dmg)parts.push((b.dmg>0?'+':'')+b.dmg+' dégâts');if(b.pa)parts.push((b.pa>0?'+':'')+b.pa+' PA');if(b.cd)parts.push((b.cd>0?'+':'')+b.cd+' recharge');if(b.rmax)parts.push('+'+b.rmax+' portée max');if(b.push)parts.push('+'+b.push+' poussée');if(b.garde)parts.push('+'+b.garde+' tour de garde');return parts.join(' · ')||'aucun bonus'}
@@ -141,13 +141,13 @@ b.onclick=()=>{if(!on&&sv.sp.eq.length+cfg.lueurs.length>=6){toast('Barre de sor
 B.appendChild(L)}
 
 // ---------- onglet Atelier ----------
-function craft(id){const o=DATA.objets[id];if(sv.inv.includes(id)||!canPay(o.cout)){toast('Impossible');return}
+function craft(id){const o=DATA.objets[id];if(sv.inv.includes(id)||!canPay(o.cout)||!metOk(o)){toast('Impossible');return}
 pay(o.cout);sv.inv.push(id);const e=autoEquip(id);const Qc=sv.q||{};for(const qid in Qc){const qq=DATA.quetes[qid];if(qq&&qq.kind=='craft'&&qq.item==id&&Qc[qid].s==1)Qc[qid].n=qq.need}store();toast(o.n+' fabriqué'+(e?' et équipé':''));renderMenu()}
 function usePotion(k){const o=DATA.conso[k];if(!o||!(sv.conso[k]>0))return;if(pvNow()>=pvMax()){toast('PV déjà au maximum');return}
 sv.pv=Math.min(pvMax(),pvNow()+Math.ceil(pvMax()*o.pct/100));if(sv.pv>=pvMax())sv.pv=null;if(--sv.conso[k]<=0)delete sv.conso[k];store();toast(o.n+' : PV '+pvNow()+' / '+pvMax());renderMenu()}
-function craftPotion(k){const o=DATA.conso[k];if((sv.conso[k]||0)>=50||!canPay(o.cout)||metNiv(o.met[0])<o.met[1]){toast('Impossible');return}pay(o.cout);sv.conso[k]=(sv.conso[k]||0)+1;store();toast(o.n+' fabriquée');renderMenu()}
+function craftPotion(k){const o=DATA.conso[k];if((sv.conso[k]||0)>=50||!canPay(o.cout)||!metOk(o)){toast('Impossible');return}pay(o.cout);sv.conso[k]=(sv.conso[k]||0)+1;store();toast(o.n+' fabriquée');renderMenu()}
 let atOnly=false;
-function tabAtelier(B){const A=EX.atelier();if(!A){B.appendChild(card('Fabrication','La fabrication se fait uniquement dans les ateliers de la Cour des Ouvrages, au Village des Lanternes. Va y rencontrer les artisans.'));return}if(A.conso){const c=card(A.n,'Transforme tes ressources en potions. Elles se boivent hors combat (Inventaire, Consommables), 50 par pile.');Object.keys(DATA.conso).forEach(k=>{const o=DATA.conso[k],n=sv.conso[k]||0,ok=n<50&&canPay(o.cout)&&metNiv(o.met[0])>=o.met[1];c.appendChild(row('<span class="em">'+o.e+'</span><span class="tx"><span class="nm">'+o.n+' ×'+n+'</span><span class="mt">'+o.d+(o.met[1]>1?' · '+DATA.metiers[o.met[0]].n+' niv '+o.met[1]+' requis':'')+'</span></span><span class="mt">'+costChips(o.cout)+'</span>',()=>craftPotion(k),ok?'':'lock'))});B.appendChild(c);return}if(A.bientot){B.appendChild(card(A.n,'L’atelier n’est pas encore prêt : les fioles refroidissent. Reviens plus tard.'));return}const all=craftables(),list=atOnly?all.filter(id=>canPay(DATA.objets[id].cout)):all;
+function tabAtelier(B){const A=EX.atelier();if(!A){B.appendChild(card('Fabrication','La fabrication se fait uniquement dans les ateliers de la Cour des Ouvrages, au Village des Lanternes. Va y rencontrer les artisans.'));return}if(A.conso){const c=card(A.n,'Transforme tes ressources en potions. Elles se boivent hors combat (Inventaire, Consommables), 50 par pile.');Object.keys(DATA.conso).forEach(k=>{const o=DATA.conso[k],n=sv.conso[k]||0,ok=n<50&&canPay(o.cout)&&metOk(o);c.appendChild(row('<span class="em">'+o.e+'</span><span class="tx"><span class="nm">'+o.n+' ×'+n+'</span><span class="mt">'+o.d+(metTxt(o)?' · requis : '+metTxt(o):'')+'</span></span><span class="mt">'+costChips(o.cout)+'</span>',()=>craftPotion(k),ok?'':'lock'))});B.appendChild(c);return}if(A.bientot){B.appendChild(card(A.n,'L’atelier n’est pas encore prêt : les fioles refroidissent. Reviens plus tard.'));return}const all=craftables(),list=atOnly?all.filter(id=>canPay(DATA.objets[id].cout)):all;
 B.appendChild(row('<span class="em">🔎</span><span class="tx"><span class="nm">Afficher : '+(atOnly?'ce que je peux fabriquer maintenant':'tout')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{atOnly=!atOnly;renderMenu()}));
 const c=card(A.n,'Transforme tes ressources en équipement. Chaque objet se fabrique une seule fois. Les panoplies donnent un bonus à partir de 2 pièces portées.');
 if(!all.length)c.appendChild(el('p','','Tout est fabriqué !'));else if(!list.length)c.appendChild(el('p','','Rien n’est fabricable pour l’instant : récolte des ressources.'));
@@ -155,7 +155,7 @@ const groups={};list.forEach(id=>{const k=DATA.objets[id].set||'_';(groups[k]=gr
 const order=Object.keys(groups).sort((x,y)=>(x=='_')-(y=='_')||Object.keys(DATA.objets).indexOf(groups[x][0])-Object.keys(DATA.objets).indexOf(groups[y][0]));
 order.forEach(k=>{let title='Équipement simple',sub='';if(k!='_'){const S=DATA.sets[k],tot=Object.keys(DATA.objets).filter(i=>DATA.objets[i].set==k),own=tot.filter(i=>sv.inv.includes(i)).length;title=S.n+' ('+own+'/'+tot.length+')';sub=Object.keys(S.bonus).map(n=>'('+n+') '+fmtSt(S.bonus[n])).join(' · ')}
 c.appendChild(el('h3','',title));if(sub)c.appendChild(el('p','mt',sub));
-groups[k].sort((x,y)=>canPay(DATA.objets[y].cout)-canPay(DATA.objets[x].cout)).forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout);c.appendChild(row(itemRow(id,'<span class="mt">'+costChips(o.cout)+'</span>'),()=>craft(id),ok?'':'lock'))})});
+groups[k].sort((x,y)=>(canPay(DATA.objets[y].cout)&&metOk(DATA.objets[y]))-(canPay(DATA.objets[x].cout)&&metOk(DATA.objets[x]))).forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout)&&metOk(o),rq=metTxt(o);c.appendChild(row(itemRow(id,'<span class="mt">'+costChips(o.cout)+(rq?' <span class="chip '+(metOk(o)?'ok':'no')+'">'+rq+'</span>':'')+'</span>'),()=>craft(id),ok?'':'lock'))})});
 B.appendChild(c);
 const d=card('À trouver en combat','Ces objets ne se fabriquent pas : ils tombent sur les monstres, une garantie évite la malchance trop longue. Les boss lâchent les meilleurs.');
 DATA.rencontres.forEach((e,i)=>{if(i>sv.renc+1)return;const L=(e.drops||[]).filter(x=>DATA.objets[x.id]&&!DATA.objets[x.id].cout);if(!L.length)return;

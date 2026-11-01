@@ -199,3 +199,17 @@ test('gisements des marges : 3 à 4 sur une partie seulement des cartes à resso
   }
   assert.ok(avec / total > .3 && avec / total < .75, 'environ la moitié des cartes : ' + avec + '/' + total);
 });
+
+test('paliers : chaque métier démarre au niveau 1, les exigences tiennent dans 1-20, les niveaux d\'équipement dans 1-60 et suivent les ressources', () => {
+  for (const [m, M] of Object.entries(D.metiers)) {
+    assert.ok(M.res.some(r => D.resNiv[r] == 1), m + ' : aucune ressource de niveau 1, le métier ne pourrait pas progresser');
+    for (const r of M.res) assert.ok(D.resNiv[r] >= 1 && D.resNiv[r] <= D.metMax, r);
+  }
+  for (const r of Object.keys(D.res)) assert.ok(D.resNiv[r] && D.resHero[r], r + ' : palier manquant');
+  for (const [id, o] of Object.entries(D.objets)) {
+    assert.ok(o.niv >= 1 && o.niv <= 60, id + ' : niveau ' + o.niv);
+    if (o.cout) assert.equal(o.niv, Math.max(...Object.keys(o.cout).map(r => D.resHero[r])), id + ' : niveau de recette');
+  }
+  assert.equal(D.objets.tisonnier.niv, 1, 'le premier métier reste accessible dès le début');
+  assert.ok(D.objets.diademe_eclat.niv > D.objets.lame_roseau.niv && D.objets.lame_roseau.niv > D.objets.chapeau.niv, 'les paliers montent avec l\'avancement');
+});

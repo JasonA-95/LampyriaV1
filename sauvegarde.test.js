@@ -150,3 +150,32 @@ test('métiers : sauvegarde nettoyée, XP et niveaux, quantité récoltée selon
   assert.deepEqual(val(n, "(()=>{const r=metRecolte('eclat');return[r.qte,r.bonus,sv.met.mine.xp,sv.met.mine.niv]})()"), [6, 1, 0, 20], 'niveau max : bonus, pas d\'XP');
   assert.equal(val(n, "metRecolte('inconnue').m"), null);
 });
+
+test('paliers : anciennes sauvegardes relevées selon l\'histoire (une seule fois), exigences de métier des recettes, niveau d\'équipement', () => {
+  const neuf = loadState(JSON.stringify({ niv: 3, renc: 0 }));
+  assert.deepEqual(val(neuf, 'Object.values(sv.met)'), [], 'début de partie : aucun rattrapage');
+  const vieux = loadState(JSON.stringify({ niv: 30, renc: 5, met: { mine: { xp: 0, niv: 2 } } }));
+  assert.equal(val(vieux, 'sv.met.mine.niv'), 7, '1 + 5×1,2 = 7');
+  assert.equal(val(vieux, 'sv.met.herbo.niv'), 7);
+  assert.equal(val(vieux, 'sv.metV'), 2);
+  vm.runInContext('sv.met.mine.niv=3', vieux);
+  vm.runInContext("sv.q=sv.q;", vieux);
+  assert.equal(val(vieux, 'sv.met.mine.niv'), 3, 'le rattrapage ne se refait pas pendant la partie');
+  const c = loadState(JSON.stringify({ niv: 3 }));
+  assert.deepEqual(val(c, 'reqMet(DATA.objets.tisonnier)'), { mine: 1 }, 'braise : niveau 1');
+  assert.equal(val(c, 'metTxt(DATA.objets.tisonnier)'), '', 'niveau 1 : rien d\'affiché');
+  assert.deepEqual(val(c, 'reqMet(DATA.objets.diademe_eclat)'), { mine: 14 }, 'éclats + gravats : Mineur 14');
+  assert.deepEqual(val(c, 'reqMet(DATA.objets.lame_roseau)'), { herbo: 5, cendre: 1 });
+  assert.equal(val(c, 'metTxt(DATA.objets.lame_roseau)'), 'Herboriste 5');
+  assert.equal(val(c, 'metOk(DATA.objets.diademe_eclat)'), false);
+  vm.runInContext('sv.met.mine={xp:0,niv:14}', c);
+  assert.equal(val(c, 'metOk(DATA.objets.diademe_eclat)'), true);
+  assert.equal(val(c, 'itemNiv("diademe_eclat")'), 42);
+  vm.runInContext('toast=()=>{};sv.inv.push("diademe_eclat","tisonnier")', c);
+  assert.equal(val(c, 'autoEquip("diademe_eclat")'), false, 'trop haut niveau : pas d\'équipement automatique');
+  vm.runInContext('equip("tete","diademe_eclat")', c);
+  assert.equal(val(c, 'sv.eq.tete'), undefined, 'équiper un objet de niveau trop haut est refusé');
+  assert.equal(val(c, 'autoEquip("tisonnier")'), true);
+  vm.runInContext('sv.niv=42;equip("tete","diademe_eclat")', c);
+  assert.equal(val(c, 'sv.eq.tete'), 'diademe_eclat');
+});

@@ -32,6 +32,7 @@ if(!sv.rep||typeof sv.rep!='object'||Array.isArray(sv.rep))sv.rep={};
 for(const k of Object.keys(sv.rep))if(!Number.isFinite(sv.rep[k])||sv.rep[k]<=Date.now())delete sv.rep[k];
 if(!sv.met||typeof sv.met!='object'||Array.isArray(sv.met))sv.met={};
 for(const k of Object.keys(sv.met)){const t=sv.met[k];if(!DATA.metiers[k]||!t||typeof t!='object'){delete sv.met[k];continue}t.niv=Number.isFinite(t.niv)?Math.max(1,Math.min(DATA.metMax,Math.floor(t.niv))):1;t.xp=Number.isFinite(t.xp)&&t.xp>=0&&t.niv<DATA.metMax?Math.floor(t.xp):0}
+if(sv.metV!==2){sv.metV=2;const base=Math.min(DATA.metMax,1+Math.floor((sv.renc||0)*1.2));if(base>1)for(const m of Object.keys(DATA.metiers)){const t=sv.met[m]||(sv.met[m]={xp:0,niv:1});if(t.niv<base){t.niv=base;t.xp=0}}}
 if(!sv.conso||typeof sv.conso!='object'||Array.isArray(sv.conso))sv.conso={};
 for(const k of Object.keys(sv.conso)){if(!(DATA.conso&&Object.prototype.hasOwnProperty.call(DATA.conso,k))||!Number.isFinite(sv.conso[k])||sv.conso[k]<1)delete sv.conso[k];else sv.conso[k]=Math.min(50,Math.floor(sv.conso[k]))}
 if(typeof DJ!='undefined')DJ.norm();
@@ -130,13 +131,15 @@ const pvMax=()=>DATA.classes[cfg.classe].hp+8*(sv.niv-1)+gear().t.pv,pvNow=()=>s
 // Métiers de récolte : 5 xp par récolte, niveau 1 à 20, quantité +1 tous les 5 niveaux, bonus rare de +1 (2 % par niveau).
 const metOf=res=>Object.keys(DATA.metiers).find(m=>DATA.metiers[m].res.includes(res)),metNiv=m=>(sv.met[m]&&sv.met[m].niv)||1,metNext=n=>5*n;
 function metRecolte(res){const m=metOf(res);if(!m)return{qte:2,m:null,up:0,bonus:0};const t=sv.met[m]||(sv.met[m]={xp:0,niv:1}),n=t.niv,bonus=Math.random()<n*.02?1:0,qte=2+Math.floor((n-1)/5)+bonus;let up=0;if(n<DATA.metMax){t.xp+=5;while(t.niv<DATA.metMax&&t.xp>=metNext(t.niv)){t.xp-=metNext(t.niv);t.niv++;up++}if(t.niv>=DATA.metMax)t.xp=0}return{qte,m,up,bonus}}
+const reqMet=o=>{const r={};for(const k in o.cout||{}){const m=metOf(k),l=DATA.resNiv[k]||1;if(m&&l>(r[m]||0))r[m]=l}if(o.met&&o.met[1]>(r[o.met[0]]||0))r[o.met[0]]=o.met[1];return r},metOk=o=>Object.entries(reqMet(o)).every(([m,l])=>metNiv(m)>=l),
+metTxt=o=>Object.entries(reqMet(o)).filter(([m,l])=>l>1).map(([m,l])=>DATA.metiers[m].n+' '+l).join(', '),itemNiv=id=>(DATA.objets[id]&&DATA.objets[id].niv)||1;
 function gear(){const t={pv:0,res:0,pm:0},cnt={};for(const k of EL_IDS){t[k]=0;t['r'+k]=0}
 for(const [s] of SLOTS){const id=sv.eq[s];if(!id||!sv.inv.includes(id))continue;const o=DATA.objets[id];for(const k in o.st)t[k]+=o.st[k];if(o.set)cnt[o.set]=(cnt[o.set]||0)+1}
 for(const k in cnt){const b=DATA.sets[k].bonus;for(const n in b)if(cnt[k]>=+n)for(const s in b[n])t[s]+=b[n][s]}
 for(const [k,,,v] of TAL)t[k]+=v*(sv.tal[k]||0);
 t.res=Math.min(t.res,40);for(const k of EL_IDS)t['r'+k]=Math.min(t['r'+k],40);return{t,cnt}}
-function equip(slot,id){if(id){for(const s in sv.eq)if(sv.eq[s]==id)delete sv.eq[s];sv.eq[slot]=id}else delete sv.eq[slot];store()}
-function autoEquip(id){const t=DATA.objets[id].slot,c=t=='acc'?['acc1','acc2']:[t],s=c.find(x=>!sv.eq[x]||!sv.inv.includes(sv.eq[x]));if(s){sv.eq[s]=id;return true}return false}
+function equip(slot,id){if(id&&itemNiv(id)>sv.niv&&!cfg.test){toast('Niveau '+itemNiv(id)+' requis pour porter '+DATA.objets[id].n+'.');return}if(id){for(const s in sv.eq)if(sv.eq[s]==id)delete sv.eq[s];sv.eq[slot]=id}else delete sv.eq[slot];store()}
+function autoEquip(id){if(itemNiv(id)>sv.niv&&!cfg.test)return false;const t=DATA.objets[id].slot,c=t=='acc'?['acc1','acc2']:[t],s=c.find(x=>!sv.eq[x]||!sv.inv.includes(sv.eq[x]));if(s){sv.eq[s]=id;return true}return false}
 // Butin : chaque objet a sa chance ; garantie anti-malchance (4 combats sans objet, 1 contre un boss).
 function rollDrops(ri){const R=DATA.rencontres[ri],D=R.drops||[],got=[];
 for(const d of D)if(!sv.inv.includes(d.id)&&Math.random()*100<d.p)got.push(d.id);

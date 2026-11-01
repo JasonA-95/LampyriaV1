@@ -1323,3 +1323,9 @@ const want=3+(key>>>7)%2,rocks=new Set(m.rocks.map(r=>r.join(','))),near=[...(m.
 for(const [,[x,y]] of DATA.excells.filter(([x,y])=>!DATA.in(x,y)).map(c=>[hx(c[0],c[1],key),c]).sort((a,b)=>a[0]-b[0])){if(placed.length>=want)break;
 if(rocks.has(x+','+y)||DATA.exside(x,y).length||near.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<3)||placed.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<6))continue;
 m.nodes.push({x,y,res:types[(placed.length+(key>>>3))%types.length],gis:1});placed.push([x,y])}}})();
+
+// Paliers de ressources (phase 5) : niveau de métier requis pour récolter (échelle par métier), niveau du héros associé pour l'équipement.
+DATA.resNiv={braise:1,champi:1,laine:1,cendre:1,sable:1,roseau:5,fil:8,chaussette:8,gravat:10,eclat:14};
+DATA.resHero={braise:1,champi:1,laine:1,cendre:20,roseau:20,sable:30,fil:30,chaussette:30,gravat:42,eclat:42};
+// Niveau de chaque équipement (niveau du héros pour le porter), déduit : recette = ressource la plus avancée ; butin = niveau du groupe qui le lâche ; sinon 1.
+(()=>{for(const id in DATA.objets){const o=DATA.objets[id];if(o.niv!=null)continue;let n=1;if(o.cout)for(const r in o.cout)n=Math.max(n,DATA.resHero[r]||1);else{const l=DATA.rencontres.map((e,i)=>(e.drops||[]).some(d=>d.id==id)?(e.niv||1+i*3):0).filter(Boolean);if(l.length)n=Math.min(...l)}o.niv=n}})();

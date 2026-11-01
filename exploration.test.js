@@ -269,3 +269,12 @@ test('récolte : 5 secondes sur place, interrompue par un toucher, repousse de 3
   run(ctx, "sv.rep[Object.keys(sv.rep)[0]]=Date.now()-1;EX.enter('poste',6,6,true);EX.enter('village',6,6,true)");
   assert.equal(val(ctx, 'EX.nodes[0].until>Date.now()'), false, 'la ressource a repoussé');
 });
+
+test('récolte : un gisement d\'un palier trop haut est refusé tant que le métier n\'a pas le niveau requis', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 99 });
+  run(ctx, "globalThis.setTimeout=()=>0;EX.draw=()=>{};EX.ui=()=>{};pop=()=>{};toast=()=>{};EX.enter('village',6,6,true);globalThis.n1={x:3,y:3,res:'roseau',until:0}");
+  run(ctx, 'sv.met={};EX.harvest(n1)');
+  assert.equal(run(ctx, 'EX.gather'), null, 'Herboriste 1 : roseau (niveau 5) refusé');
+  run(ctx, 'sv.met.herbo={xp:0,niv:5};EX.harvest(n1)');
+  assert.ok(run(ctx, 'EX.gather&&EX.gather.n===n1'), 'Herboriste 5 : roseau accepté');
+});

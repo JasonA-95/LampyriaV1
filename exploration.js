@@ -100,6 +100,7 @@ else EX.fight(ent.o)};
 EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
 if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');if(typeof playSound=='function')playSound('harvest');EX.draw();return}
 if(n.until>Date.now()){msg('Déjà cueilli : repousse dans '+Math.ceil((n.until-Date.now())/1000)+' s.');return}
+{const m=metOf(n.res),l=DATA.resNiv[n.res]||1;if(m&&metNiv(m)<l){msg(DATA.metiers[m].n+' niveau '+l+' requis pour récolter '+DATA.res[n.res]+'.');return}}
 if(EX.gather&&EX.gather.n===n)return;
 const id=++EX.gtok;EX.gather={n,id,t:Date.now()};EX.gatherTick(id)};
 // Récolte : 5 secondes sur place ; un toucher, un combat ou un changement de carte l'interrompt. La ressource repousse 3 minutes (temps réel, conservé en sauvegarde).
