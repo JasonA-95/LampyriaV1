@@ -274,7 +274,7 @@ test('récolte : un gisement d\'un palier trop haut est refusé tant que le mét
   const ctx = loadExploration({ ...baseSave, renc: 99 });
   run(ctx, "globalThis.setTimeout=()=>0;EX.draw=()=>{};EX.ui=()=>{};pop=()=>{};toast=()=>{};EX.enter('village',6,6,true);globalThis.n1={x:3,y:3,res:'roseau',until:0}");
   run(ctx, 'sv.met={};EX.harvest(n1)');
-  assert.equal(run(ctx, 'EX.gather'), null, 'Glaneur 1 : roseau (niveau 5) refusé');
+  assert.equal(run(ctx, 'EX.gather'), null, 'Herboriste 1 : roseau (niveau 5) refusé');
   run(ctx, 'sv.met.herbo={xp:0,niv:5};EX.harvest(n1)');
-  assert.ok(run(ctx, 'EX.gather&&EX.gather.n===n1'), 'Glaneur 5 : roseau accepté');
+  assert.ok(run(ctx, 'EX.gather&&EX.gather.n===n1'), 'Herboriste 5 : roseau accepté');
 });

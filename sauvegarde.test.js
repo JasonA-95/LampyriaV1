@@ -166,7 +166,7 @@ test('paliers : anciennes sauvegardes relevées selon l\'histoire (une seule foi
   assert.equal(val(c, 'metTxt(DATA.objets.tisonnier)'), '', 'niveau 1 : rien d\'affiché');
   assert.deepEqual(val(c, 'reqMet(DATA.objets.diademe_eclat)'), { mine: 14 }, 'éclats + gravats : Mineur 14');
   assert.deepEqual(val(c, 'reqMet(DATA.objets.lame_roseau)'), { herbo: 5, pous: 1 });
-  assert.equal(val(c, 'metTxt(DATA.objets.lame_roseau)'), 'Glaneur de Mousses 5');
+  assert.equal(val(c, 'metTxt(DATA.objets.lame_roseau)'), 'Herboriste 5');
   assert.equal(val(c, 'metOk(DATA.objets.diademe_eclat)'), false);
   vm.runInContext('sv.met.mine={xp:0,niv:14}', c);
   assert.equal(val(c, 'metOk(DATA.objets.diademe_eclat)'), true);
@@ -180,7 +180,7 @@ test('paliers : anciennes sauvegardes relevées selon l\'histoire (une seule foi
   assert.equal(val(c, 'sv.eq.tete'), 'diademe_eclat');
 });
 
-test('métiers fusionnés : Cendrier + Sablier deviennent Ramasse-Poussières avec le meilleur niveau, sans perdre les autres métiers', () => {
+test('métiers fusionnés : Cendrier + Sablier deviennent Verrier avec le meilleur niveau, sans perdre les autres métiers', () => {
   const ctx = loadState(JSON.stringify({ niv: 5, metV: 2, met: { cendre: { xp: 3, niv: 4 }, sable: { xp: 1, niv: 9 }, mine: { xp: 2, niv: 6 } } }));
   assert.deepEqual(val(ctx, 'sv.met'), { pous: { xp: 1, niv: 9 }, mine: { xp: 2, niv: 6 } });
   const seul = loadState(JSON.stringify({ niv: 5, metV: 2, met: { cendre: { xp: 3, niv: 4 } } }));
