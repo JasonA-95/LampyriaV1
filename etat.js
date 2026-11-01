@@ -31,6 +31,8 @@ if(!Number.isFinite(sv.pv)||sv.pv<1)sv.pv=null;
 if(!sv.rep||typeof sv.rep!='object'||Array.isArray(sv.rep))sv.rep={};
 for(const k of Object.keys(sv.rep))if(!Number.isFinite(sv.rep[k])||sv.rep[k]<=Date.now())delete sv.rep[k];
 if(!sv.met||typeof sv.met!='object'||Array.isArray(sv.met))sv.met={};
+// Fusion des anciens métiers Cendrier et Sablier en un seul (le meilleur niveau est conservé).
+if(sv.met.cendre||sv.met.sable){const a=sv.met.cendre,b=sv.met.sable,t=[a,b].filter(x=>x&&typeof x=='object').sort((x,y)=>(y.niv||1)-(x.niv||1)||(y.xp||0)-(x.xp||0))[0];if(t&&!sv.met.pous)sv.met.pous={xp:t.xp,niv:t.niv};delete sv.met.cendre;delete sv.met.sable}
 for(const k of Object.keys(sv.met)){const t=sv.met[k];if(!DATA.metiers[k]||!t||typeof t!='object'){delete sv.met[k];continue}t.niv=Number.isFinite(t.niv)?Math.max(1,Math.min(DATA.metMax,Math.floor(t.niv))):1;t.xp=Number.isFinite(t.xp)&&t.xp>=0&&t.niv<DATA.metMax?Math.floor(t.xp):0}
 if(sv.metV!==2){sv.metV=2;const base=Math.min(DATA.metMax,1+Math.floor((sv.renc||0)*1.2));if(base>1)for(const m of Object.keys(DATA.metiers)){const t=sv.met[m]||(sv.met[m]={xp:0,niv:1});if(t.niv<base){t.niv=base;t.xp=0}}}
 if(!sv.conso||typeof sv.conso!='object'||Array.isArray(sv.conso))sv.conso={};

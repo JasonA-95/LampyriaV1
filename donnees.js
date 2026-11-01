@@ -1299,8 +1299,8 @@ const g=npc('cb_cimetiere','Gardienne Cyprès');g.quests=(g.quests||[]).concat('
 DATA.cartes.cb_cimetiere.npcs.push({x:6,y:9,e:'👵',n:'Veuve Cendreuse',cache:[{pasFlag:'esc_fin_cb6'}],txt:'Il est enfin entouré de fleurs de cendre. Merci, voyageur. Il aurait ri de me voir arriver avec une escorte.'})})();
 
 // Potions (phase 5) : soignent un pourcentage des PV max, hors combat uniquement. Piles de 50 max. Fabriquées à La Fiole Tiède.
-DATA.metiers={herbo:{n:'Herboriste',e:'🌿',res:['champi','roseau']},mine:{n:'Mineur',e:'⛏️',res:['braise','gravat','eclat']},cendre:{n:'Cendrier',e:'🌫️',res:['cendre']},tiss:{n:'Tisserand',e:'🧵',res:['laine','fil','chaussette']},sable:{n:'Sablier',e:'🏜️',res:['sable']}};DATA.metMax=20;
-DATA.conso={tisane:{n:'Tisane de braise',e:'🍵',pct:30,cout:{braise:2},met:['mine',1],d:'Rend 30 % des PV max.'},baume:{n:'Baume de champignon',e:'🧴',pct:55,cout:{champi:3},met:['herbo',3],d:'Rend 55 % des PV max.'},elixir:{n:'Élixir de cendres',e:'⚗️',pct:80,cout:{cendre:3,roseau:1},met:['cendre',5],d:'Rend 80 % des PV max.'},fiole:{n:'Fiole de lumière',e:'🔆',pct:100,cout:{eclat:2,champi:2},met:['mine',10],d:'Rend tous les PV.'}};
+DATA.metiers={herbo:{n:'Glaneur de Mousses',e:'🌿',res:['champi','roseau']},mine:{n:'Piocheur d’Éclats',e:'⛏️',res:['braise','gravat','eclat']},pous:{n:'Ramasse-Poussières',e:'🌫️',res:['cendre','sable']},tiss:{n:'Ravaudeur',e:'🧵',res:['laine','fil','chaussette']}};DATA.metMax=20;
+DATA.conso={tisane:{n:'Tisane de braise',e:'🍵',pct:30,cout:{braise:2},met:['mine',1],d:'Rend 30 % des PV max.'},baume:{n:'Baume de champignon',e:'🧴',pct:55,cout:{champi:3},met:['herbo',3],d:'Rend 55 % des PV max.'},elixir:{n:'Élixir de cendres',e:'⚗️',pct:80,cout:{cendre:3,roseau:1},met:['pous',5],d:'Rend 80 % des PV max.'},fiole:{n:'Fiole de lumière',e:'🔆',pct:100,cout:{eclat:2,champi:2},met:['mine',10],d:'Rend tous les PV.'}};
 // Lieux de repos : entrer remet les PV au maximum.
 ['v_auberge','cb_taverne','sv_hospice'].forEach(k=>{DATA.cartes[k].repos=1});
 
@@ -1325,7 +1325,7 @@ if(rocks.has(x+','+y)||DATA.exside(x,y).length||near.some(c=>Math.abs(c[0]-x)+Ma
 m.nodes.push({x,y,res:types[(placed.length+(key>>>3))%types.length],gis:1});placed.push([x,y])}}})();
 
 // Paliers de ressources (phase 5) : niveau de métier requis pour récolter (échelle par métier), niveau du héros associé pour l'équipement.
-DATA.resNiv={braise:1,champi:1,laine:1,cendre:1,sable:1,roseau:5,fil:8,chaussette:8,gravat:10,eclat:14};
+DATA.resNiv={braise:1,champi:1,laine:1,cendre:1,sable:6,roseau:5,fil:8,chaussette:8,gravat:10,eclat:14};
 DATA.resHero={braise:1,champi:1,laine:1,cendre:20,roseau:20,sable:30,fil:30,chaussette:30,gravat:42,eclat:42};
 // Niveau de chaque équipement (niveau du héros pour le porter), déduit : recette = ressource la plus avancée ; butin = niveau du groupe qui le lâche ; sinon 1.
 (()=>{for(const id in DATA.objets){const o=DATA.objets[id];if(o.niv!=null)continue;let n=1;if(o.cout)for(const r in o.cout)n=Math.max(n,DATA.resHero[r]||1);else{const l=DATA.rencontres.map((e,i)=>(e.drops||[]).some(d=>d.id==id)?(e.niv||1+i*3):0).filter(Boolean);if(l.length)n=Math.min(...l)}o.niv=n}})();
