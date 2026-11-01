@@ -44,7 +44,7 @@ test('monde : aucun objet hors carte, sur un rocher, sur une sortie ou superpos�
     const rocks = new Set(m.rocks.map(r => key(r[0], r[1]))), vus = new Map(), sorties = new Set(m.exits.map(e => key(e.x, e.y)));
     for (const q of ENTS) for (const o of m[q] || []) {
       const id = key(o.x, o.y), lab = k + '.' + q + '@' + id;
-      if (o.x < 0 || o.y < 0 || o.x >= N || o.y >= N) p.push(lab + ': hors carte');
+      if (o.gis ? !D.exin(o.x, o.y) : (o.x < 0 || o.y < 0 || o.x >= N || o.y >= N)) p.push(lab + ': hors carte');
       if (rocks.has(id)) p.push(lab + ': sur un rocher');
       if (sorties.has(id)) p.push(lab + ': sur une sortie');
       if (vus.has(id)) p.push(lab + ': même case que ' + vus.get(id)); else vus.set(id, q);
@@ -62,7 +62,7 @@ test('monde : tout ce qui est posé sur une carte est accessible depuis son poin
       for (const [a, b] of DIRS) { const nx = x + a, ny = y + b, kk = key(nx, ny); if (nx < 0 || ny < 0 || nx >= N || ny >= N || rocks.has(kk) || vu.has(kk)) continue; vu.add(kk); file.push([nx, ny]); }
     }
     for (const q of ENTS) for (const o of m[q] || [])
-      if (!vu.has(key(o.x, o.y)) && !DIRS.some(([a, b]) => vu.has(key(o.x + a, o.y + b)))) p.push(k + '.' + q + '@' + key(o.x, o.y) + ' : inaccessible');
+      if (!o.gis && !vu.has(key(o.x, o.y)) && !DIRS.some(([a, b]) => vu.has(key(o.x + a, o.y + b)))) p.push(k + '.' + q + '@' + key(o.x, o.y) + ' : inaccessible');
   }
   assert.deepEqual(p, []);
 });
@@ -184,4 +184,17 @@ test('cartes d\'exploration 20×25 : rectangle complet, départ et entités deda
     for (const o of [...(m.npcs || []), ...(m.groups || []), ...(m.nodes || []), ...m.exits.filter(e => e.don)]) assert.ok([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => seen.has((o.x + a) + ',' + (o.y + b))), k + ' : inatteignable ' + (o.n || o.res || o.to) + ' ' + o.x + ',' + o.y);
     for (const s of sides) assert.ok([...seen].some(key => D.exside(...key.split(',').map(Number)).includes(s)), k + ' : bord ' + s + ' inatteignable');
   }
+});
+
+test('gisements des marges : 3 à 4 sur une partie seulement des cartes à ressources, hors bords, hors donjons, avec le type de ressource de la carte', () => {
+  const marge = m => m.nodes.filter(n => n.gis);
+  let avec = 0, total = 0;
+  for (const [k, m] of Object.entries(C)) {
+    const types = new Set(m.nodes.filter(n => n.res && !n.gis).map(n => n.res)), g = marge(m);
+    if (!types.size) { assert.equal(g.length, 0, k + ' : pas de ressource d\'origine, pas de gisement'); continue }
+    total++;
+    if (g.length) { avec++; assert.ok(g.length >= 3 && g.length <= 4, k + ' : ' + g.length + ' gisements'); assert.ok(g.every(n => types.has(n.res) && D.exin(n.x, n.y) && !D.exside(n.x, n.y).length), k) }
+    if (/^(terrier|enclos|archives|reves|pyr|crypte)\d$/.test(k)) assert.equal(g.length, 0, k + ' : pas de gisement en donjon');
+  }
+  assert.ok(avec / total > .3 && avec / total < .75, 'environ la moitié des cartes : ' + avec + '/' + total);
 });

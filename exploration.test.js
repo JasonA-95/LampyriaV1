@@ -29,11 +29,11 @@ test('quête acceptée : les monstres vaincus et les récoltes en cours ne réap
   run(ctx, "EX.enter('village',3,6,true)");
   assert.ok(run(ctx, 'EX.groups.length') >= 1);
   run(ctx, 'EX.groups[0].dead=true');
-  run(ctx, 'EX.nodes[0].until=EX.steps+30');
+  run(ctx, 'EX.nodes[0].until=Date.now()+180000');
   run(ctx, "sv.q.q1={s:1,n:0,got:[]}");
   run(ctx, "EX.marks('village')");
   assert.equal(run(ctx, 'EX.groups[0].dead'), true, 'le groupe vaincu doit rester vaincu');
-  assert.equal(run(ctx, 'EX.nodes[0].until>EX.steps'), true, 'le nœud récolté doit rester en repousse');
+  assert.equal(run(ctx, 'EX.nodes[0].until>Date.now()'), true, 'le nœud récolté doit rester en repousse');
 });
 
 test('les repères de quête apparaissent à l’acceptation et disparaissent une fois ramassés ou la quête terminée', () => {
@@ -241,4 +241,31 @@ test('un seul toucher suffit pour une case libre, une ressource ou un bord de so
   const cote = val(ctx, "DATA.cartes.village.exits.find(e=>e.to=='foret').d"), c = val(ctx, `DATA.excells.find(([x,y])=>{const s=DATA.exside(x,y);return s.length==1&&s[0]=='${cote}'})`);
   run(ctx, 'G=[]'); run(ctx, tap(c[0], c[1]));
   assert.equal(val(ctx, 'G[0].t'), 'e', 'bord de sortie');
+});
+
+test('récolte : 5 secondes sur place, interrompue par un toucher, repousse de 3 minutes conservée en sauvegarde et au changement de carte', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 99 });
+  run(ctx, "globalThis.setTimeout=()=>0;globalThis.G=[];EX.draw=()=>{};EX.ui=()=>{};pop=()=>{};toast=()=>{};EX.enter('village',6,6,true)");
+  run(ctx, "globalThis.n0=EX.nodes[0]");
+  const k = val(ctx, "n0.res"), avant = val(ctx, `sv.res.${k}`);
+  run(ctx, 'EX.harvest(n0)');
+  assert.ok(run(ctx, 'EX.gather&&EX.gather.n===n0'), 'la récolte démarre');
+  assert.equal(val(ctx, `sv.res.${k}`), avant, 'rien avant la fin des 5 s');
+  run(ctx, 'EX.gather.t=Date.now()-2000;EX.gatherTick(EX.gather.id)');
+  assert.ok(run(ctx, 'EX.gather'), 'toujours en cours à 2 s');
+  run(ctx, 'EX.click({clientX:0,clientY:0})');
+  assert.equal(run(ctx, 'EX.gather'), null, 'un toucher interrompt');
+  assert.equal(val(ctx, `sv.res.${k}`), avant);
+  run(ctx, 'EX.harvest(n0);EX.gather.t=Date.now()-5001;EX.gatherTick(EX.gather.id)');
+  assert.equal(run(ctx, 'EX.gather'), null);
+  assert.ok(val(ctx, `sv.res.${k}`) >= avant + 2, 'ressource obtenue');
+  const reste = val(ctx, 'n0.until-Date.now()');
+  assert.ok(reste > 179000 && reste <= 180000, 'repousse de 3 minutes : ' + reste);
+  assert.ok(val(ctx, "Object.keys(sv.rep).length") === 1, 'repousse conservée en sauvegarde');
+  run(ctx, 'EX.harvest(n0)');
+  assert.equal(run(ctx, 'EX.gather'), null, 'pas de récolte pendant la repousse');
+  run(ctx, "EX.enter('poste',6,6,true);EX.enter('village',6,6,true)");
+  assert.ok(val(ctx, 'EX.nodes[0].until>Date.now()'), 'la repousse survit au changement de carte');
+  run(ctx, "sv.rep[Object.keys(sv.rep)[0]]=Date.now()-1;EX.enter('poste',6,6,true);EX.enter('village',6,6,true)");
+  assert.equal(val(ctx, 'EX.nodes[0].until>Date.now()'), false, 'la ressource a repoussé');
 });

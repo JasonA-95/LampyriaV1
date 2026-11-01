@@ -8,7 +8,7 @@ const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem(slotKey(SLOT));savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
 const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],pv:null,conso:{},met:{},q:{},hist:{vus:[],flags:{}}};
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],pv:null,conso:{},met:{},rep:{},q:{},hist:{vus:[],flags:{}}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
 function normaliseStoryHistory(save,existed,hadHistory){if(!save.hist||typeof save.hist!='object'||Array.isArray(save.hist))save.hist={vus:[],flags:{}};
 if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save.hist.vus.filter(id=>typeof id=='string'))];
@@ -28,6 +28,8 @@ for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
 // PV persistants (null = au maximum) et potions en piles (50 max par potion).
 if(!Number.isFinite(sv.pv)||sv.pv<1)sv.pv=null;
+if(!sv.rep||typeof sv.rep!='object'||Array.isArray(sv.rep))sv.rep={};
+for(const k of Object.keys(sv.rep))if(!Number.isFinite(sv.rep[k])||sv.rep[k]<=Date.now())delete sv.rep[k];
 if(!sv.met||typeof sv.met!='object'||Array.isArray(sv.met))sv.met={};
 for(const k of Object.keys(sv.met)){const t=sv.met[k];if(!DATA.metiers[k]||!t||typeof t!='object'){delete sv.met[k];continue}t.niv=Number.isFinite(t.niv)?Math.max(1,Math.min(DATA.metMax,Math.floor(t.niv))):1;t.xp=Number.isFinite(t.xp)&&t.xp>=0&&t.niv<DATA.metMax?Math.floor(t.xp):0}
 if(!sv.conso||typeof sv.conso!='object'||Array.isArray(sv.conso))sv.conso={};

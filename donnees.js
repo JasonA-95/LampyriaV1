@@ -1315,3 +1315,11 @@ DATA.exside=(x,y)=>{const u=x-y,v=x+y,r=[];if(v<=DATA.EXV[0]+1)r.push('N');if(v>
 (()=>{const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+97)*73856093)^((y+131)*19349663)^(k*83492791))>>>0;
 for(const k in DATA.cartes){const m=DATA.cartes[k],key=hs(k+'ex'),sides=new Set(m.exits.filter(e=>!e.don&&e.d).map(e=>e.d)),pts=m.exits.filter(e=>e.don).map(e=>[e.x,e.y]);
 for(const [x,y] of DATA.excells){if(DATA.in(x,y)||hx(x,y,key)%100>=10)continue;if(DATA.exside(x,y).some(s=>sides.has(s)))continue;if(pts.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<=2))continue;m.rocks.push([x,y])}}})();
+
+// Gisements dans les marges des cartes (phase 5) : 3 à 4 sur environ la moitié des cartes qui ont déjà des ressources (pas dans les donjons), même type de ressource que la carte.
+(()=>{const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+211)*73856093)^((y+317)*19349663)^(k*83492791))>>>0;
+for(const k in DATA.cartes){const m=DATA.cartes[k],types=[...new Set((m.nodes||[]).filter(n=>n.res).map(n=>n.res))],key=hs(k+'gis');if(!types.length||/^(terrier|enclos|archives|reves|pyr|crypte)\d$/.test(k)||key%100>=55)continue;
+const want=3+(key>>>7)%2,rocks=new Set(m.rocks.map(r=>r.join(','))),near=[...(m.npcs||[]),...(m.groups||[]),...(m.nodes||[]),...(m.picks||[]),...m.exits.filter(e=>e.don)].map(o=>[o.x,o.y]),placed=[];
+for(const [,[x,y]] of DATA.excells.filter(([x,y])=>!DATA.in(x,y)).map(c=>[hx(c[0],c[1],key),c]).sort((a,b)=>a[0]-b[0])){if(placed.length>=want)break;
+if(rocks.has(x+','+y)||DATA.exside(x,y).length||near.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<3)||placed.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<6))continue;
+m.nodes.push({x,y,res:types[(placed.length+(key>>>3))%types.length],gis:1});placed.push([x,y])}}})();

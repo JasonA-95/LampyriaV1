@@ -40,7 +40,7 @@ EX.marks=name=>{const d=DATA.cartes[name],Q=qs(),on=(p,i)=>{const s=Q[p.quest];r
 (d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})})};
 EX.atelier=()=>(DATA.cartes[EX.map]||{}).atelier||null;
 EX.enter=(name,x,y,quiet=false)=>{exPrune();sv.hist.flags['vu_'+name]=true;const d=DATA.cartes[name],previous=EX.map,chg=previous!==name;if(chg){EX.avatar={};EX.fol=null;if(d.repos&&sv.pv!=null){sv.pv=null;if(!quiet)toast('Tu te reposes : PV au maximum.')}}EX.map=name;sv.map=name;if(!quiet)store();if(chg&&previous)setTimeout(()=>{if(!EX.sceneActive)startScreenTransition(d.n)},0);
-EX.x=x??d.start[0];EX.y=y??d.start[1];EX.groups=d.groups.map(q=>({...q}));EX.nodes=d.nodes.map(n=>({...n,until:0}));EX.marks(name);(d.coffres||[]).forEach(c=>{if(sv.deb.includes('farceuse')&&!sv.hist.flags['coffre_'+name])EX.nodes.push({x:c.x,y:c.y,coffre:1,res:c.res,id:name,until:0})});if(chg&&W)resetView()}
+EX.x=x??d.start[0];EX.y=y??d.start[1];EX.groups=d.groups.map(q=>({...q}));EX.gather=null;EX.nodes=d.nodes.map(n=>({...n,until:sv.rep[name+':'+n.x+','+n.y]||0}));EX.marks(name);(d.coffres||[]).forEach(c=>{if(sv.deb.includes('farceuse')&&!sv.hist.flags['coffre_'+name])EX.nodes.push({x:c.x,y:c.y,coffre:1,res:c.res,id:name,until:0})});if(chg&&W)resetView()}
 EX.start=options=>{options=options||{};DJ.guard();const entering=EX.map!==(sv.map||'village');hideBubble();EX.on=true;EX.tok++;EX.walking=false;EX.group=null;hideMenu();closeModal();$('game').classList.remove('hide');size();
 if(entering)EX.enter(sv.map||'village',undefined,undefined,!!(options.storyId&&cfg.test));resetView();
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
@@ -76,7 +76,7 @@ speak(p.n,t,{at:{x:p.x,y:p.y},stay:true});EX.hud();$('bar').innerHTML='';$('bar'
 EX.deliver=p=>{const id=Object.keys(DATA.quetes).find(k=>{const q=DATA.quetes[k],s=qs()[k];return q.kind=='livre'&&[].concat(q.to).includes(p.n)&&s&&s.s==1&&!(s.got||[]).includes(p.n)&&(s.n||0)<q.need});if(!id)return false;
 const q=DATA.quetes[id],line=typeof q.recu=='object'?q.recu[p.n]:q.recu;EX.prog(id,p.n);const played=EX.storyTrigger({quand:'livraison',id},()=>{EX.ui();EX.draw()});if(!played){speak(p.n,line,{at:{x:p.x,y:p.y}});EX.ui();EX.draw()}return true};
 EX.talk=p=>exStory({quand:'parle',pnj:p.n},()=>{if(!EX.deliver(p))EX.talkNormal(p)});
-EX.click=e=>{if(EX.walking){if(EX.sceneActive)return;EX.tok++;EX.walking=false;EX.pend=null;msg('Déplacement annulé.');EX.draw();return}let rc=cv.getBoundingClientRect(),a=(e.clientX-rc.left-ox)/(tw/2),b=(e.clientY-rc.top-oy)/(th/2),
+EX.click=e=>{if(EX.gather){EX.gather=null;msg('Récolte interrompue.');EX.draw();return}if(EX.walking){if(EX.sceneActive)return;EX.tok++;EX.walking=false;EX.pend=null;msg('Déplacement annulé.');EX.draw();return}let rc=cv.getBoundingClientRect(),a=(e.clientX-rc.left-ox)/(tw/2),b=(e.clientY-rc.top-oy)/(th/2),
 x=Math.round((a+b)/2),y=Math.round((b-a)/2),N=DATA.taille,d=DATA.cartes[EX.map];
 if(EX.sceneActive){EX.storyNext();return}if(!DATA.exin(x,y)||(x==EX.x&&y==EX.y))return;
 if(d.rocks.some(r=>r[0]==x&&r[1]==y)){EX.pend=null;msg('Un rocher bloque le passage.');EX.draw();return}
@@ -99,9 +99,14 @@ else if(ent.t=='e'){const e0=DJ.pass(ent.o),e=ent.o.don||e0.to!=ent.o.to?e0:{...
 else EX.fight(ent.o)};
 EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
 if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');if(typeof playSound=='function')playSound('harvest');EX.draw();return}
-if(n.until>EX.steps){msg('Déjà cueilli : ça repoussera bientôt.');return}
-const k=n.res,r=metRecolte(k);sv.res[k]+=r.qte;n.until=EX.steps+30;store();pop(n,'+'+r.qte+' '+DATA.res[k].split(' ')[0],'#7fd18b');if(r.up)toast(DATA.metiers[r.m].n+' niveau '+sv.met[r.m].niv+' !');if(typeof playSound=='function')playSound('harvest');msg('Récolte : +'+r.qte+' '+DATA.res[k]+(r.bonus?' (bonus !)':''));EX.ui();EX.draw()};
-EX.fight=q=>{const begin=()=>{EX.walking=false;EX.on=false;EX.pend=null;EX.group=q;cfg.renc=q.renc;hideMenu();$('game').classList.remove('hide');startScreenTransition();init()};EX.storyGroup=q;EX.storyTrigger({quand:'avantCombat',renc:q.renc},begin,{kind:'fight',x:q.x,y:q.y,renc:q.renc})};
+if(n.until>Date.now()){msg('Déjà cueilli : repousse dans '+Math.ceil((n.until-Date.now())/1000)+' s.');return}
+if(EX.gather&&EX.gather.n===n)return;
+const id=++EX.gtok;EX.gather={n,id,t:Date.now()};EX.gatherTick(id)};
+// Récolte : 5 secondes sur place ; un toucher, un combat ou un changement de carte l'interrompt. La ressource repousse 3 minutes (temps réel, conservé en sauvegarde).
+EX.gtok=0;EX.GATHER_MS=5000;EX.REPOP_MS=180000;
+EX.gatherTick=id=>{const G=EX.gather;if(!G||G.id!=id)return;const left=Math.ceil((G.t+EX.GATHER_MS-Date.now())/1000);if(left<=0){EX.gather=null;EX.harvestDone(G.n);return}msg('Récolte en cours… '+left+' s (touche pour annuler)');setTimeout(()=>EX.gatherTick(id),250)};
+EX.harvestDone=n=>{const k=n.res,r=metRecolte(k);sv.res[k]+=r.qte;n.until=Date.now()+EX.REPOP_MS;sv.rep[EX.map+':'+n.x+','+n.y]=n.until;store();pop(n,'+'+r.qte+' '+DATA.res[k].split(' ')[0],'#7fd18b');if(r.up)toast(DATA.metiers[r.m].n+' niveau '+sv.met[r.m].niv+' !');if(typeof playSound=='function')playSound('harvest');msg('Récolte : +'+r.qte+' '+DATA.res[k]+(r.bonus?' (bonus !)':''));EX.ui();EX.draw()};
+EX.fight=q=>{EX.gather=null;const begin=()=>{EX.walking=false;EX.on=false;EX.pend=null;EX.group=q;cfg.renc=q.renc;hideMenu();$('game').classList.remove('hide');startScreenTransition();init()};EX.storyGroup=q;EX.storyTrigger({quand:'avantCombat',renc:q.renc},begin,{kind:'fight',x:q.x,y:q.y,renc:q.renc})};
 EX.fightNpc=(i,p)=>EX.fight({x:p.x,y:p.y,renc:i,npc:1});
 // Escorte : le PNJ (`suit`) quitte sa carte (cache par le drapeau esc_<id>) et suit le héros ; à l'arrivée sur la carte `vers`, une embuscade (rencontre `emb`) l'attend ;
 // une fois vaincue, la quête se rend au PNJ `rend`. Une défaite annule l'escorte : la quête est à reprendre et le PNJ rentre chez lui.
@@ -127,7 +132,7 @@ const pp={},ex={},E={};
 if(EX.pend&&EX.pend.path)EX.pend.path.forEach(t=>pp[exK(t[0],t[1])]=1);
 d.exits.forEach(e=>{if(e.don)ex[exK(e.x,e.y)]=e});exRing(d).forEach(c=>ex[exK(c[0],c[1])]=c[2]);
 EX.groups.forEach(q=>{if(!q.dead)E[exK(q.x,q.y)]=q.hide?{e:'🌿',b:'?',visual:q}:{e:DATA.rencontres[q.renc].m[0].e,n:DATA.rencontres[q.renc].m[0].n,b:'×'+DATA.rencontres[q.renc].m.length,visual:q}});
-EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>EX.steps?.25:1,visual:n});
+EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>Date.now()?.25:1,visual:n});
 d.npcs.forEach(n=>E[exK(n.x,n.y)]={e:n.e,n:n.n,npc:1,visual:n});
 EX.storyActors.forEach(a=>E[exK(a.x,a.y)]={e:a.e,visual:a});
 {const eid=EX.escort(),fn=eid&&EX.escortNpc(eid);if(fn&&EX.fol&&(EX.fol.x!=EX.x||EX.fol.y!=EX.y))E[exK(EX.fol.x,EX.fol.y)]={e:fn.e,n:fn.n,npc:1,visual:fn}}
