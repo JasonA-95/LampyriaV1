@@ -192,9 +192,10 @@ test('gisements des marges : 3 à 4 sur une partie seulement des cartes à resso
   for (const [k, m] of Object.entries(C)) {
     const types = new Set(m.nodes.filter(n => n.res && !n.gis).map(n => n.res)), g = marge(m);
     if (!types.size) { assert.equal(g.length, 0, k + ' : pas de ressource d\'origine, pas de gisement'); continue }
-    total++;
+    if (!/^(village|poste|quartier)$|^(v|cb|sv)_/.test(k)) total++;
     if (g.length) { avec++; assert.ok(g.length >= 3 && g.length <= 4, k + ' : ' + g.length + ' gisements'); assert.ok(g.every(n => types.has(n.res) && D.exin(n.x, n.y) && !D.exside(n.x, n.y).length), k) }
     if (/^(terrier|enclos|archives|reves|pyr|crypte)\d$/.test(k)) assert.equal(g.length, 0, k + ' : pas de gisement en donjon');
+    if (/^(village|poste|quartier)$|^(v|cb|sv)_/.test(k)) assert.equal(g.length, 0, k + ' : pas de gisement en ville');
   }
   assert.ok(avec / total > .3 && avec / total < .75, 'environ la moitié des cartes : ' + avec + '/' + total);
 });
