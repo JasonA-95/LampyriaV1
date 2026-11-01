@@ -85,7 +85,11 @@ let ent=exEnt(x,y);
 if(!ent){const ex=(d.exits||[]).find(q=>q.don&&Math.abs(q.x-x)+Math.abs(q.y-y)<=2&&Math.abs(q.x-EX.x)+Math.abs(q.y-EX.y)>3),en=ex&&exEnt(ex.x,ex.y);if(en&&en.t=='e'){ent=en;x=ex.x;y=ex.y}}
 if(ent&&ent.t=='e'&&!cfg.test&&exLock(ent.o)){EX.pend=null;msg(exLock(ent.o));EX.draw();return}
 const path=exPath(x,y,ent);if(!path){EX.pend=null;msg('Aucun chemin vers cette case.');EX.draw();return}
+// Groupe de monstres : un premier toucher affiche son contenu, le second (même groupe) engage le combat.
+if(ent&&ent.t=='g'&&!ent.o.hide&&(!EX.pend||EX.pend.x!=x||EX.pend.y!=y)){EX.pend={x,y,ent,path};msg(EX.groupInfo(ent.o));EX.draw();return}
 EX.pend=null;EX.go(path,ent)};
+EX.groupInfo=q=>{const r=DATA.rencontres[q.renc],c={};for(const m of r.m){if(m.form)continue;(c[m.n]=c[m.n]||{e:m.e,n:0}).n++}
+return (r.m.some(m=>m.boss)?'💀 Boss · ':'')+Object.values(c).map((v,i)=>v.e+' '+Object.keys(c)[i]+(v.n>1?' ×'+v.n:'')).join(', ')+(r.niv?' · niv '+r.niv:'')+' — touche encore pour combattre.'};
 EX.go=async(path,ent)=>{const t=++EX.tok;EX.walking=true;
 const ms=path.length>8?90:130;for(const [px,py] of path){await new Promise(r=>setTimeout(r,ms));if(t!=EX.tok)return;
 const from={x:EX.x,y:EX.y};if(EX.escort())EX.fol={x:from.x,y:from.y};EX.face={right:(px-py)>(from.x-from.y),back:(px+py)<(from.x+from.y)};EX.x=px;EX.y=py;EX.steps++;if(typeof playSound=='function')playSound('step');animateUnitMove(EX.avatar,from,{x:px,y:py},new Set(DATA.cartes[EX.map].rocks.map(r=>exK(r[0],r[1]))));EX.draw()}

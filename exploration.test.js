@@ -92,7 +92,7 @@ test('défi de combat : EX.defi retrouve la quête à défi liée à la rencontr
   assert.equal(val(loadExploration(baseSave), 'EX.defi(' + idx + ')'), null);
 });
 
-test('déplacements : un appui pendant la marche l’annule ; une case proche d’une sortie vise la sortie sauf si le héros en est tout près', () => {
+test('déplacements : un appui pendant la marche l’annule ; un seul appui lance la marche ; une case proche d’une sortie vise la sortie sauf si le héros en est tout près', () => {
   const ctx = loadExploration({ ...baseSave, renc: 99 });   // sorties ouvertes
   run(ctx, "var DIRS=[[1,0],[-1,0],[0,1],[0,-1]];var cv={getBoundingClientRect:()=>({left:0,top:0})},ox=0,oy=0,tw=2,th=2;EX.draw=()=>{};");
   run(ctx, "EX.enter('village',6,6,true)");
@@ -105,11 +105,11 @@ test('déplacements : un appui pendant la marche l’annule ; une case proche d�
   const libres = val(ctx, `(()=>{const e=DATA.cartes.clairiere.exits.find(e=>e.don),R=DATA.cartes.clairiere.rocks,o=[];for(const [a,b] of [[-1,0],[0,1],[-1,1],[0,-1],[-2,0],[-1,-1],[0,2],[0,-2],[1,0],[1,1]]){const x=e.x+a,y=e.y+b;if(DATA.exin(x,y)&&!R.some(r=>r[0]==x&&r[1]==y)&&!exEnt(x,y))o.push([x,y])}return o})()`);
   assert.ok(libres.length >= 2, 'cases libres près de l\'entrée');
   const tap = ([x, y]) => `EX.click({clientX:${x - y},clientY:${x + y}})`;
-  run(ctx, `EX.pend=null;EX.x=6;EX.y=6;${tap(libres[0])}`);
-  assert.equal(run(ctx, 'EX.pend&&EX.pend.ent&&EX.pend.ent.t'), 'e', 'une case voisine de l\'entrée la vise');
-  assert.equal(run(ctx, 'EX.pend.x'), ex.x);
-  run(ctx, `EX.pend=null;EX.x=${libres[0][0]};EX.y=${libres[0][1]};${tap(libres[1])}`);
-  assert.ok(!run(ctx, 'EX.pend&&EX.pend.ent'), 'près de l\'entrée, une case voisine reste une simple case');
+  run(ctx, `globalThis.G=null;EX.go=(p,e)=>{G={p,e}};EX.pend=null;EX.x=6;EX.y=6;${tap(libres[0])}`);
+  assert.equal(run(ctx, 'G&&G.e&&G.e.t'), 'e', 'une case voisine de l\'entrée la vise');
+  assert.equal(run(ctx, 'G.p[G.p.length-1][0]'), ex.x);
+  run(ctx, `G=null;EX.pend=null;EX.x=${libres[0][0]};EX.y=${libres[0][1]};${tap(libres[1])}`);
+  assert.ok(run(ctx, 'G&&!G.e'), 'près de l\'entrée, une case voisine reste une simple case');
 });
 
 test('bords entiers (style Dofus Touch) : toute case du bord d\'une sortie la déclenche, arrivée sur le bord opposé à la même position', () => {
@@ -219,4 +219,26 @@ test('régénération lente : 1 PV par tick (1 s) en exploration seulement, plaf
   assert.equal(val(ctx, 'sv.pv'), null, 'plafonné au max');
   run(ctx, "EX.regen()");
   assert.equal(val(ctx, 'sv.pv'), null);
+});
+
+test('un seul toucher suffit pour une case libre, une ressource ou un bord de sortie ; un groupe de monstres demande un double toucher avec info-bulle', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 99 });
+  run(ctx, "var DIRS=[[1,0],[-1,0],[0,1],[0,-1]];var cv={getBoundingClientRect:()=>({left:0,top:0})},ox=0,oy=0,tw=2,th=2;EX.draw=()=>{};globalThis.setTimeout=()=>0;EX.enter('village',6,6,true);globalThis.G=[];EX.go=(p,e)=>G.push({n:p.length,t:e?e.t:undefined})");
+  const tap = (x, y) => `EX.pend=null;EX.x=6;EX.y=6;EX.click({clientX:${x - y},clientY:${x + y}})`;
+  run(ctx, tap(6, 9));
+  assert.deepEqual(val(ctx, 'G'), [{ n: 3 }], 'case libre : une marche de 3 cases dès le premier appui');
+  const n = val(ctx, 'EX.nodes[0]'), g = val(ctx, 'EX.groups.find(q=>!q.dead)');
+  run(ctx, 'G=[]'); run(ctx, tap(n.x, n.y));
+  assert.equal(val(ctx, 'G[0].t'), 'n', 'ressource');
+  run(ctx, 'G=[]'); run(ctx, tap(g.x, g.y));
+  assert.equal(val(ctx, 'G.length'), 0, 'groupe de monstres : le premier toucher ne lance pas le combat');
+  const nom = val(ctx, `DATA.rencontres[${g.renc}].m[0].n`);
+  assert.equal(val(ctx, 'EX.pend.ent.t'), 'g', 'le groupe attend la confirmation');
+  const info = val(ctx, `EX.groupInfo(EX.pend.ent.o)`);
+  assert.ok(info.includes(nom) && info.includes('touche encore'), 'info-bulle avec la liste des monstres : ' + info);
+  run(ctx, `EX.x=6;EX.y=6;EX.click({clientX:${g.x - g.y},clientY:${g.x + g.y}})`);
+  assert.equal(val(ctx, 'G[0].t'), 'g', 'second toucher sur le même groupe : combat');
+  const cote = val(ctx, "DATA.cartes.village.exits.find(e=>e.to=='foret').d"), c = val(ctx, `DATA.excells.find(([x,y])=>{const s=DATA.exside(x,y);return s.length==1&&s[0]=='${cote}'})`);
+  run(ctx, 'G=[]'); run(ctx, tap(c[0], c[1]));
+  assert.equal(val(ctx, 'G[0].t'), 'e', 'bord de sortie');
 });
