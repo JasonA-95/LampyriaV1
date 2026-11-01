@@ -1329,3 +1329,18 @@ DATA.resNiv={braise:1,champi:1,laine:1,cendre:1,sable:6,roseau:5,fil:8,chaussett
 DATA.resHero={braise:1,champi:1,laine:1,cendre:20,roseau:20,sable:30,fil:30,chaussette:30,gravat:42,eclat:42};
 // Niveau de chaque équipement (niveau du héros pour le porter), déduit : recette = ressource la plus avancée ; butin = niveau du groupe qui le lâche ; sinon 1.
 (()=>{for(const id in DATA.objets){const o=DATA.objets[id];if(o.niv!=null)continue;let n=1;if(o.cout)for(const r in o.cout)n=Math.max(n,DATA.resHero[r]||1);else{const l=DATA.rencontres.map((e,i)=>(e.drops||[]).some(d=>d.id==id)?(e.niv||1+i*3):0).filter(Boolean);if(l.length)n=Math.min(...l)}o.niv=n}})();
+
+// Ressources de zone (une par zone) : niveau de métier minimum (resNiv), niveau d'équipement associé (resHero), gisements en marge, puis recettes pour les objets qui n'avaient que des drops.
+(()=>{const N=[['mousse','🌿','Mousse argentée','herbo',3,10],['toison','☁️','Toison de brume','tiss',4,15],['encre','🖋️','Encre de greffier','pous',7,20],['nenuphar','🪷','Nénuphar nacré','herbo',9,25],['tuyau','🎷','Tuyau de basalte','mine',12,32],['verre','🔮','Verre de mirage','pous',13,38],['perle','🦪','Perle de marée','pous',16,44],['cire','🕯️','Cire sacrée','tiss',17,50],['os','🦴','Os d’étoile','mine',19,58]];
+for(const [id,e,n,m,nv,h] of N){DATA.res[id]=e+' '+n;DATA.resE[id]=e;DATA.metiers[m].res.push(id);DATA.resNiv[id]=nv;DATA.resHero[id]=h}
+const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+53)*73856093)^((y+71)*19349663)^(k*83492791))>>>0;
+const zone=(m,L)=>m.biome==='mer'?'perle':(m.biome==='temple'||(m.biome==='desert'&&L>=44))?'cire':(m.biome==='citadelle'||m.biome==='trone')?'os':L<=12?'mousse':L<=17?'toison':L<=21?'encre':L<=26?'nenuphar':L<=32?'tuyau':'verre';
+for(const k in DATA.cartes){const m=DATA.cartes[k];if(!(m.nodes||[]).some(n=>n.res)||/^(terrier|enclos|archives|reves|pyr|crypte)\d$/.test(k)||/^(village|poste|quartier)$|^(v|cb|sv)_/.test(k))continue;
+const L=Math.max(0,...(m.groups||[]).map(g=>(DATA.rencontres[g.renc]||{}).niv||0));if(!L)continue;const t=zone(m,L),key=hs(k+'zr'),rocks=new Set(m.rocks.map(r=>r.join(','))),near=[...(m.npcs||[]),...(m.groups||[]),...(m.nodes||[]),...(m.picks||[]),...m.exits.filter(e=>e.don)].map(o=>[o.x,o.y]),placed=[];
+for(const [,[x,y]] of DATA.excells.filter(([x,y])=>!DATA.in(x,y)).map(c=>[hx(c[0],c[1],key),c]).sort((a,b)=>a[0]-b[0])){if(placed.length>=2)break;
+if(rocks.has(x+','+y)||DATA.exside(x,y).length||near.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<3)||placed.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<8))continue;m.nodes.push({x,y,res:t,gis:1,zr:1});placed.push([x,y])}}
+// Recettes : chaque objet sans recette reçoit un coût tiré des ressources de son niveau (jusqu'à 3 types), quantités selon niveau et rareté. Les drops restent.
+const R=Object.keys(DATA.resHero).sort((a,b)=>DATA.resHero[a]-DATA.resHero[b]);
+for(const id in DATA.objets){const o=DATA.objets[id];if(o.cout)continue;const n=o.niv||1,ok=R.filter(r=>DATA.resHero[r]<=n),top=ok.slice(-5),h=hs(id),pick=[top[top.length-1]];
+for(const j of [1,2]){const c=top[(h>>>(j*3))%top.length];if(!pick.includes(c)&&pick.length<3)pick.push(c)}
+const f=1+(o.r||0)*.25;o.cout={};pick.forEach((r,i)=>{o.cout[r]=Math.max(1,Math.round((i==0?3+n/6:i==1?2+n/10:1+n/15)*f))})}})();

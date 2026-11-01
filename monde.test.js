@@ -187,7 +187,7 @@ test('cartes d\'exploration 20×25 : rectangle complet, départ et entités deda
 });
 
 test('gisements des marges : 3 à 4 sur une partie seulement des cartes à ressources, hors bords, hors donjons, avec le type de ressource de la carte', () => {
-  const marge = m => m.nodes.filter(n => n.gis);
+  const marge = m => m.nodes.filter(n => n.gis && !n.zr);
   let avec = 0, total = 0;
   for (const [k, m] of Object.entries(C)) {
     const types = new Set(m.nodes.filter(n => n.res && !n.gis).map(n => n.res)), g = marge(m);
@@ -208,8 +208,21 @@ test('paliers : chaque métier démarre au niveau 1, les exigences tiennent dans
   for (const r of Object.keys(D.res)) assert.ok(D.resNiv[r] && D.resHero[r], r + ' : palier manquant');
   for (const [id, o] of Object.entries(D.objets)) {
     assert.ok(o.niv >= 1 && o.niv <= 60, id + ' : niveau ' + o.niv);
-    if (o.cout) assert.equal(o.niv, Math.max(...Object.keys(o.cout).map(r => D.resHero[r])), id + ' : niveau de recette');
+    if (o.cout) assert.ok(o.niv >= Math.max(...Object.keys(o.cout).map(r => D.resHero[r])), id + ' : niveau de recette');
   }
   assert.equal(D.objets.tisonnier.niv, 1, 'le premier métier reste accessible dès le début');
   assert.ok(D.objets.diademe_eclat.niv > D.objets.lame_roseau.niv && D.objets.lame_roseau.niv > D.objets.chapeau.niv, 'les paliers montent avec l\'avancement');
+});
+
+test('ressources de zone : 9 nouvelles, 1-2 gisements par carte éligible, jamais en ville ni en donjon, chaque objet a une recette', () => {
+  const nv = ['mousse', 'toison', 'encre', 'nenuphar', 'tuyau', 'verre', 'perle', 'cire', 'os'], vus = new Set();
+  for (const [k, m] of Object.entries(C)) {
+    const z = m.nodes.filter(n => n.zr);
+    if (!z.length) continue;
+    assert.ok(z.length <= 2 && z.every(n => nv.includes(n.res) && n.res == z[0].res && D.exin(n.x, n.y) && !D.exside(n.x, n.y).length), k);
+    assert.ok(!/^(terrier|enclos|archives|reves|pyr|crypte)\d$|^(village|poste|quartier)$|^(v|cb|sv)_/.test(k), k + ' : zone interdite');
+    vus.add(z[0].res);
+  }
+  assert.equal(vus.size, 9, 'chaque ressource de zone est récoltable quelque part');
+  for (const [id, o] of Object.entries(D.objets)) assert.ok(o.cout && Object.keys(o.cout).length, id + ' : recette manquante');
 });
