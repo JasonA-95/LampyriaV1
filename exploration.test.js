@@ -99,16 +99,39 @@ test('déplacements : un appui pendant la marche l’annule ; une case proche d�
   run(ctx, 'EX.walking=true;EX.tok=5;EX.click({clientX:0,clientY:0})');
   assert.equal(run(ctx, 'EX.walking'), false);
   assert.equal(run(ctx, 'EX.tok'), 6);
-  const ex = val(ctx, "DATA.cartes.village.exits.find(e=>e.to=='foret')");
-  // deux cases libres (ni rocher ni objet) à 2 pas ou moins de la sortie
-  const libres = val(ctx, `(()=>{const e=DATA.cartes.village.exits.find(e=>e.to=='foret'),R=DATA.cartes.village.rocks,o=[];for(const [a,b] of [[-1,0],[0,1],[-1,1],[0,-1],[-2,0],[-1,-1],[0,2],[0,-2]]){const x=e.x+a,y=e.y+b;if(DATA.in(x,y)&&!R.some(r=>r[0]==x&&r[1]==y)&&!exEnt(x,y))o.push([x,y])}return o})()`);
-  assert.ok(libres.length >= 2, 'cases libres près de la sortie');
+  // entrée de donjon (sortie ponctuelle) : l'assistance de case voisine reste active
+  run(ctx, "globalThis.setTimeout=()=>0;cfg.test=true;EX.enter('clairiere',6,6,true)");   // cfg.test : ignore la relique exigée
+  const ex = val(ctx, "DATA.cartes.clairiere.exits.find(e=>e.don)");
+  const libres = val(ctx, `(()=>{const e=DATA.cartes.clairiere.exits.find(e=>e.don),R=DATA.cartes.clairiere.rocks,o=[];for(const [a,b] of [[-1,0],[0,1],[-1,1],[0,-1],[-2,0],[-1,-1],[0,2],[0,-2],[1,0],[1,1]]){const x=e.x+a,y=e.y+b;if(DATA.exin(x,y)&&!R.some(r=>r[0]==x&&r[1]==y)&&!exEnt(x,y))o.push([x,y])}return o})()`);
+  assert.ok(libres.length >= 2, 'cases libres près de l\'entrée');
   const tap = ([x, y]) => `EX.click({clientX:${x - y},clientY:${x + y}})`;
   run(ctx, `EX.pend=null;EX.x=6;EX.y=6;${tap(libres[0])}`);
-  assert.equal(run(ctx, 'EX.pend&&EX.pend.ent&&EX.pend.ent.t'), 'e', 'une case voisine de la sortie vise la sortie');
+  assert.equal(run(ctx, 'EX.pend&&EX.pend.ent&&EX.pend.ent.t'), 'e', 'une case voisine de l\'entrée la vise');
   assert.equal(run(ctx, 'EX.pend.x'), ex.x);
   run(ctx, `EX.pend=null;EX.x=${libres[0][0]};EX.y=${libres[0][1]};${tap(libres[1])}`);
-  assert.ok(!run(ctx, 'EX.pend&&EX.pend.ent'), 'près de la sortie, une case voisine reste une simple case');
+  assert.ok(!run(ctx, 'EX.pend&&EX.pend.ent'), 'près de l\'entrée, une case voisine reste une simple case');
+});
+
+test('bords entiers (style Dofus Touch) : toute case du bord d\'une sortie la déclenche, arrivée sur le bord opposé à la même position', () => {
+  const ctx = loadExploration({ ...baseSave, renc: 99 });
+  run(ctx, "EX.enter('village',6,6,true)");
+  const d = 'DATA.cartes.village';
+  const cote = val(ctx, `${d}.exits.find(e=>e.to=='foret').d`);
+  assert.ok(['N', 'E', 'S', 'W'].includes(cote));
+  const cells = val(ctx, `DATA.excells.filter(([x,y])=>{const s=DATA.exside(x,y);return s.length==1&&s[0]=='${cote}'})`);
+  assert.ok(cells.length >= 40, 'un bord entier est cliquable');
+  const bad = cells.filter(([x, y]) => val(ctx, `(()=>{const e=exEnt(${x},${y});return !(e&&e.t=='e'&&e.o.to=='foret')})()`));
+  assert.equal(bad.length, 0, 'toutes les cases de ce bord mènent à la forêt');
+  assert.equal(val(ctx, 'exEnt(6,6)'), null, 'le centre n\'est pas une sortie');
+  // arrivée : bord opposé de la carte voisine, case libre, hors bord de sortie
+  for (const [x, y] of cells.filter((_, i) => i % 7 == 0)) {
+    const a = val(ctx, `exArrive('${cote}',${x},${y},DATA.cartes.foret)`);
+    assert.ok(val(ctx, `DATA.exin(${a.tx},${a.ty})&&exFree(DATA.cartes.foret,${a.tx},${a.ty})`), 'arrivée libre ' + a.tx + ',' + a.ty);
+  }
+  // même position le long du bord : v identique pour E/W, u identique (à 1 près) pour N/S
+  const [x0, y0] = cells[Math.floor(cells.length / 2)], a0 = val(ctx, `exArrive('${cote}',${x0},${y0},DATA.cartes.foret)`);
+  const along = cote == 'E' || cote == 'W' ? [x0 + y0, a0.tx + a0.ty] : [x0 - y0, a0.tx - a0.ty];
+  assert.ok(Math.abs(along[0] - along[1]) <= 6, 'même position le long du bord (marge de recherche d\'une case libre)');
 });
 
 test('quête de combat par cartes : un groupe non boss d\'une des cartes compte, pas ailleurs ni un boss', () => {

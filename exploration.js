@@ -3,20 +3,32 @@ const EX={on:false,map:null,x:0,y:0,avatar:{},groups:[],nodes:[],pend:null,tok:0
 const exK=(x,y)=>x+','+y,qs=()=>sv.q=sv.q||{};
 const exLock=e=>{const t=DATA.cartes[e.to];if(sv.renc<t.need)return 'Passage fermé : bats d\'abord les monstres de cette zone.';if(e.cle&&!sv.hist.flags[e.cle]&&sv.renc<=t.need)return e.why;return DJ.lock(e)};
 const exStory=(trigger,after)=>EX.storyTrigger?EX.storyTrigger(trigger,after):after&&after();
+// Sorties par bords entiers (style Dofus Touch) : toute case du bord (2 rangées) d'un côté qui a une sortie la déclenche.
+const exEdge=e=>!e.don&&!!e.d,exSides=(d,side)=>d.exits.filter(e=>exEdge(e)&&e.d==side);
+function exExitAt(d,x,y){for(const side of DATA.exside(x,y)){const L=exSides(d,side);if(!L.length)continue;const u=x-y,v=x+y,t=(side=='N'||side=='S')?(u+DATA.EXU)/(2*DATA.EXU+1):(v-DATA.EXV[0])/(DATA.EXV[1]-DATA.EXV[0]+1);return L[Math.min(L.length-1,Math.floor(t*L.length))]}return null}
+function exRing(d){if(!d._ring){d._ring=[];for(const [x,y] of DATA.excells){const e=exExitAt(d,x,y);if(e)d._ring.push([x,y,e])}}return d._ring}
+const exPts=d=>[...d.exits.filter(e=>e.don).map(e=>[e.x,e.y]),...exRing(d).map(c=>[c[0],c[1]])];
+function exFree(m,x,y){if(!DATA.exin(x,y)||(m.rocks||[]).some(r=>r[0]==x&&r[1]==y))return false;for(const q of ['npcs','groups','nodes','picks','hides','coffres'])if((m[q]||[]).some(o=>o.x==x&&o.y==y))return false;if(m.exits.some(e=>e.don&&e.x==x&&e.y==y))return false;return!DATA.exside(x,y).some(s=>exSides(m,s).length)}
+// Arrivée dans la carte voisine : bord opposé, même position le long du bord, sur la case libre la plus proche.
+function exArrive(side,x,y,m){const u=x-y,v=x+y,U=DATA.EXU,V=DATA.EXV;let a,b;
+if(side=='E'){a=-U+2;b=v}else if(side=='W'){a=U-2;b=v}else if(side=='N'){b=V[1]-2;a=u}else{b=V[0]+2;a=u}
+if((a+b)%2){if(side=='E'||side=='W')a+=side=='E'?1:-1;else a+=a>0?-1:1}
+const cx=(a+b)/2,cy=(b-a)/2,offs=[];for(let dx=-6;dx<=6;dx++)for(let dy=-6;dy<=6;dy++)offs.push([dx,dy]);offs.sort((p,q)=>Math.abs(p[0])+Math.abs(p[1])-Math.abs(q[0])-Math.abs(q[1]));
+for(const [dx,dy] of offs)if(exFree(m,cx+dx,cy+dy))return{tx:cx+dx,ty:cy+dy};return{tx:m.start[0],ty:m.start[1]}}
 function exBlock(){const d=DATA.cartes[EX.map],s=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 EX.groups.forEach(q=>{if(!q.dead)s.add(exK(q.x,q.y))});EX.nodes.forEach(n=>s.add(exK(n.x,n.y)));
-d.npcs.forEach(n=>s.add(exK(n.x,n.y)));d.exits.forEach(e=>s.add(exK(e.x,e.y)));return s}
+d.npcs.forEach(n=>s.add(exK(n.x,n.y)));d.exits.forEach(e=>{if(e.don)s.add(exK(e.x,e.y))});return s}
 function exEnt(x,y){const d=DATA.cartes[EX.map];
 const q=EX.groups.find(q=>!q.dead&&q.x==x&&q.y==y);if(q)return{t:'g',o:q};
 const n=EX.nodes.find(n=>n.x==x&&n.y==y);if(n)return{t:'n',o:n};
 const p=d.npcs.find(n=>n.x==x&&n.y==y);if(p)return{t:'p',o:p};
-const e=d.exits.find(e=>e.x==x&&e.y==y);if(e)return{t:'e',o:e};return null}
+const e=d.exits.find(e=>e.don&&e.x==x&&e.y==y)||exExitAt(d,x,y);if(e)return{t:'e',o:e};return null}
 function exPath(tx,ty,ent){const N=DATA.taille,B=exBlock(),near=ent&&ent.t!='e',
 goal=(x,y)=>near?Math.abs(x-tx)+Math.abs(y-ty)==1:(x==tx&&y==ty);
 if(goal(EX.x,EX.y))return[];
 const p={},d={[exK(EX.x,EX.y)]:1},q=[[EX.x,EX.y]];let end=null;
 while(q.length&&!end){const [x,y]=q.shift();for(const [a,b] of DIRS){const nx=x+a,ny=y+b,k=exK(nx,ny);
-if(!DATA.in(nx,ny)||d[k])continue;
+if(!DATA.exin(nx,ny)||d[k])continue;
 if(B.has(k)&&!(ent&&ent.t=='e'&&nx==tx&&ny==ty))continue;
 d[k]=1;p[k]=[x,y];if(goal(nx,ny)){end=[nx,ny];break}q.push([nx,ny])}}
 if(!end)return null;const r=[];let c=end;while(c&&!(c[0]==EX.x&&c[1]==EX.y)){r.unshift(c);c=p[exK(c[0],c[1])]}return r}
@@ -66,11 +78,11 @@ const q=DATA.quetes[id],line=typeof q.recu=='object'?q.recu[p.n]:q.recu;EX.prog(
 EX.talk=p=>exStory({quand:'parle',pnj:p.n},()=>{if(!EX.deliver(p))EX.talkNormal(p)});
 EX.click=e=>{if(EX.walking){if(EX.sceneActive)return;EX.tok++;EX.walking=false;EX.pend=null;msg('Déplacement annulé.');EX.draw();return}let rc=cv.getBoundingClientRect(),a=(e.clientX-rc.left-ox)/(tw/2),b=(e.clientY-rc.top-oy)/(th/2),
 x=Math.round((a+b)/2),y=Math.round((b-a)/2),N=DATA.taille,d=DATA.cartes[EX.map];
-if(EX.sceneActive){EX.storyNext();return}if(!DATA.in(x,y)||(x==EX.x&&y==EX.y))return;
+if(EX.sceneActive){EX.storyNext();return}if(!DATA.exin(x,y)||(x==EX.x&&y==EX.y))return;
 if(d.rocks.some(r=>r[0]==x&&r[1]==y)){EX.pend=null;msg('Un rocher bloque le passage.');EX.draw();return}
 let ent=exEnt(x,y);
 // Sortie élargie : une case libre à 2 pas ou moins d'une sortie (si le héros en est à plus de 3) compte comme la sortie
-if(!ent){const ex=(d.exits||[]).find(q=>Math.abs(q.x-x)+Math.abs(q.y-y)<=2&&Math.abs(q.x-EX.x)+Math.abs(q.y-EX.y)>3),en=ex&&exEnt(ex.x,ex.y);if(en&&en.t=='e'){ent=en;x=ex.x;y=ex.y}}
+if(!ent){const ex=(d.exits||[]).find(q=>q.don&&Math.abs(q.x-x)+Math.abs(q.y-y)<=2&&Math.abs(q.x-EX.x)+Math.abs(q.y-EX.y)>3),en=ex&&exEnt(ex.x,ex.y);if(en&&en.t=='e'){ent=en;x=ex.x;y=ex.y}}
 if(ent&&ent.t=='e'&&!cfg.test&&exLock(ent.o)){EX.pend=null;msg(exLock(ent.o));EX.draw();return}
 const path=exPath(x,y,ent);if(!path){EX.pend=null;msg('Aucun chemin vers cette case.');EX.draw();return}
 if(!EX.pend||EX.pend.x!=x||EX.pend.y!=y){EX.pend={x,y,ent,path};
@@ -81,7 +93,7 @@ const ms=path.length>8?90:130;for(const [px,py] of path){await new Promise(r=>se
 const from={x:EX.x,y:EX.y};if(EX.escort())EX.fol={x:from.x,y:from.y};EX.face={right:(px-py)>(from.x-from.y),back:(px+py)<(from.x+from.y)};EX.x=px;EX.y=py;EX.steps++;if(typeof playSound=='function')playSound('step');animateUnitMove(EX.avatar,from,{x:px,y:py},new Set(DATA.cartes[EX.map].rocks.map(r=>exK(r[0],r[1]))));EX.draw()}
 EX.walking=false;if(!ent){msg('');return}
 if(ent.t=='n')EX.harvest(ent.o);else if(ent.t=='p')EX.talk(ent.o)
-else if(ent.t=='e'){const e=DJ.pass(ent.o);EX.enter(e.to,e.tx,e.ty);msg('Tu entres : '+DATA.cartes[e.to].n+'.'+DJ.note);EX.ui();EX.draw();EX.storyTrigger({quand:'entree',carte:EX.map},EX.ambush)}
+else if(ent.t=='e'){const e0=DJ.pass(ent.o),e=ent.o.don||e0.to!=ent.o.to?e0:{...e0,...exArrive(ent.o.d,EX.x,EX.y,DATA.cartes[e0.to])};EX.enter(e.to,e.tx,e.ty);msg('Tu entres : '+DATA.cartes[e.to].n+'.'+DJ.note);EX.ui();EX.draw();EX.storyTrigger({quand:'entree',carte:EX.map},EX.ambush)}
 else EX.fight(ent.o)};
 EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
 if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');if(typeof playSound=='function')playSound('harvest');EX.draw();return}
@@ -111,7 +123,7 @@ if(djm)msg(djm);EX.hud();if(g0)EX.storyGroup=g0;EX.storyTrigger({quand:'apresCom
 EX.draw=()=>{const N=DATA.taille,d=DATA.cartes[EX.map],rocks=new Set(d.rocks.map(r=>exK(r[0],r[1]))),avatar=displayPosition(EX.avatar,EX.x,EX.y,rocks);cam(avatar.x,avatar.y);g.clearRect(0,0,W,H);
 const pp={},ex={},E={};
 if(EX.pend&&EX.pend.path)EX.pend.path.forEach(t=>pp[exK(t[0],t[1])]=1);
-d.exits.forEach(e=>ex[exK(e.x,e.y)]=e);
+d.exits.forEach(e=>{if(e.don)ex[exK(e.x,e.y)]=e});exRing(d).forEach(c=>ex[exK(c[0],c[1])]=c[2]);
 EX.groups.forEach(q=>{if(!q.dead)E[exK(q.x,q.y)]=q.hide?{e:'🌿',b:'?',visual:q}:{e:DATA.rencontres[q.renc].m[0].e,n:DATA.rencontres[q.renc].m[0].n,b:'×'+DATA.rencontres[q.renc].m.length,visual:q}});
 EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>EX.steps?.25:1,visual:n});
 d.npcs.forEach(n=>E[exK(n.x,n.y)]={e:n.e,n:n.n,npc:1,visual:n});
@@ -119,20 +131,20 @@ EX.storyActors.forEach(a=>E[exK(a.x,a.y)]={e:a.e,visual:a});
 {const eid=EX.escort(),fn=eid&&EX.escortNpc(eid);if(fn&&EX.fol&&(EX.fol.x!=EX.x||EX.fol.y!=EX.y))E[exK(EX.fol.x,EX.fol.y)]={e:fn.e,n:fn.n,npc:1,visual:fn}}
 E[exK(EX.x,EX.y)]={e:heroEmoji(),visual:EX.avatar};
 g.textAlign='center';g.textBaseline='middle';g.font=Math.round(tw*.7)+'px serif';
-const occupied=new Set(rocks);Object.keys(E).forEach(k=>occupied.add(k));d.npcs.forEach(n=>occupied.add(exK(n.x,n.y)));d.exits.forEach(e=>occupied.add(exK(e.x,e.y)));
+const occupied=new Set(rocks);Object.keys(E).forEach(k=>occupied.add(k));d.npcs.forEach(n=>occupied.add(exK(n.x,n.y)));exPts(d).forEach(c=>occupied.add(exK(c[0],c[1])));
 (d.picks||[]).forEach(p=>occupied.add(exK(p.x,p.y)));(d.hides||[]).forEach(p=>occupied.add(exK(p.x,p.y)));
-const excluded=new Set([exK(d.start[0],d.start[1]),...d.exits.map(e=>exK(e.x,e.y))]),biome=d.biome,
-decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,excluded,DATA.decor[biome]),decorAt=new Map(decor.map(item=>[exK(item.x,item.y),item]));
-fillOuter(biome,N);for(const [x,y] of DATA.cells){const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);
+const excluded=new Set([exK(d.start[0],d.start[1]),...exPts(d).map(c=>exK(c[0],c[1]))]),biome=d.biome,
+decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,excluded,DATA.decor[biome],DATA.excells),decorAt=new Map(decor.map(item=>[exK(item.x,item.y),item]));
+fillOuter(biome,N,DATA.exin);for(const [x,y] of DATA.excells){const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
-for(const [x,y] of DATA.cells){const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;
-if(d.tint)dia(cx,cy,d.tint);if(ex[k])dia(cx,cy,exLock(ex[k])?'rgba(120,120,140,.45)':'rgba(255,180,84,.45)');
+for(const [x,y] of DATA.excells){const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;
+if(d.tint)dia(cx,cy,d.tint);if(ex[k])dia(cx,cy,exLock(ex[k])?'rgba(120,120,140,.35)':'rgba(255,180,84,.3)');
 if(pp[k])dia(cx,cy,'rgba(255,240,170,.55)');if(EX.pend&&EX.pend.x==x&&EX.pend.y==y)dia(cx,cy,'rgba(255,240,170,.35)');
 if(rocks.has(k)){if(OPT.fx=='off'){g.fillStyle='#fff';g.fillText('🪨',cx,cy-th*.15)}else drawTerrainObstacle(g,cx,cy,tw,th,biome,x,y)}}
 const hx=(EX.x-EX.y)*tw/2+ox,hy=(EX.x+EX.y)*th/2+oy,gr=g.createRadialGradient(hx,hy,0,hx,hy,tw*3);
 gr.addColorStop(0,'rgba(255,180,84,.28)');gr.addColorStop(1,'rgba(255,180,84,0)');
 g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';
-for(const exit of d.exits){const cx=(exit.x-exit.y)*tw/2+ox,cy=(exit.x+exit.y)*th/2+oy;g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';g.fillText(exit.don?'🕳️':({W:'⬅️',E:'➡️',N:'⬆️',S:'⬇️'})[exit.d]||'➡️',cx,cy-th*.1);
+for(const exit of d.exits){let ex0=exit.x,ey0=exit.y;if(exEdge(exit)){const R=exRing(d).filter(c=>c[2]===exit);if(!R.length)continue;const mx=R.reduce((s,c)=>s+c[0],0)/R.length,my=R.reduce((s,c)=>s+c[1],0)/R.length,b=R.reduce((a,c)=>Math.hypot(c[0]-mx,c[1]-my)<Math.hypot(a[0]-mx,a[1]-my)?c:a);ex0=b[0];ey0=b[1]}const cx=(ex0-ey0)*tw/2+ox,cy=(ex0+ey0)*th/2+oy;g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';g.fillText(exit.don?'🕳️':({W:'⬅️',E:'➡️',N:'⬆️',S:'⬇️'})[exit.d]||'➡️',cx,cy-th*.1);
 if(exit.don){const f=Math.round(tw*.3),up=exit.d=='S'?1:0,y0=cy+(up?-th*1.15:th*.75);g.font='bold '+f+'px sans-serif';g.lineWidth=3;g.strokeStyle='#000';g.lineJoin='round';g.fillStyle=exit.don?'#ffd27a':'#e8e4f5';
 const ls=exit.don?[exit.lbl,exit.nv]:[exit.lbl];ls.forEach((t,i)=>{const yy=y0+(up?-(ls.length-1-i):i)*f*1.15;g.strokeText(t,cx,yy);g.fillText(t,cx,yy)})}}
 drawDisplayEffects(g,tw,th,ox,oy);

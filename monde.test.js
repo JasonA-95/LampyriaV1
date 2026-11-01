@@ -164,3 +164,24 @@ test('métiers : chaque ressource appartient à un seul métier, et les potions 
     assert.ok(o.met[1] >= 1 && o.met[1] <= D.metMax, k + ' : niveau requis hors limites');
   }
 });
+
+test('cartes d\'exploration 20×25 : rectangle complet, départ et entités dedans, tout est atteignable depuis le départ, chaque côté de sortie a toutes ses cases libres', () => {
+  assert.ok(D.excells.length >= 1000 && D.excells.length <= 1100, 'environ 25 rangées de 20 à 21 cases : ' + D.excells.length);
+  const rows = {}; for (const [x, y] of D.excells) rows[x + y] = (rows[x + y] || 0) + 1;
+  assert.equal(Object.keys(rows).length, 50, '50 demi-rangées = 25 rangées complètes');
+  for (const [k, m] of Object.entries(C)) {
+    assert.ok(D.exin(m.start[0], m.start[1]), k + ' : départ hors carte');
+    const sides = new Set(m.exits.filter(e => !e.don && e.d).map(e => e.d));
+    const isRock = new Set(m.rocks.map(r => r.join(',')));
+    const blocked = new Set([...isRock]);
+    const ents = ['npcs', 'groups', 'nodes', 'picks', 'hides', 'coffres'].flatMap(q => m[q] || []);
+    for (const o of ents) { assert.ok(D.exin(o.x, o.y), k + ' : objet hors carte ' + o.x + ',' + o.y); }
+    for (const o of ['npcs', 'groups', 'nodes'].flatMap(q => m[q] || [])) blocked.add(o.x + ',' + o.y);
+    for (const e of m.exits.filter(e => e.don)) blocked.add(e.x + ',' + e.y);
+    for (const [x, y] of D.excells) if (D.exside(x, y).some(s => sides.has(s))) assert.ok(!isRock.has(x + ',' + y), k + ' : rocher sur un bord de sortie ' + x + ',' + y);
+    const seen = new Set([m.start.join(',')]), q = [m.start.slice()];
+    while (q.length) { const [x, y] = q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + a, ny = y + b, key = nx + ',' + ny; if (!D.exin(nx, ny) || seen.has(key) || blocked.has(key)) continue; seen.add(key); q.push([nx, ny]) } }
+    for (const o of [...(m.npcs || []), ...(m.groups || []), ...(m.nodes || []), ...m.exits.filter(e => e.don)]) assert.ok([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => seen.has((o.x + a) + ',' + (o.y + b))), k + ' : inatteignable ' + (o.n || o.res || o.to) + ' ' + o.x + ',' + o.y);
+    for (const s of sides) assert.ok([...seen].some(key => D.exside(...key.split(',').map(Number)).includes(s)), k + ' : bord ' + s + ' inatteignable');
+  }
+});

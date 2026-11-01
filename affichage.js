@@ -52,9 +52,11 @@ function leaveFight(){combatLive=false;if(EX.group){const q=EX.group;EX.group=nu
 // Caméra libre : on zoome (pincement ou molette) et on déplace la vue en faisant glisser. Aucun suivi automatique.
 let TW0=1,LAND=false;const V={z:1,px:0,py:0};
 function applyZoom(){tw=TW0*V.z;th=tw/2}
-function clampPan(){const N=DATA.taille;if(V.z<=1.01){V.px=V.py=0;return}const mx=N*tw/2+W/2-50,my=N*th/2+H/2-50;V.px=Math.max(-mx,Math.min(mx,V.px));V.py=Math.max(-my,Math.min(my,V.py))}
-function fillOuter(biome,N){const R=40;for(let s=-2*R;s<=2*N+2*R;s++)for(let x=-R;x<N+R;x++){const y=s-x;if(y<-R||y>=N+R||(x>=0&&x<N&&y>=0&&y<N))continue;const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=.3*((x+y)%2?.9:1);if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,Math.abs(x),Math.abs(y),l);dia(cx,cy,'rgba(0,0,0,.18)')}}
-function cam(){clampPan();ox=W/2+V.px;oy=H/2-6*th+V.py}
+// Cadrage : combat (grille 13x13) ou exploration (carte rectangulaire 20x25 style Dofus Touch). vc = centre vertical en unités v.
+const gdim=()=>EX.on?{w:22,h:13.5,vc:11.5,a:10.25,b:12.5}:{w:16.4,h:6.5,vc:12,a:6.5,b:6.5};
+function clampPan(){const gd=gdim();if(V.z<=1.01){V.px=V.py=0;return}const mx=gd.a*tw+W/2-50,my=gd.b*th+H/2-50;V.px=Math.max(-mx,Math.min(mx,V.px));V.py=Math.max(-my,Math.min(my,V.py))}
+function fillOuter(biome,N,inside){const R=40,ins=inside||((x,y)=>x>=0&&x<N&&y>=0&&y<N);for(let s=-2*R;s<=2*N+2*R;s++)for(let x=-R;x<N+R;x++){const y=s-x;if(y<-R||y>=N+R||ins(x,y))continue;const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=.3*((x+y)%2?.9:1);if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,Math.abs(x),Math.abs(y),l);dia(cx,cy,'rgba(0,0,0,.18)')}}
+function cam(){clampPan();ox=W/2+V.px;oy=H/2-gdim().vc/2*th+V.py}
 let ambRAF=0,ambTimer=0,ambLast=0;const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
 function ambienceActive(){return ambienceShouldRun(OPT.fx,document.hidden,$('game').classList.contains('hide'),motionQuery.matches)}
 function stopAmbience(){if(ambRAF)cancelAnimationFrame(ambRAF);if(ambTimer)clearTimeout(ambTimer);ambRAF=ambTimer=ambLast=0;ambCv.style.visibility='hidden';if(ambCv.width&&ambCv.height)ag.clearRect(0,0,W,H)}
@@ -64,10 +66,10 @@ if(ambienceFrameDue(ambLast,time,OPT.fx)){ambLast=time;const biome=EX.on?DATA.ca
 scheduleAmbience(Math.max(0,1000/fps-(performance.now()-time)))}
 function syncAmbience(){if(!ambienceActive()){if(ambRAF||ambTimer||ambCv.style.visibility!='hidden')stopAmbience();return}ambCv.style.visibility='visible';scheduleAmbience(0)}
 function size(){const N=DATA.taille,S=$('stage');LAND=matchMedia('(orientation:landscape) and (min-width:700px)').matches||matchMedia('(orientation:landscape) and (max-height:600px)').matches;
-W=S.clientWidth||innerWidth;H=S.clientHeight||innerHeight*.55;TW0=Math.min(W/16.4,(H-10)/6.5);applyZoom();const d=devicePixelRatio||1;
+W=S.clientWidth||innerWidth;H=S.clientHeight||innerHeight*.55;{const gd=gdim();TW0=Math.min(W/gd.w,(H-10)/gd.h)}applyZoom();const d=devicePixelRatio||1;
 cv.width=Math.round(W*d);cv.height=Math.round(H*d);cv.style.width=ambCv.style.width=W+'px';cv.style.height=ambCv.style.height=H+'px';ambCv.width=cv.width;ambCv.height=cv.height;g.setTransform(d,0,0,d,0,0);ag.setTransform(d,0,0,d,0,0);cam();syncAmbience()}
 function resetView(){V.z=1;V.px=V.py=0;applyZoom();cam()}
-function setZoom(z2,fx,fy){const N=DATA.taille;cam();const u=(fx-ox)/tw,v=(fy-oy)/tw;V.z=Math.max(1,Math.min(3.5,z2));applyZoom();V.px=fx-u*tw-W/2;V.py=fy-v*tw-(H/2-6*th);cam()}
+function setZoom(z2,fx,fy){const N=DATA.taille;cam();const u=(fx-ox)/tw,v=(fy-oy)/tw;V.z=Math.max(1,Math.min(3.5,z2));applyZoom();V.px=fx-u*tw-W/2;V.py=fy-v*tw-(H/2-gdim().vc/2*th);cam()}
 const ptrs=new Map();let drag=null,moved=false,pinch=null;
 cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
 if(ptrs.size==1){drag={x:e.clientX,y:e.clientY,px:V.px,py:V.py};moved=false}else if(ptrs.size==2){const [p,q]=[...ptrs.values()];pinch={d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:V.z};moved=true}});

@@ -1303,3 +1303,15 @@ DATA.metiers={herbo:{n:'Herboriste',e:'🌿',res:['champi','roseau']},mine:{n:'M
 DATA.conso={tisane:{n:'Tisane de braise',e:'🍵',pct:30,cout:{braise:2},met:['mine',1],d:'Rend 30 % des PV max.'},baume:{n:'Baume de champignon',e:'🧴',pct:55,cout:{champi:3},met:['herbo',3],d:'Rend 55 % des PV max.'},elixir:{n:'Élixir de cendres',e:'⚗️',pct:80,cout:{cendre:3,roseau:1},met:['cendre',5],d:'Rend 80 % des PV max.'},fiole:{n:'Fiole de lumière',e:'🔆',pct:100,cout:{eclat:2,champi:2},met:['mine',10],d:'Rend tous les PV.'}};
 // Lieux de repos : entrer remet les PV au maximum.
 ['v_auberge','cb_taverne','sv_hospice'].forEach(k=>{DATA.cartes[k].repos=1});
+
+// Exploration style Dofus Touch (phase 5) : cartes rectangulaires de 20 colonnes x 25 rangées (u = x-y de -20 à 20, v = x+y de -13 à 36).
+// Le combat garde sa grille (DATA.in / DATA.cells). Le contenu existant (cases 0..12) reste au centre sans être déplacé.
+DATA.EXU=20;DATA.EXV=[-13,36];
+DATA.exin=(x,y)=>{const u=x-y,v=x+y;return u>=-DATA.EXU&&u<=DATA.EXU&&v>=DATA.EXV[0]&&v<=DATA.EXV[1]};
+DATA.excells=[];for(let s=DATA.EXV[0];s<=DATA.EXV[1];s++)for(let x=-30;x<=50;x++){const y=s-x;if(DATA.exin(x,y))DATA.excells.push([x,y])}
+// Bords (2 rangées) : N = haut, S = bas, E = droite, W = gauche de l'écran. Une case d'angle appartient à deux bords.
+DATA.exside=(x,y)=>{const u=x-y,v=x+y,r=[];if(v<=DATA.EXV[0]+1)r.push('N');if(v>=DATA.EXV[1]-1)r.push('S');if(u>=DATA.EXU-1)r.push('E');if(u<=-DATA.EXU+1)r.push('W');return r};
+// Rochers épars dans les nouvelles zones (hors grille de combat), sans toucher aux bords qui ont une sortie ni aux entrées de donjon.
+(()=>{const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+97)*73856093)^((y+131)*19349663)^(k*83492791))>>>0;
+for(const k in DATA.cartes){const m=DATA.cartes[k],key=hs(k+'ex'),sides=new Set(m.exits.filter(e=>!e.don&&e.d).map(e=>e.d)),pts=m.exits.filter(e=>e.don).map(e=>[e.x,e.y]);
+for(const [x,y] of DATA.excells){if(DATA.in(x,y)||hx(x,y,key)%100>=10)continue;if(DATA.exside(x,y).some(s=>sides.has(s)))continue;if(pts.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<=2))continue;m.rocks.push([x,y])}}})();
