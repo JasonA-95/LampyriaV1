@@ -85,8 +85,6 @@ let ent=exEnt(x,y);
 if(!ent){const ex=(d.exits||[]).find(q=>q.don&&Math.abs(q.x-x)+Math.abs(q.y-y)<=2&&Math.abs(q.x-EX.x)+Math.abs(q.y-EX.y)>3),en=ex&&exEnt(ex.x,ex.y);if(en&&en.t=='e'){ent=en;x=ex.x;y=ex.y}}
 if(ent&&ent.t=='e'&&!cfg.test&&exLock(ent.o)){EX.pend=null;msg(exLock(ent.o));EX.draw();return}
 const path=exPath(x,y,ent);if(!path){EX.pend=null;msg('Aucun chemin vers cette case.');EX.draw();return}
-if(!EX.pend||EX.pend.x!=x||EX.pend.y!=y){EX.pend={x,y,ent,path};
-msg(!ent?'Touche encore la case pour t\'y rendre ('+path.length+' cases).':ent.t=='g'?'Groupe de monstres : touche encore pour engager le combat.':ent.t=='n'?'Ressource : touche encore pour la récolter.':ent.t=='p'?'Touche encore pour parler à '+ent.o.n+'.':'Touche encore pour '+(ent.o.don?'entrer dans '+ent.o.lbl+' ('+ent.o.nv+')':'partir vers '+DATA.cartes[ent.o.to].n)+'.'+DJ.warn(ent.o));EX.draw();return}
 EX.pend=null;EX.go(path,ent)};
 EX.go=async(path,ent)=>{const t=++EX.tok;EX.walking=true;
 const ms=path.length>8?90:130;for(const [px,py] of path){await new Promise(r=>setTimeout(r,ms));if(t!=EX.tok)return;
