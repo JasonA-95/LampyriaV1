@@ -158,7 +158,7 @@ test('potions : ressources connues, soins valides, atelier ouvert et lieux de re
 test('métiers : chaque ressource appartient à un seul métier, et les potions exigent un métier et un niveau valides', () => {
   const owner = {};
   for (const [m, M] of Object.entries(D.metiers)) for (const r of M.res) { assert.ok(D.res[r], m + ' : ressource inconnue ' + r); assert.equal(owner[r], undefined, r + ' est dans deux métiers'); owner[r] = m; }
-  for (const r of Object.keys(D.res)) assert.ok(owner[r], r + ' : aucune récolte ne la fait progresser');
+  for (const r of Object.keys(D.res).filter(k => !/^rel\d+$/.test(k))) assert.ok(owner[r], r + ' : aucune récolte ne la fait progresser');
   for (const [k, o] of Object.entries(D.conso)) {
     assert.ok(D.metiers[o.met[0]], k + ' : métier inconnu');
     assert.ok(o.met[1] >= 1 && o.met[1] <= D.metMax, k + ' : niveau requis hors limites');
@@ -224,5 +224,19 @@ test('ressources de zone : 9 nouvelles, 1-2 gisements par carte éligible, jamai
     vus.add(z[0].res);
   }
   assert.equal(vus.size, 9, 'chaque ressource de zone est récoltable quelque part');
-  for (const [id, o] of Object.entries(D.objets)) assert.ok(o.cout && Object.keys(o.cout).length, id + ' : recette manquante');
+  for (const [id, o] of Object.entries(D.objets)) if (o.drop) assert.ok(o.cout && Object.keys(o.cout).length, id + ' : recette manquante');
+  assert.ok(!D.objets.casque_negociateur.cout, 'récompense de quête : pas de recette');
+});
+
+test('reliques de boss : chaque boss en lâche une garantie et ses objets la demandent', () => {
+  let nb = 0;
+  D.rencontres.forEach((e, i) => {
+    if (!e.m.some(z => z.boss) || !(e.drops || []).length) return;
+    nb++; const r = 'rel' + i;
+    assert.equal(e.loot[r], 1, r + ' : butin garanti');
+    assert.ok(D.res[r] && D.resNiv[r] && !D.metiers.herbo.res.includes(r), r);
+    for (const d of e.drops) assert.ok(D.objets[d.id].cout[r] >= 2, d.id + ' : relique requise');
+  });
+  assert.equal(nb, 13);
+  assert.ok(Object.values(D.objets).every(o => !o.cout || Object.keys(o.cout).filter(k => /^rel/.test(k)).length <= 1));
 });

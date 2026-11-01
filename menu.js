@@ -157,11 +157,11 @@ order.forEach(k=>{let title='Équipement simple',sub='';if(k!='_'){const S=DATA.
 c.appendChild(el('h3','',title));if(sub)c.appendChild(el('p','mt',sub));
 groups[k].sort((x,y)=>(canPay(DATA.objets[y].cout)&&metOk(DATA.objets[y]))-(canPay(DATA.objets[x].cout)&&metOk(DATA.objets[x]))).forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout)&&metOk(o),rq=metTxt(o);c.appendChild(row(itemRow(id,'<span class="mt">'+costChips(o.cout)+(rq?' <span class="chip '+(metOk(o)?'ok':'no')+'">'+rq+'</span>':'')+'</span>'),()=>craft(id),ok?'':'lock'))})});
 B.appendChild(c);
-const d=card('À trouver en combat','Ces objets ne se fabriquent pas : ils tombent sur les monstres, une garantie évite la malchance trop longue. Les boss lâchent les meilleurs.');
-DATA.rencontres.forEach((e,i)=>{if(i>sv.renc+1)return;const L=(e.drops||[]).filter(x=>DATA.objets[x.id]&&!DATA.objets[x.id].cout);if(!L.length)return;
+const d=card('À trouver en combat','Ces objets tombent sur les monstres (une garantie évite la malchance trop longue) et peuvent aussi se fabriquer. Les boss lâchent une relique garantie pour leurs objets.');
+DATA.rencontres.forEach((e,i)=>{if(i>sv.renc+1)return;const L=(e.drops||[]).filter(x=>DATA.objets[x.id]&&DATA.objets[x.id].drop);if(!L.length)return;
 const got=L.filter(x=>sv.inv.includes(x.id)).length;d.appendChild(el('h3','',e.n+' ('+got+'/'+L.length+')'));
 L.forEach(x=>{const own=sv.inv.includes(x.id);d.appendChild(row(itemRow(x.id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Chance : '+x.p+' %')+'</span>'),null,own?'':'lock'))})});
-const sp=Object.keys(DATA.objets).filter(id=>!DATA.objets[id].cout&&!DATA.rencontres.some(e=>(e.drops||[]).some(x=>x.id==id)));
+const sp=Object.keys(DATA.objets).filter(id=>!DATA.objets[id].drop&&!DATA.objets[id].cout&&!DATA.rencontres.some(e=>(e.drops||[]).some(x=>x.id==id)));
 if(sp.length){d.appendChild(el('h3','','Récompenses spéciales'));sp.forEach(id=>{const own=sv.inv.includes(id);d.appendChild(row(itemRow(id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Récompense de quête ou d’événement')+'</span>'),null,own?'':'lock'))})}
 B.appendChild(d)}
 

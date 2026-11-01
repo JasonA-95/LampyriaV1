@@ -1339,8 +1339,11 @@ for(const k in DATA.cartes){const m=DATA.cartes[k];if(!(m.nodes||[]).some(n=>n.r
 const L=Math.max(0,...(m.groups||[]).map(g=>(DATA.rencontres[g.renc]||{}).niv||0));if(!L)continue;const t=zone(m,L),key=hs(k+'zr'),rocks=new Set(m.rocks.map(r=>r.join(','))),near=[...(m.npcs||[]),...(m.groups||[]),...(m.nodes||[]),...(m.picks||[]),...m.exits.filter(e=>e.don)].map(o=>[o.x,o.y]),placed=[];
 for(const [,[x,y]] of DATA.excells.filter(([x,y])=>!DATA.in(x,y)).map(c=>[hx(c[0],c[1],key),c]).sort((a,b)=>a[0]-b[0])){if(placed.length>=2)break;
 if(rocks.has(x+','+y)||DATA.exside(x,y).length||near.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<3)||placed.some(c=>Math.abs(c[0]-x)+Math.abs(c[1]-y)<8))continue;m.nodes.push({x,y,res:t,gis:1,zr:1});placed.push([x,y])}}
-// Recettes : chaque objet sans recette reçoit un coût tiré des ressources de son niveau (jusqu'à 3 types), quantités selon niveau et rareté. Les drops restent.
-const R=Object.keys(DATA.resHero).sort((a,b)=>DATA.resHero[a]-DATA.resHero[b]);
-for(const id in DATA.objets){const o=DATA.objets[id];if(o.cout)continue;const n=o.niv||1,ok=R.filter(r=>DATA.resHero[r]<=n),top=ok.slice(-5),h=hs(id),pick=[top[top.length-1]];
+// Reliques de boss : chaque boss en lâche toujours 1 (butin garanti) ; les objets qu'il fait tomber se fabriquent avec elles. Sans métier de récolte (réservées aux boss).
+const R=Object.keys(DATA.resHero).sort((a,b)=>DATA.resHero[a]-DATA.resHero[b]),rel={};
+DATA.rencontres.forEach((e,i)=>{const b=e.m.find(z=>z.boss);if(!b||!(e.drops||[]).length)return;const id='rel'+i;DATA.res[id]=b.e+' Relique : '+b.n;DATA.resE[id]=b.e;DATA.resNiv[id]=1;DATA.resHero[id]=e.niv||1;e.loot[id]=1;(e.drops).forEach(d=>{rel[d.id]=id})});
+// Recettes : chaque objet qui tombe en combat reçoit aussi un coût tiré des ressources de son niveau (jusqu'à 3 types), quantités selon niveau et rareté ; les objets de boss ajoutent leur relique. Les drops restent (o.drop). Les récompenses de quête restent sans recette.
+const inD=id=>DATA.rencontres.some(e=>(e.drops||[]).some(d=>d.id==id));
+for(const id in DATA.objets){const o=DATA.objets[id];if(inD(id))o.drop=1;if(o.cout||!o.drop)continue;const n=o.niv||1,ok=R.filter(r=>DATA.resHero[r]<=n),top=ok.slice(-5),h=hs(id),pick=[top[top.length-1]];
 for(const j of [1,2]){const c=top[(h>>>(j*3))%top.length];if(!pick.includes(c)&&pick.length<3)pick.push(c)}
-const f=1+(o.r||0)*.25;o.cout={};pick.forEach((r,i)=>{o.cout[r]=Math.max(1,Math.round((i==0?3+n/6:i==1?2+n/10:1+n/15)*f))})}})();
+const f=1+(o.r||0)*.25;o.cout={};pick.forEach((r,i)=>{o.cout[r]=Math.max(1,Math.round((i==0?3+n/6:i==1?2+n/10:1+n/15)*f))});if(rel[id])o.cout[rel[id]]=(o.r||0)>=3?3:2}})();
