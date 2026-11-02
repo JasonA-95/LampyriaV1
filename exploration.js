@@ -89,7 +89,7 @@ const path=exPath(x,y,ent);if(!path){EX.pend=null;msg('Aucun chemin vers cette c
 if(ent&&ent.t=='g'&&!ent.o.hide&&(!EX.pend||EX.pend.x!=x||EX.pend.y!=y)){EX.pend={x,y,ent,path};msg('Touche encore pour combattre.');EX.draw();return}
 EX.pend=null;EX.go(path,ent)};
 EX.groupInfo=q=>{const r=DATA.rencontres[q.renc],c={};for(const m of r.m){if(m.form)continue;(c[m.n]=c[m.n]||{e:m.e,n:0}).n++}
-return {titre:(r.m.some(m=>m.boss)?'💀 Boss':'Groupe')+(r.niv?' · niv '+r.niv:''),l:Object.values(c).map((v,i)=>v.e+' '+Object.keys(c)[i]+(v.n>1?' ×'+v.n:''))}};
+return {titre:r.m.some(m=>m.boss)?'💀 Boss':'Groupe',l:Object.values(c).map((v,i)=>v.e+' '+Object.keys(c)[i]+(v.n>1?' ×'+v.n:'')+(r.niv?' · niv '+r.niv:''))}};
 // Info-bulle du groupe touché une première fois : flottante au-dessus du groupe, disparaît dès que la sélection est annulée (autre toucher, déplacement, combat).
 EX.tip=()=>{let t=$('grpTip');if(!EX.pend||!EX.on||EX.pend.ent.t!='g'){if(t)t.style.display='none';return}
 if(!t){t=document.createElement('div');t.id='grpTip';$('stage').appendChild(t)}
