@@ -66,7 +66,7 @@ const sum=()=>cfg.lueurs.reduce((a,k)=>a+DATA.lueurs[k].t,0)+sv.etin.eq.length;
 const avail=()=>cfg.test?Object.keys(DATA.lueurs):sv.deb;
 const capNow=()=>cfg.test?12:sv.cap;
 function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(5,Math.floor(rang||1)));
-for(let i=0;i<rank-1;i++){const b=sort.rg[i]||{};if(b.dmg)s.dmg=(s.dmg||0)+b.dmg;if(b.pa)s.pa+=b.pa;if(b.cd)s.cd=Math.max(0,(s.cd||0)+b.cd);if(b.rmax)s.r[1]+=b.rmax;if(b.push)s.push=(s.push||0)+b.push;if(b.garde)s.garde=(s.garde||0)+b.garde}
+for(let i=0;i<rank-1;i++){const b=sort.rg[i]||{};if(b.dmg)s.dmg=(s.dmg||0)+b.dmg;if(b.pa)s.pa+=b.pa;if(b.cd)s.cd=Math.max(0,(s.cd||0)+b.cd);if(b.rmax)s.r[1]+=b.rmax;if(b.push)s.push=(s.push||0)+b.push;if(b.garde)s.garde=(s.garde||0)+b.garde;if(b.ihp||b.ida){s.invoque={...s.invoque};s.invoque.hp+=b.ihp||0;s.invoque.d+=b.ida||0}}
 s.rang=rank;return s}
 const sortOuvert=s=>cfg.test||s.niv<=sv.niv||sv.sp.keep.includes(s.id);
 function sortsDispo(){return DATA.classes[cfg.classe].sorts.filter(sortOuvert).map(s=>applyRang(s,cfg.test?5:(sv.sp.rg[s.id]||1)))}
@@ -108,6 +108,7 @@ const costChips=c=>'<span class="chips">'+Object.keys(c).map(k=>'<span class="ch
 // ---------- description des sorts ----------
 const rg=r=>r[0]==r[1]?r[0]:r[0]+'-'+r[1];
 function descrBody(s){const a=[s.pa+' PA, '+(s.r[1]?'portée '+rg(s.r):'sur soi')+(s.los?', ligne de vue':'')];
+if(s.invoque)a.push('invoque '+s.invoque.n+' ('+s.invoque.hp+' PV, '+s.invoque.d+' dégâts'+(s.invoque.r&&s.invoque.r[1]>1?', à distance':', au contact')+'), '+(s.max||2)+' invocations au plus');
 if(s.dmg)a.push('inflige '+s.dmg+' dégâts'+(s.aoe!=null?' en zone (rayon '+s.aoe+')':'')+(s.drain?' et te soigne (plus ta vie est basse, plus tu récupères)':''));
 const describeEtat=e=>{const n=DATA.etats[e.id]?.n||e.id,v=e.v,t=e.t;
 if(e.id=='brule')return'brûle '+v+' PV par tour pendant '+t+' tours';if(e.id=='poison')return'empoisonne : '+v+' PV par tour pendant '+t+' tours, soins reçus réduits de moitié';

@@ -80,3 +80,17 @@ test('chaque combat repart sans invocation', () => {
   c.cast(0, p.x, p.y);
   assert.equal(combat().allies.length, 0);
 });
+
+test('Fossoyeur lot 1 : classe fragile, sorts valides, invocations lancees depuis les vrais sorts', () => {
+  const F = DATA.classes.fossoyeur;
+  assert.ok(F && F.hp < DATA.classes.mage.hp + 10, 'classe fragile');
+  assert.equal(F.sorts.map(s => s.id).join(), 'pelle,squelette,spectre,terre,pelletee');
+  const c = new Combat(DATA, { classe: 'fossoyeur', renc: 0, niv: 8, lueurs: [] });
+  c.pa = 12;
+  const sq = c.S.findIndex(s => s.id == 'squelette'), sp = c.S.findIndex(s => s.id == 'spectre');
+  const p = c.ranged(sq)[0], q = c.ranged(sp)[1];
+  assert.ok(c.cast(sq, p[0], p[1]).summon, 'squelette');
+  assert.ok(c.cast(sp, q[0], q[1]).summon, 'spectre');
+  assert.equal(c.allies.map(a => a.n).join(), 'Squelette de service,Spectre farceur');
+  assert.ok(c.allies[0].hp > 24 && c.allies[0].d >= 7, 'les stats montent avec le niveau du heros');
+});

@@ -25,6 +25,7 @@ const beard=o=>o.beard?`<path d="M132 78Q150 154 168 78Q150 96 132 78Z" fill="#e
 const props={
 lantern:o=>`<path d="M214 232V262" stroke="${INK}" stroke-width="3"/><path d="M203 262H225L228 312H200Z" fill="#ffe4a8" ${L}/><path d="M214 270Q204 288 214 304Q224 288 214 270Z" fill="#ff8a30" stroke="${INK}" stroke-width="2"/><path d="M200 262H228M200 312H228" stroke="${INK}" stroke-width="7"/><circle cx="214" cy="290" r="26" fill="#ffd890" opacity=".35"/>`,
 bow:o=>`<path d="M226 110Q276 250 226 390" stroke="${INK}" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M226 110Q276 250 226 390" stroke="#8a5a2c" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M250 150Q264 250 250 350" stroke="${o.rim}" stroke-width="2.6" fill="none" opacity=".7"/><path d="M226 110L226 390" stroke="#e8e0c8" stroke-width="2.4"/>`,
+shovel:o=>`<path d="M220 70L222 432" stroke="${INK}" stroke-width="13" stroke-linecap="round"/><path d="M220 70L222 432" stroke="#7a5a30" stroke-width="7" stroke-linecap="round"/><path d="M196 66Q200 6 220 2Q242 8 246 66Q220 86 196 66Z" fill="#8a8e98" ${L}/><path d="M206 62Q208 24 220 14" stroke="#c8ccd8" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="222" cy="20" r="30" fill="${o.rim}" opacity=".22" filter="url(#b8)"/>`,
 staff:o=>`<path d="M220 56L222 432" stroke="${INK}" stroke-width="13" stroke-linecap="round"/><path d="M220 56L222 432" stroke="#7a5a30" stroke-width="7" stroke-linecap="round"/><path d="M208 44Q204 24 220 20Q236 24 232 44Q226 36 220 38Q214 36 208 44Z" fill="#8a6a30" ${L}/><circle cx="220" cy="30" r="34" fill="${o.rim}" opacity=".3" filter="url(#b8)"/><circle cx="220" cy="30" r="13" fill="#bff6ff" stroke="${INK}" stroke-width="4"/><circle cx="220" cy="30" r="6" fill="#fff"/>`};
 const extra={
 quiver:(o,back)=>back?`<path d="M126 104L172 116L164 226L120 212Z" fill="#6a4a2c" ${L}/><path d="M130 110L168 120" stroke="${o.rim}" stroke-width="3" opacity=".6"/><path d="M134 102L128 80M146 106L146 82M158 110L164 86" stroke="#e8e0c8" stroke-width="5" stroke-linecap="round"/><path d="M134 102L128 80M146 106L146 82M158 110L164 86" stroke="#c0402a" stroke-width="2" stroke-linecap="round"/>`
@@ -54,6 +55,7 @@ const wrap=(o,back)=>`<g transform="translate(48,128) scale(.285) translate(-150
 const LOOK={
 porte:{coat:'#4a647e',coatSh:'#2a3a4e',rim:'#ffb060',scarf:'#a04040',scarfLt:'#c85a50',legs:'#2e3444',legs2:'#3a4254',trim:'#c8a050',collar:'#2a1e26',prop:'lantern'},
 archer:{coat:'#4a6a48',coatSh:'#2a4030',rim:'#ffd890',hood:'#3c5c3e',legs:'#4a3a28',legs2:'#5a4830',trim:'#c8a050',collar:'#2a3a28',belt:'#5a3a1c',quiver:1,prop:'bow',sleeve:'#4a6a48'},
+fossoyeur:{coat:'#3a4a3e',coatSh:'#20301f',rim:'#9be3a1',hood:'#2a352c',legs:'#2a2a30',legs2:'#383840',trim:'#8a8e98',collar:'#20301f',belt:'#4a3a28',prop:'shovel',sleeve:'#3a4a3e',eye:'#9be3a1'},
 mage:{coat:'#5c4c9c',coatSh:'#382c6a',rim:'#8af0ff',long:1,hat:'#4a3a88',hatSh:'#2c2060',trim:'#e8c870',collar:'#382c6a',beard:1,prop:'staff',gx:220,gy:80,hx:220,hy:236,eye:'#9af0ff'}
 };
 const out={};for(const k in LOOK)out[k]=[()=>wrap(LOOK[k],false),()=>wrap(LOOK[k],true)];
