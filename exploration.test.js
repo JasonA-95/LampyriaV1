@@ -234,8 +234,8 @@ test('un seul toucher suffit pour une case libre, une ressource ou un bord de so
   assert.equal(val(ctx, 'G.length'), 0, 'groupe de monstres : le premier toucher ne lance pas le combat');
   const nom = val(ctx, `DATA.rencontres[${g.renc}].m[0].n`);
   assert.equal(val(ctx, 'EX.pend.ent.t'), 'g', 'le groupe attend la confirmation');
-  const info = val(ctx, `EX.groupInfo(EX.pend.ent.o)`);
-  assert.ok(info.includes(nom) && info.includes('touche encore'), 'info-bulle avec la liste des monstres : ' + info);
+  const info = JSON.stringify(val(ctx, `EX.groupInfo(EX.pend.ent.o)`));
+  assert.ok(info.includes(nom), 'info-bulle avec la liste des monstres : ' + info);
   run(ctx, `EX.x=6;EX.y=6;EX.click({clientX:${g.x - g.y},clientY:${g.x + g.y}})`);
   assert.equal(val(ctx, 'G[0].t'), 'g', 'second toucher sur le même groupe : combat');
   const cote = val(ctx, "DATA.cartes.village.exits.find(e=>e.to=='foret').d"), c = val(ctx, `DATA.excells.find(([x,y])=>{const s=DATA.exside(x,y);return s.length==1&&s[0]=='${cote}'})`);

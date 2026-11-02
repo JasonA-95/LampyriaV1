@@ -86,10 +86,15 @@ if(!ent){const ex=(d.exits||[]).find(q=>q.don&&Math.abs(q.x-x)+Math.abs(q.y-y)<=
 if(ent&&ent.t=='e'&&!cfg.test&&exLock(ent.o)){EX.pend=null;msg(exLock(ent.o));EX.draw();return}
 const path=exPath(x,y,ent);if(!path){EX.pend=null;msg('Aucun chemin vers cette case.');EX.draw();return}
 // Groupe de monstres : un premier toucher affiche son contenu, le second (même groupe) engage le combat.
-if(ent&&ent.t=='g'&&!ent.o.hide&&(!EX.pend||EX.pend.x!=x||EX.pend.y!=y)){EX.pend={x,y,ent,path};msg(EX.groupInfo(ent.o));EX.draw();return}
+if(ent&&ent.t=='g'&&!ent.o.hide&&(!EX.pend||EX.pend.x!=x||EX.pend.y!=y)){EX.pend={x,y,ent,path};msg('Touche encore pour combattre.');EX.draw();return}
 EX.pend=null;EX.go(path,ent)};
 EX.groupInfo=q=>{const r=DATA.rencontres[q.renc],c={};for(const m of r.m){if(m.form)continue;(c[m.n]=c[m.n]||{e:m.e,n:0}).n++}
-return (r.m.some(m=>m.boss)?'💀 Boss · ':'')+Object.values(c).map((v,i)=>v.e+' '+Object.keys(c)[i]+(v.n>1?' ×'+v.n:'')).join(', ')+(r.niv?' · niv '+r.niv:'')+' — touche encore pour combattre.'};
+return {titre:(r.m.some(m=>m.boss)?'💀 Boss':'Groupe')+(r.niv?' · niv '+r.niv:''),l:Object.values(c).map((v,i)=>v.e+' '+Object.keys(c)[i]+(v.n>1?' ×'+v.n:''))}};
+// Info-bulle du groupe touché une première fois : flottante au-dessus du groupe, disparaît dès que la sélection est annulée (autre toucher, déplacement, combat).
+EX.tip=()=>{let t=$('grpTip');if(!EX.pend||!EX.on||EX.pend.ent.t!='g'){if(t)t.style.display='none';return}
+if(!t){t=document.createElement('div');t.id='grpTip';$('stage').appendChild(t)}
+const i=EX.groupInfo(EX.pend.ent.o);t.innerHTML='<b>'+i.titre+'</b>'+i.l.map(s=>'<div>'+s+'</div>').join('');t.style.display='block';
+const [px,py]=cellPx(EX.pend.x,EX.pend.y),w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,px-w/2))+'px';t.style.top=Math.max(4,py-th*1.6-h)+'px'};
 EX.go=async(path,ent)=>{const t=++EX.tok;EX.walking=true;
 const ms=path.length>8?90:130;for(const [px,py] of path){await new Promise(r=>setTimeout(r,ms));if(t!=EX.tok)return;
 const from={x:EX.x,y:EX.y};if(EX.escort())EX.fol={x:from.x,y:from.y};EX.face={right:(px-py)>(from.x-from.y),back:(px+py)<(from.x+from.y)};EX.x=px;EX.y=py;EX.steps++;if(typeof playSound=='function')playSound('step');animateUnitMove(EX.avatar,from,{x:px,y:py},new Set(DATA.cartes[EX.map].rocks.map(r=>exK(r[0],r[1]))));EX.draw()}
@@ -107,7 +112,7 @@ const id=++EX.gtok;EX.gather={n,id,t:Date.now()};EX.gatherTick(id)};
 EX.gtok=0;EX.GATHER_MS=5000;EX.REPOP_MS=180000;
 EX.gatherTick=id=>{const G=EX.gather;if(!G||G.id!=id)return;const left=Math.ceil((G.t+EX.GATHER_MS-Date.now())/1000);if(left<=0){EX.gather=null;EX.harvestDone(G.n);return}msg('Récolte en cours… '+left+' s (touche pour annuler)');setTimeout(()=>EX.gatherTick(id),250)};
 EX.harvestDone=n=>{const k=n.res,r=metRecolte(k);sv.res[k]+=r.qte;n.until=Date.now()+EX.REPOP_MS;sv.rep[EX.map+':'+n.x+','+n.y]=n.until;store();pop(n,'+'+r.qte+' '+DATA.res[k].split(' ')[0],'#7fd18b');if(r.up)toast(DATA.metiers[r.m].n+' niveau '+sv.met[r.m].niv+' !');if(typeof playSound=='function')playSound('harvest');msg('Récolte : +'+r.qte+' '+DATA.res[k]+(r.bonus?' (bonus !)':''));EX.ui();EX.draw()};
-EX.fight=q=>{EX.gather=null;const begin=()=>{EX.walking=false;EX.on=false;EX.pend=null;EX.group=q;cfg.renc=q.renc;hideMenu();$('game').classList.remove('hide');startScreenTransition();init()};EX.storyGroup=q;EX.storyTrigger({quand:'avantCombat',renc:q.renc},begin,{kind:'fight',x:q.x,y:q.y,renc:q.renc})};
+EX.fight=q=>{EX.gather=null;const begin=()=>{EX.walking=false;EX.on=false;EX.pend=null;EX.tip();EX.group=q;cfg.renc=q.renc;hideMenu();$('game').classList.remove('hide');startScreenTransition();init()};EX.storyGroup=q;EX.storyTrigger({quand:'avantCombat',renc:q.renc},begin,{kind:'fight',x:q.x,y:q.y,renc:q.renc})};
 EX.fightNpc=(i,p)=>EX.fight({x:p.x,y:p.y,renc:i,npc:1});
 // Escorte : le PNJ (`suit`) quitte sa carte (cache par le drapeau esc_<id>) et suit le héros ; à l'arrivée sur la carte `vers`, une embuscade (rencontre `emb`) l'attend ;
 // une fois vaincue, la quête se rend au PNJ `rend`. Une défaite annule l'escorte : la quête est à reprendre et le PNJ rentre chez lui.
@@ -219,3 +224,5 @@ EX.dock=F=>{const D=el('div','dock');TABS.forEach(([id,n,ic])=>{const dot=(id=='
 // Régénération lente hors combat : 1 PV par seconde en exploration, jamais en combat.
 EX.regen=()=>{if(!EX.on||sv.pv==null)return;const m=pvMax();sv.pv+=1;if(sv.pv>=m)sv.pv=null;store();EX.hud()};
 if(typeof setInterval=='function')setInterval(()=>{if(typeof document=='undefined'||!document.hidden)EX.regen()},1000);
+// Affiche ou masque l'info-bulle de groupe à chaque redessin.
+{const d0=EX.draw;EX.draw=function(){const r=d0.apply(this,arguments);EX.tip();return r}}
