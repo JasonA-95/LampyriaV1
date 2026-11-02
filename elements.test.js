@@ -110,7 +110,7 @@ test('chaque classe a 10 ou 15 sorts : au moins 2 par élément, ids uniques, ni
 
 test('chaque sort de dégâts de chaque classe se lance et blesse un monstre (portée et ligne de vue valides)', () => {
   for (const k of Object.keys(DC.classes)) for (const base of DC.classes[k].sorts) {
-    if (!base.dmg) continue;
+    if (!base.dmg || base.sacrifice) continue;   // sacrifice : cible une invocation (testé dans invocations.test.js)
     let fait = false;
     for (let x = 0; x < DC.taille && !fait; x++) for (let y = 0; y < DC.taille && !fait; y++) {
       const g = new Combat(DC, { classe: k, renc: 0, niv: 60, lueurs: [], gear: {} });

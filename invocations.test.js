@@ -84,7 +84,7 @@ test('chaque combat repart sans invocation', () => {
 test('Fossoyeur lot 1 : classe fragile, sorts valides, invocations lancees depuis les vrais sorts', () => {
   const F = DATA.classes.fossoyeur;
   assert.ok(F && F.hp < DATA.classes.mage.hp + 10, 'classe fragile');
-  assert.equal(F.sorts.map(s => s.id).join(), 'pelle,squelette,spectre,terre,pelletee');
+  assert.equal(F.sorts.slice(0, 5).map(s => s.id).join(), 'pelle,squelette,spectre,terre,pelletee');
   const c = new Combat(DATA, { classe: 'fossoyeur', renc: 0, niv: 8, lueurs: [] });
   c.pa = 12;
   const sq = c.S.findIndex(s => s.id == 'squelette'), sp = c.S.findIndex(s => s.id == 'spectre');
@@ -93,4 +93,44 @@ test('Fossoyeur lot 1 : classe fragile, sorts valides, invocations lancees depui
   assert.ok(c.cast(sp, q[0], q[1]).summon, 'spectre');
   assert.equal(c.allies.map(a => a.n).join(), 'Squelette de service,Spectre farceur');
   assert.ok(c.allies[0].hp > 24 && c.allies[0].d >= 7, 'les stats montent avec le niveau du heros');
+});
+
+test('Fossoyeur lot 2 : soin d une invocation, sacrifice explosif, renfort plus solide, malediction', () => {
+  const F = DATA.classes.fossoyeur;
+  assert.equal(F.sorts.slice(5).map(s => s.id).join(), 'heure,sacrifice,renfort,malediction');
+  const c = new Combat(DATA, { classe: 'fossoyeur', renc: 0, niv: 22, lueurs: [] });
+  c.pa = 20;
+  const I = id => c.S.findIndex(s => s.id == id);
+  const sq = I('squelette'), re = I('renfort');
+  const p = c.ranged(sq)[0]; c.cast(sq, p[0], p[1]);
+  const q = c.ranged(re)[0]; c.cast(re, q[0], q[1]);
+  const [a, b] = c.allies;
+  assert.ok(b.hp > a.hp && b.d > a.d, 'le renfort est plus solide que le squelette');
+  // soin : cibles = allies seulement, plafonne aux PV max
+  const he = I('heure');
+  assert.ok(c.ranged(he).every(t => c.at(t[0], t[1]) && c.at(t[0], t[1]).ally), 'soin : allies uniquement');
+  a.hp = 1;
+  const rc = c.ranged(he).find(t => c.at(t[0], t[1]) === a);
+  assert.ok(rc && c.cast(he, rc[0], rc[1]).ok);
+  assert.ok(a.hp > 1 && a.hp <= a.max);
+  const full = b.hp;
+  const rb = c.ranged(he).find(t => c.at(t[0], t[1]) === b);
+  c.cd[he] = 0;
+  c.cast(he, rb[0], rb[1]);
+  assert.equal(b.hp, full, 'jamais au-dessus du maximum');
+  // sacrifice : l allie meurt et les monstres proches subissent des degats
+  const sa = I('sacrifice'), foe = c.foes.find(f => !f.form);
+  foe.x = a.x + 1; foe.y = a.y; const hp0 = foe.hp;
+  assert.ok(c.ranged(sa).every(t => c.at(t[0], t[1]) && c.at(t[0], t[1]).ally), 'sacrifice : allies uniquement');
+  const rs = c.ranged(sa).find(t => c.at(t[0], t[1]) === a);
+  assert.ok(c.cast(sa, rs[0], rs[1]).ok);
+  assert.equal(a.hp, 0, 'invocation sacrifiee');
+  assert.ok(foe.hp < hp0, 'explosion sur le monstre voisin');
+  // malediction : degats et affaibli
+  const ma = I('malediction'), foe2 = c.foes.find(f => f.hp > 0 && !f.form);
+  foe2.x = c.hero.x + 3; foe2.y = c.hero.y; foe2.hp = foe2.max = 500;
+  const rm = c.ranged(ma).find(t => c.at(t[0], t[1]) === foe2);
+  assert.ok(rm, 'monstre a portee');
+  c.cast(ma, rm[0], rm[1]);
+  assert.ok(c.hasEtat(foe2, 'affaibli'));
 });

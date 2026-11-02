@@ -1388,4 +1388,9 @@ DATA.classes.fossoyeur={n:'Fossoyeur',e:'⚰️',hp:45,info:'invocations, fragil
 {id:'squelette',n:'Squelette de service',niv:1,pa:3,r:[1,3],cd:2,max:2,invoque:{n:'Squelette de service',e:'💀',hp:24,d:7,pm:3,k:2.5,kd:.6},rg:[{ihp:6},{ida:2},{cd:-1},{ihp:8,ida:2}]},
 {id:'spectre',n:'Spectre farceur',niv:3,elem:'vent',pa:3,r:[1,3],cd:2,max:2,invoque:{n:'Spectre farceur',e:'👻',hp:14,d:8,pm:3,r:[2,4],los:1,elem:'vent',k:1.2,kd:.7},rg:[{ihp:4},{ida:2},{cd:-1},{ihp:6,ida:2}]},
 {id:'terre',n:'Terre meuble',niv:5,elem:'lumiere',pa:2,r:[0,0],garde:1,cd:3,rg:[{cd:-1},{garde:1},{pa:-1},{garde:1}]},
-{id:'pelletee',n:'Pelletée de cendres',niv:8,elem:'tenebres',pa:3,r:[1,3],los:1,dmg:14,cd:2,etats:[{id:'poison',v:3,t:3}],rg:[{dmg:3},{cd:-1},{dmg:3},{dmg:4}]}]};
+{id:'pelletee',n:'Pelletée de cendres',niv:8,elem:'tenebres',pa:3,r:[1,3],los:1,dmg:14,cd:2,etats:[{id:'poison',v:3,t:3}],rg:[{dmg:3},{cd:-1},{dmg:3},{dmg:4}]},
+// Lot 2 : niveaux 11 à 22
+{id:'heure',n:'Heure sup’',niv:11,elem:'lumiere',pa:2,r:[1,4],los:1,cd:2,healA:14,rg:[{heal:4},{cd:-1},{heal:5},{heal:6}]},
+{id:'sacrifice',n:'Sacrifice utile',niv:14,elem:'tenebres',pa:1,r:[1,4],los:1,cd:2,dmg:18,aoe:1,sacrifice:1,rg:[{dmg:5},{cd:-1},{dmg:5},{dmg:6}]},
+{id:'renfort',n:'Fossoyeuse de renfort',niv:18,pa:4,r:[1,3],cd:3,max:2,invoque:{n:'Fossoyeuse de renfort',e:'🧟',hp:40,d:11,pm:3,k:3.2,kd:.9},rg:[{ihp:8},{ida:3},{cd:-1},{ihp:10,ida:3}]},
+{id:'malediction',n:'Malédiction du dimanche',niv:22,elem:'foudre',pa:3,r:[2,5],los:1,dmg:16,cd:2,etats:[{id:'affaibli',v:25,t:2}],rg:[{dmg:4},{cd:-1},{dmg:4},{dmg:5}]}]};

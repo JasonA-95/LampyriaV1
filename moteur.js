@@ -60,7 +60,7 @@ return true}
 ranged(i){const s=this.S[i],h=this.hero,r=[];
 for(const [x,y] of this.cells){const m=this.dist(h,{x,y}),u=this.at(x,y);
 if(m<s.r[0]||m>s.r[1]||!this.ok(x,y)||(s.los&&!this.los(h,{x,y})))continue;
-if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge||(s.etats&&s.etats.length&&s.aoe==null))&&!(u&&u!==h&&!u.ally))continue;if(s.invoque&&(u||this.liveAllies().length>=(s.max||2)))continue;
+if((s.healA||s.sacrifice)&&!(u&&u.ally))continue;if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge||(s.etats&&s.etats.length&&s.aoe==null))&&!(u&&u!==h&&!u.ally))continue;if(s.invoque&&(u||this.liveAllies().length>=(s.max||2)))continue;
 if(s.charge&&!DIRS.some(([dx,dy])=>this.free(u.x+dx,u.y+dy)))continue;r.push([x,y])}return r}
 move(x,y){const d=this.reach()[x+','+y];if(!(d>0))return{ok:false,tag:'loin'};
 this.pm-=d;this.hero.x=x;this.hero.y=y;return{ok:true,tag:''}}
@@ -86,6 +86,8 @@ if(s.mur){h.mur=2;this.noMove=1;this.pm=0}
 if(s.sleep){const t=this.at(x,y);if(t.boss)r.resist=1;else t.sleep=true}
 if(s.swap){const f=this.at(x,y);[f.x,h.x]=[h.x,f.x];[f.y,h.y]=[h.y,f.y]}
 if(s.invoque){const q=s.invoque,hp=Math.round((q.hp||20)+this.bonus*(q.k||2)),a={pm:3,...q,x,y,hp,max:hp,d:Math.round((q.d||6)+this.bonus*(q.kd||.5)),ally:1,etats:[],sortCd:0};this.allies.push(a);r.summon=a;r.effects.push({cible:a,texte:'✦',couleur:'#9be3a1'})}
+if(s.healA&&target&&target.ally){const n=this.heal(target,s.healA+this.bonus*2);r.effects.push({cible:target,texte:'+'+n,couleur:'#7fd18b'})}
+if(s.sacrifice&&target&&target.ally){target.hp=0;r.effects.push({cible:target,texte:'✝',couleur:'#c9b8ff'})}
 {const mk=this.foes.find(g=>g.form&&g.hp>0&&g.mock);if(mk&&['farce','sommeil','mur','fuite','rage','ombre'].includes(s.say)){mk.hp=Math.max(0,mk.hp-Math.ceil(mk.max*mk.mock));r.mocked=1}}
 if(inv0&&!this.foes.some(g=>g.form&&g.hp>0)){this.vuln=this.p2?2:3;r.formDown=1}
 this.applyEtats(h,s.etatsSoi,r.events);if(h.hp>0)this.checkWin();return r}
