@@ -8,7 +8,7 @@ const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem(slotKey(SLOT));savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
 const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],pv:null,conso:{},met:{},rep:{},q:{},hist:{vus:[],flags:{}}};
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,etin:{got:[],eq:[]},tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],lien:{},pv:null,conso:{},met:{},rep:{},q:{},hist:{vus:[],flags:{}}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
 function normaliseStoryHistory(save,existed,hadHistory){if(!save.hist||typeof save.hist!='object'||Array.isArray(save.hist))save.hist={vus:[],flags:{}};
 if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save.hist.vus.filter(id=>typeof id=='string'))];
@@ -26,6 +26,8 @@ sv.sp.seen=[...new Set(sv.sp.seen.filter(id=>ALL_SORT_IDS.has(id)))];
 if(!Array.isArray(sv.sp.keep)){sv.sp.keep=[];for(const c of Object.values(DATA.classes))for(const s of c.sorts)if(s.old!=null&&s.old<=sv.niv)sv.sp.keep.push(s.id)}
 for(const id of Object.keys(sv.sp.rg)){if(!ALL_SORT_IDS.has(id)||typeof sv.sp.rg[id]!='number')delete sv.sp.rg[id];else sv.sp.rg[id]=Math.max(1,Math.min(5,Math.floor(sv.sp.rg[id])))}
 for(const k in DATA.res)if(typeof sv.res[k]!='number')sv.res[k]=0;
+if(!sv.etin||typeof sv.etin!='object'||Array.isArray(sv.etin))sv.etin={};for(const k of ['got','eq'])sv.etin[k]=(Array.isArray(sv.etin[k])?sv.etin[k]:[]).filter((id,i,a)=>DATA.etin[id]&&a.indexOf(id)==i);sv.etin.eq=sv.etin.eq.filter(id=>sv.etin.got.includes(id)).slice(0,2);
+if(!sv.lien||typeof sv.lien!='object'||Array.isArray(sv.lien))sv.lien={};for(const k of Object.keys(sv.lien)){if(!DATA.lueurs[k]||typeof sv.lien[k]!='number'||!(sv.lien[k]>=0))delete sv.lien[k];else sv.lien[k]=Math.floor(sv.lien[k])}
 // PV persistants (null = au maximum) et potions en piles (50 max par potion).
 if(!Number.isFinite(sv.pv)||sv.pv<1)sv.pv=null;
 if(!sv.rep||typeof sv.rep!='object'||Array.isArray(sv.rep))sv.rep={};
@@ -60,7 +62,7 @@ const heroEmoji=()=>(sv.hero&&sv.hero.asp)||DATA.classes[cfg.classe].e;
 if(savedData&&!hadStoryHistory)store();
 const cfg={classe:sv.classe,renc:0,test:false,lueurs:sv.lueurs.filter(k=>DATA.lueurs[k])};
 const saveCfg=()=>{sv.classe=cfg.classe;sv.lueurs=[...cfg.lueurs];store()};
-const sum=()=>cfg.lueurs.reduce((a,k)=>a+DATA.lueurs[k].t,0);
+const sum=()=>cfg.lueurs.reduce((a,k)=>a+DATA.lueurs[k].t,0)+sv.etin.eq.length;
 const avail=()=>cfg.test?Object.keys(DATA.lueurs):sv.deb;
 const capNow=()=>cfg.test?12:sv.cap;
 function applyRang(sort,rang){const s={...sort,r:[...sort.r]},rank=Math.max(1,Math.min(5,Math.floor(rang||1)));
@@ -75,7 +77,7 @@ sv.sp.eq=sv.sp.eq.filter(id=>available.has(id));if(!sv.sp.eq.includes(first))sv.
 for(const s of unlocked)if(!sv.sp.seen.includes(s.id)&&!sv.sp.eq.includes(s.id)&&sv.sp.eq.length+cfg.lueurs.length<6)sv.sp.eq.push(s.id);
 sv.sp.seen=[...new Set([...sv.sp.seen,...unlocked.map(s=>s.id)])];
 while(sv.sp.eq.length+cfg.lueurs.length>6){let i=-1;for(let j=sv.sp.eq.length-1;j>=0;j--)if(sv.sp.eq[j]!==first){i=j;break}if(i<0)break;sv.sp.eq.splice(i,1)}store()}
-function normL(){const av=avail(),cap=capNow();cfg.lueurs=cfg.lueurs.filter(k=>av.includes(k));while(sum()>cap||cfg.lueurs.length>4)cfg.lueurs.pop();syncSorts()}
+function normL(){const av=avail(),cap=capNow();sv.etin.eq=sv.etin.eq.slice(0,Math.min(2,cap));cfg.lueurs=cfg.lueurs.filter(k=>av.includes(k));while(sum()>cap||cfg.lueurs.length>4)cfg.lueurs.pop();syncSorts()}
 
 // ---------- petits outils d'interface ----------
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.innerHTML=x;return e};
@@ -139,6 +141,8 @@ function gear(){const t={pv:0,res:0,pm:0},cnt={};for(const k of EL_IDS){t[k]=0;t
 for(const [s] of SLOTS){const id=sv.eq[s];if(!id||!sv.inv.includes(id))continue;const o=DATA.objets[id];for(const k in o.st)t[k]+=o.st[k];if(o.set)cnt[o.set]=(cnt[o.set]||0)+1}
 for(const k in cnt){const b=DATA.sets[k].bonus;for(const n in b)if(cnt[k]>=+n)for(const s in b[n])t[s]+=b[n][s]}
 for(const [k,,,v] of TAL)t[k]+=v*(sv.tal[k]||0);
+for(const id of cfg.lueurs){const b=DATA.lueurBonus(id,sv.lien[id]);for(const s in b)t[s]+=b[s]}
+for(const id of sv.etin.eq){const b=DATA.etin[id].st;for(const s in b)t[s]+=b[s]}
 t.res=Math.min(t.res,40);for(const k of EL_IDS)t['r'+k]=Math.min(t['r'+k],40);return{t,cnt}}
 function equip(slot,id){if(id&&itemNiv(id)>sv.niv&&!cfg.test){toast('Niveau '+itemNiv(id)+' requis pour porter '+DATA.objets[id].n+'.');return}if(id){for(const s in sv.eq)if(sv.eq[s]==id)delete sv.eq[s];sv.eq[slot]=id}else delete sv.eq[slot];store()}
 function autoEquip(id){if(itemNiv(id)>sv.niv&&!cfg.test)return false;const t=DATA.objets[id].slot,c=t=='acc'?['acc1','acc2']:[t],s=c.find(x=>!sv.eq[x]||!sv.inv.includes(sv.eq[x]));if(s){sv.eq[s]=id;return true}return false}

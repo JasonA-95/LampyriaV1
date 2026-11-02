@@ -8,7 +8,7 @@ const exEdge=e=>!e.don&&!!e.d,exSides=(d,side)=>d.exits.filter(e=>exEdge(e)&&e.d
 function exExitAt(d,x,y){for(const side of DATA.exside(x,y)){const L=exSides(d,side);if(!L.length)continue;const u=x-y,v=x+y,t=(side=='N'||side=='S')?(u+DATA.EXU)/(2*DATA.EXU+1):(v-DATA.EXV[0])/(DATA.EXV[1]-DATA.EXV[0]+1);return L[Math.min(L.length-1,Math.floor(t*L.length))]}return null}
 function exRing(d){if(!d._ring){d._ring=[];for(const [x,y] of DATA.excells){const e=exExitAt(d,x,y);if(e)d._ring.push([x,y,e])}}return d._ring}
 const exPts=d=>[...d.exits.filter(e=>e.don).map(e=>[e.x,e.y]),...exRing(d).map(c=>[c[0],c[1]])];
-function exFree(m,x,y){if(!DATA.exin(x,y)||(m.rocks||[]).some(r=>r[0]==x&&r[1]==y))return false;for(const q of ['npcs','groups','nodes','picks','hides','coffres'])if((m[q]||[]).some(o=>o.x==x&&o.y==y))return false;if(m.exits.some(e=>e.don&&e.x==x&&e.y==y))return false;return!DATA.exside(x,y).some(s=>exSides(m,s).length)}
+function exFree(m,x,y){if(!DATA.exin(x,y)||(m.rocks||[]).some(r=>r[0]==x&&r[1]==y))return false;for(const q of ['npcs','groups','nodes','picks','hides','coffres','etins'])if((m[q]||[]).some(o=>o.x==x&&o.y==y))return false;if(m.exits.some(e=>e.don&&e.x==x&&e.y==y))return false;return!DATA.exside(x,y).some(s=>exSides(m,s).length)}
 // Arrivée dans la carte voisine : bord opposé, même position le long du bord, sur la case libre la plus proche.
 function exArrive(side,x,y,m){const u=x-y,v=x+y,U=DATA.EXU,V=DATA.EXV;let a,b;
 if(side=='E'){a=-U+2;b=v}else if(side=='W'){a=U-2;b=v}else if(side=='N'){b=V[1]-2;a=u}else{b=V[0]+2;a=u}
@@ -35,7 +35,7 @@ if(!end)return null;const r=[];let c=end;while(c&&!(c[0]==EX.x&&c[1]==EX.y)){r.u
 // Masque les PNJ dont une condition de 'cache' est vraie (ex. le Général après sa défaite).
 function exPrune(){for(const m of Object.values(DATA.cartes)){if(!m._npcs)m._npcs=m.npcs.slice();m.npcs=m._npcs.filter(n=>!(n.cache||[]).some(c=>storyCondition(c,sv,sv.hist.flags)))}}
 // Repères de quête de la carte (objets à ramasser, cachettes) : recalculés depuis l'état des quêtes, sans toucher aux monstres vaincus ni aux récoltes en cours.
-EX.marks=name=>{const d=DATA.cartes[name],Q=qs(),on=(p,i)=>{const s=Q[p.quest];return s&&s.s==1&&!(s.got||[]).includes(name+i)};EX.pend=null;EX.nodes=EX.nodes.filter(n=>!n.pick);EX.groups=EX.groups.filter(q=>!q.hide);
+EX.marks=name=>{const d=DATA.cartes[name],Q=qs(),on=(p,i)=>{const s=Q[p.quest];return s&&s.s==1&&!(s.got||[]).includes(name+i)};EX.pend=null;EX.nodes=EX.nodes.filter(n=>!n.pick&&!n.etin);(d.etins||[]).forEach(p=>{if(!sv.etin.got.includes(p.id))EX.nodes.push({x:p.x,y:p.y,etin:p.id,until:0})});EX.groups=EX.groups.filter(q=>!q.hide);
 (d.picks||[]).forEach((p,i)=>{if(on(p,i))EX.nodes.push({x:p.x,y:p.y,pick:1,quest:p.quest,id:name+i,until:0})});
 (d.hides||[]).forEach((p,i)=>{if(on(p,i))EX.groups.push({x:p.x,y:p.y,renc:p.renc,hide:1,quest:p.quest,id:name+i})})};
 EX.atelier=()=>(DATA.cartes[EX.map]||{}).atelier||null;
@@ -52,7 +52,9 @@ for(const k in (r.res||{})){sv.res[k]+=r.res[k];t+=' +'+r.res[k]+' '+DATA.res[k]
 for(const it of (r.items||[]))if(!sv.inv.includes(it)){sv.inv.push(it);autoEquip(it);t+=' '+DATA.objets[it].n+' !'}
 if(r.item&&!sv.inv.includes(r.item)){sv.inv.push(r.item);autoEquip(r.item);t+=' '+DATA.objets[r.item].n+' !'}
 for(const k in (r.set||{}))sv.hist.flags[k]=r.set[k];if(r.renc!=null&&sv.renc==r.renc&&sv.renc<DATA.rencontres.length-1)sv.renc++;
-if(r.lueur&&!sv.deb.includes(r.lueur)){sv.deb.push(r.lueur);t+=' Nouvelle Lueur : '+DATA.lueurs[r.lueur].n+' !'}store();return t};
+if(r.lueur&&!sv.deb.includes(r.lueur)){sv.deb.push(r.lueur);t+=' Nouvelle Lueur : '+DATA.lueurs[r.lueur].n+' !'}
+if(r.etin&&!sv.etin.got.includes(r.etin)){sv.etin.got.push(r.etin);t+=' ✨ '+DATA.etin[r.etin].n+' !'}
+if(r.lien){const [k,p]=r.lien,a=DATA.lien.niv(sv.lien[k]);sv.lien[k]=(sv.lien[k]||0)+p;const n=DATA.lien.niv(sv.lien[k]);t+=' 🔗 '+DATA.lueurs[k].n+' : lien'+(n>a?' '+n+' !':' renforcé')}store();return t};
 EX.prog=(id,cell)=>{const s=qs()[id],q=DATA.quetes[id];if(!s||s.s!=1||(s.n||0)>=q.need)return;s.got=s.got||[];if(cell)s.got.push(cell);s.n=(s.n||0)+1;store();
 const t='Quête « '+q.n+' » : '+s.n+'/'+q.need+(s.n>=q.need?'. Retourne voir '+(q.rend||q.donneur||'le Maître Lampiste')+'.':'.');msg(t);toast(t)};
 EX.princ=q=>q.princ??!!(q.rew&&q.rew.lueur);
@@ -103,6 +105,7 @@ if(ent.t=='n')EX.harvest(ent.o);else if(ent.t=='p')EX.talk(ent.o)
 else if(ent.t=='e'){const e0=DJ.pass(ent.o),e=ent.o.don||e0.to!=ent.o.to?e0:{...e0,...exArrive(ent.o.d,EX.x,EX.y,DATA.cartes[e0.to])};EX.enter(e.to,e.tx,e.ty);msg('Tu entres : '+DATA.cartes[e.to].n+'.'+DJ.note);EX.ui();EX.draw();EX.storyTrigger({quand:'entree',carte:EX.map},EX.ambush)}
 else EX.fight(ent.o)};
 EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
+if(n.etin){EX.nodes=EX.nodes.filter(z=>z!==n);if(!sv.etin.got.includes(n.etin))sv.etin.got.push(n.etin);store();pop(n,'Étincelle !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('✨ '+DATA.etin[n.etin].n+' : à équiper dans la Lanterne.');EX.draw();return}
 if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');if(typeof playSound=='function')playSound('harvest');EX.draw();return}
 if(n.until>Date.now()){msg('Déjà cueilli : repousse dans '+Math.ceil((n.until-Date.now())/1000)+' s.');return}
 {const m=metOf(n.res),l=DATA.resNiv[n.res]||1;if(m&&metNiv(m)<l){msg(DATA.metiers[m].n+' niveau '+l+' requis pour récolter '+DATA.res[n.res]+'.');return}}
@@ -138,14 +141,14 @@ const pp={},ex={},E={};
 if(EX.pend&&EX.pend.path)EX.pend.path.forEach(t=>pp[exK(t[0],t[1])]=1);
 d.exits.forEach(e=>{if(e.don)ex[exK(e.x,e.y)]=e});exRing(d).forEach(c=>ex[exK(c[0],c[1])]=c[2]);
 EX.groups.forEach(q=>{if(!q.dead)E[exK(q.x,q.y)]=q.hide?{e:'🌿',b:'?',visual:q}:{e:DATA.rencontres[q.renc].m[0].e,n:DATA.rencontres[q.renc].m[0].n,b:'×'+DATA.rencontres[q.renc].m.length,visual:q}});
-EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>Date.now()?.25:1,visual:n});
+EX.nodes.forEach(n=>E[exK(n.x,n.y)]={e:n.etin?'✨':n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>Date.now()?.25:1,visual:n});
 d.npcs.forEach(n=>E[exK(n.x,n.y)]={e:n.e,n:n.n,npc:1,visual:n});
 EX.storyActors.forEach(a=>E[exK(a.x,a.y)]={e:a.e,visual:a});
 {const eid=EX.escort(),fn=eid&&EX.escortNpc(eid);if(fn&&EX.fol&&(EX.fol.x!=EX.x||EX.fol.y!=EX.y))E[exK(EX.fol.x,EX.fol.y)]={e:fn.e,n:fn.n,npc:1,visual:fn}}
 E[exK(EX.x,EX.y)]={e:heroEmoji(),visual:EX.avatar};
 g.textAlign='center';g.textBaseline='middle';g.font=Math.round(tw*.7)+'px serif';
 const occupied=new Set(rocks);Object.keys(E).forEach(k=>occupied.add(k));d.npcs.forEach(n=>occupied.add(exK(n.x,n.y)));exPts(d).forEach(c=>occupied.add(exK(c[0],c[1])));
-(d.picks||[]).forEach(p=>occupied.add(exK(p.x,p.y)));(d.hides||[]).forEach(p=>occupied.add(exK(p.x,p.y)));
+(d.picks||[]).forEach(p=>occupied.add(exK(p.x,p.y)));(d.etins||[]).forEach(p=>occupied.add(exK(p.x,p.y)));(d.hides||[]).forEach(p=>occupied.add(exK(p.x,p.y)));
 const excluded=new Set([exK(d.start[0],d.start[1]),...exPts(d).map(c=>exK(c[0],c[1]))]),biome=d.biome,
 decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,excluded,DATA.decor[biome],DATA.excells),decorAt=new Map(decor.map(item=>[exK(item.x,item.y),item]));
 fillOuter(biome,N,DATA.exin);for(const [x,y] of DATA.excells){const k=exK(x,y),cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=Math.max(0,1-Math.hypot(x-avatar.x,y-avatar.y)/7)*((x+y)%2?.9:1);

@@ -1362,3 +1362,22 @@ else st=f==1?{res:Math.round(R*1.5),[r_]:2}:{pv:Math.round(P*.5),[el]:Math.round
 const q=Math.round(3+n/8)+(sl=='arme'||sl=='corps'?2:0);
 DATA.objets[id]={n:nm+' '+nom.replace('Panoplie ',''),e,slot:sl,r,st,niv:n,set:k,cout:{[A]:q,[B]:Math.max(1,Math.round(q/2))}}});
 DATA.sets[k]={n:nom,bonus:{2:{pv:Math.round(n*.33)},4:Object.assign({res:Math.max(2,Math.round(n/7)),[el]:1+Math.floor(n/25)},f==2?{pm:1}:{},{[r_]:5})}};DATA.setElem[k]=el}})();
+
+// Lueurs évolutives : points de lien (+1 par victoire avec la Lueur dans la lanterne, +8 à la fin de sa quête du passé) → niveau de lien 1 à 5.
+// Niveau 1 = comportement d'origine. Niveau 2+ : bonus passif (tant que la Lueur est dans la lanterne) ; niveau 3 : sort signature -1 de recharge ; niveau 5 : encore -1 de recharge et -1 PA.
+DATA.lien={seuils:[0,4,10,20,35],niv:p=>{let n=1;DATA.lien.seuils.forEach((s,i)=>{if((p||0)>=s)n=i+1});return n}};
+DATA.lueurPas={colerique:['foudre','el'],peureuse:['vent','el'],gourmande:['pv','pv'],reveuse:['tenebres','el'],tetue:['res','res'],farceuse:['neutre','el'],melancolique:['lumiere','el']};
+DATA.lueurBonus=(id,p)=>{const L=DATA.lien.niv(p),d=DATA.lueurPas[id];if(!d||L<2)return {};return {[d[0]]:d[1]=='pv'?5*(L-1):d[1]=='res'?L-1:Math.floor(L/2)}};
+DATA.lueurSort=(id,p)=>{const s=DATA.lueurs[id].sort,L=DATA.lien.niv(p);if(L<3)return s;const o={...s,r:[...s.r]};if(o.cd>=2)o.cd--;if(L>=5){if(o.cd>=2)o.cd--;if(o.pa>=2)o.pa--}return o};
+[['lu_g','gourmande'],['lu_p','peureuse'],['lu_t','tetue'],['lu_r','reveuse'],['lu_f','farceuse'],['lu_c','colerique'],['lu_m','melancolique']].forEach(([q,l])=>{DATA.quetes[q].rew.lien=[l,8]});
+
+// Étincelles (petites Lueurs de taille 1, bonus fixe modeste, 2 équipées au plus) : 9 cachées dans les marges d'une carte par zone, 3 offertes par des boss, 3 par des quêtes.
+DATA.etin={
+e_mousse:{n:'Étincelle de mousse',st:{pv:6},map:'sentier'},e_laine:{n:'Étincelle de laine',st:{res:2},map:'paturage'},e_tampon:{n:'Étincelle de tampon',st:{neutre:1},map:'bureaux'},
+e_vase:{n:'Étincelle de vase',st:{rtenebres:4},map:'gue'},e_basalte:{n:'Étincelle de basalte',st:{foudre:1},map:'os5'},e_sable:{n:'Étincelle de sable',st:{vent:1},map:'mirage'},
+e_ecume:{n:'Étincelle d’écume',st:{rvent:4},map:'port'},e_cierge:{n:'Étincelle de cierge',st:{lumiere:1},map:'cloitre'},e_rempart:{n:'Étincelle de rempart',st:{pm:1},map:'cour'},
+e_chambellan:{n:'Étincelle de poussière',st:{pv:8},boss:3},e_duchesse:{n:'Étincelle de cendre',st:{res:3},boss:6},e_general:{n:'Étincelle de grève',st:{rfoudre:5},boss:10},
+e_gamin:{n:'Étincelle de suie',st:{pv:10},quete:'cb5'},e_pelerin:{n:'Étincelle de veille',st:{rlumiere:5},quete:'sv5'},e_mirage:{n:'Étincelle de mirage',st:{tenebres:1},quete:'o2'}};
+(()=>{const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+29)*73856093)^((y+43)*19349663)^(k*83492791))>>>0;
+for(const id in DATA.etin){const e=DATA.etin[id];e.e='✨';if(e.boss!=null)DATA.rencontres[e.boss].etin=id;else if(e.quete)DATA.quetes[e.quete].rew.etin=id;else{const m=DATA.cartes[e.map],key=hs(id),rocks=new Set(m.rocks.map(r=>r.join(','))),near=['npcs','groups','nodes','picks','hides','coffres'].flatMap(q=>m[q]||[]).concat(m.exits.filter(z=>z.don)).map(o=>[o.x,o.y]);
+const c=DATA.excells.filter(([x,y])=>!DATA.in(x,y)&&!rocks.has(x+','+y)&&!DATA.exside(x,y).length&&!near.some(p=>Math.abs(p[0]-x)+Math.abs(p[1]-y)<3)).map(c=>[hx(c[0],c[1],key),c]).sort((a,b)=>a[0]-b[0])[0][1];(m.etins=m.etins||[]).push({x:c[0],y:c[1],id})}}})();

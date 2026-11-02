@@ -121,11 +121,17 @@ wrap.append(left,right);B.appendChild(wrap)}
 // ---------- onglet Lanterne ----------
 function whereLueur(k){const r=DATA.rencontres.find(e=>e.unlock===k);if(r)return 'Récompense : '+r.n;
 const q=Object.keys(DATA.quetes).find(id=>DATA.quetes[id].rew&&DATA.quetes[id].rew.lueur===k);return q?'Quête : '+DATA.quetes[q].n:'Débloquée au fil de l\'aventure'}
+const lienTxt=k=>{const p=sv.lien[k]||0,L=DATA.lien.niv(p),n=DATA.lien.seuils[L],b=DATA.lueurBonus(k,p),nm={pv:'PV',res:'résistance',neutre:'Neutre',vent:'Vent',foudre:'Foudre',tenebres:'Ténèbres',lumiere:'Lumière'},t=Object.keys(b).map(s=>'+'+b[s]+' '+nm[s]).join(', ');return (t||'aucun bonus passif')+(n!=null?' · prochain palier '+p+'/'+n:' · maximum')};
 function tabLanterne(B){const cap=capNow(),used=sum();
-let seg='';const cells=[];cfg.lueurs.forEach(k=>{for(let i=0;i<DATA.lueurs[k].t;i++)cells.push('f')});for(let i=0;i<cap;i++)seg+='<i class="'+(cells[i]||'')+'"></i>';
+let seg='';const cells=[];cfg.lueurs.forEach(k=>{for(let i=0;i<DATA.lueurs[k].t;i++)cells.push('f')});sv.etin.eq.forEach(()=>cells.push('f'));for(let i=0;i<cap;i++)seg+='<i class="'+(cells[i]||'')+'"></i>';
 const c=card('Lanterne','<div class="seg">'+seg+'</div><span class="sp"><b>'+used+'/'+cap+'</b> de capacité utilisée · <b>'+cfg.lueurs.length+'/4</b> Lueurs</span>');
 if(!cfg.test)c.appendChild(el('p','',DATA.lampiste.some(u=>u.cap>sv.cap)?'Pour agrandir la lanterne, va voir le Maître Lampiste au Village.':'Capacité maximale atteinte.'));
 B.appendChild(c);
+const SP=card('Étincelles','Petites Lueurs de taille 1 : un bonus fixe. 2 équipées au plus, elles prennent de la place dans la lanterne. <b>'+sv.etin.got.length+'/'+Object.keys(DATA.etin).length+'</b> trouvées.');
+Object.keys(DATA.etin).forEach(id=>{const e=DATA.etin[id],has=sv.etin.got.includes(id),on=sv.etin.eq.includes(id);if(!has){SP.appendChild(row('<span class="em">🔒</span><span class="tx"><span class="nm">???</span><span class="mt">'+(e.boss!=null?'Offerte par un boss':e.quete?'Récompense de quête':'Cachée dans une zone')+'</span></span>',null,'lock'));return}
+const why=!on&&(sv.etin.eq.length>=2?'2 étincelles maximum':used+1>cap?'Pas assez de place dans la lanterne':'');
+SP.appendChild(row('<span class="em">'+(on?'✨':'💡')+'</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+fmtSt(e.st)+(why?' · <span style="color:var(--bad)">'+why+'</span>':'')+'</span></span>',()=>{if(why){toast(why);return}sv.etin.eq=on?sv.etin.eq.filter(z=>z!=id):[...sv.etin.eq,id];normL();saveCfg();renderMenu()},why?'lock':''))});
+B.appendChild(SP);
 const L=card('Lueurs','Chaque Lueur ajoute un sort. Les grandes Lueurs prennent plus de place dans la lanterne.');
 const av=avail();
 Object.keys(DATA.lueurs).forEach(k=>{const l=DATA.lueurs[k];

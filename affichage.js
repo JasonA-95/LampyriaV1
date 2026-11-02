@@ -28,7 +28,9 @@ function reward(){const e=DATA.rencontres[cfg.renc];if(cfg.test)return{test:true
 const type=e.type||(e.m.some(m=>m.boss)?'boss':'normal'),gain=Math.round(XP.rencontre({niv:e.niv||1+cfg.renc*3,m:XP.m[type]||1},sv.niv,!EX.group)*(type=='boss'&&EX.group&&DJ.of(EX.map)?1.5:1)),r={xp:gain,loot:e.loot||{},lv:0,items:[],eq:[],lueur:null};for(const k in r.loot)sv.res[k]+=r.loot[k];
 r.lv=XP.add(sv,gain);if(r.lv&&typeof playSound=='function')playSound('level');
 if(!r.lv)sv.pv=C.hero.hp>=C.hero.max?null:Math.max(1,C.hero.hp);
+r.liens=cfg.test?[]:cfg.lueurs.map(k=>{const a=DATA.lien.niv(sv.lien[k]);sv.lien[k]=(sv.lien[k]||0)+1;return DATA.lien.niv(sv.lien[k])>a?DATA.lueurs[k].n+' (lien '+DATA.lien.niv(sv.lien[k])+')':null}).filter(Boolean);
 if((DATA.rencontres[cfg.renc].base??cfg.renc)==sv.renc&&sv.renc<DATA.rencontres.length-1)sv.renc++;
+if(e.etin&&!sv.etin.got.includes(e.etin)){sv.etin.got.push(e.etin);r.etin=e.etin}
 if(e.unlock&&!sv.deb.includes(e.unlock)){sv.deb.push(e.unlock);r.lueur=e.unlock}
 r.rel=DJ.roll();r.items=rollDrops(cfg.renc);r.eq=r.items.map(autoEquip);store();return r}
 function endFight(res,r){combatLive=false;const win=res=='win',n=el('div','');if(typeof playSound=='function')playSound(win?'victory':'defeat');
@@ -36,7 +38,9 @@ if(win){say(DATA.rencontres[cfg.renc].vic||'victoire');let h='<h2>Victoire !</h2
 if(r.test)h+='<p>Mode test : aucun gain.</p>';
 else{h+='<p>+'+r.xp+' XP'+(r.lv?' · <b style="color:var(--ember)">Niveau '+sv.niv+' !</b> (+'+r.lv+' point'+(r.lv>1?'s':'')+' de talent)':'')+'</p>';
 const L=Object.keys(r.loot);if(L.length)h+='<p><span class="chips">'+L.map(k=>'<span class="chip ok">'+rn(k)+' +'+r.loot[k]+'</span>').join('')+'</span></p>';
+if(r.etin)h+='<p>✨ Étincelle trouvée : <b>'+DATA.etin[r.etin].n+'</b></p>';
 if(r.lueur)h+='<p>✨ Nouvelle Lueur : <b>'+DATA.lueurs[r.lueur].n+'</b></p>';
+if((r.liens||[]).length)h+='<p>🔗 Lien renforcé : <b>'+r.liens.join(', ')+'</b></p>';
 if(r.rel)h+='<p>'+DJ.D[r.rel].e+' <b>'+DJ.D[r.rel].rel+'</b> obtenue ! Elle ouvre le donjon « '+DJ.D[r.rel].n+' ».</p>';
 r.items.forEach((id,i)=>{const o=DATA.objets[id];h+='<p>'+o.e+' <b style="color:'+RC[o.r]+'">'+o.n+'</b> <span class="sp">('+RAR[o.r]+', '+fmtSt(o.st)+')'+(r.eq[i]?' · équipé':' · dans ton sac')+'</span></p>'})}
 n.innerHTML=h}
@@ -83,7 +87,7 @@ function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('g
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
-function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes(),hp:cfg.test?0:sv.pv});C.hero.e=heroEmoji();resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
+function init(){size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes(),lien:sv.lien,hp:cfg.test?0:sv.pv});C.hero.e=heroEmoji();resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
 hideBubble();say(DATA.rencontres[cfg.renc].say||'debut');$('tip').textContent='Maintiens un sort pour lire sa description. Tacle : quitter une case voisine d’un monstre coûte 1 PM de plus.'+(C.foes.some(f=>f.cendre)?' Duchesse : protégée sur la cendre grise (≈), disperse-la avec un sort pour la rendre vulnérable.':'');
 msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw()}
 cv.onclick=e=>{if(moved){moved=false;return}if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);

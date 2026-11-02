@@ -250,3 +250,22 @@ test('panoplies par tranche : 9 nouvelles de 5 pièces, fabricables, niveau éga
     for (const [id, o] of p) assert.ok(o.niv == Math.max(...Object.keys(o.cout).map(r => D.resHero[r])) && !o.drop, id);
   }
 });
+
+test('étincelles : 15 (9 cachées, 3 de boss, 3 de quêtes), bien placées, chacune obtenable une seule fois', () => {
+  const E = Object.entries(D.etin);
+  assert.equal(E.length, 15);
+  let cach = 0, boss = 0, qu = 0;
+  for (const [id, e] of E) {
+    assert.ok(Object.keys(e.st).length == 1, id + ' : un seul bonus');
+    if (e.boss != null) { boss++; assert.equal(D.rencontres[e.boss].etin, id) }
+    else if (e.quete) { qu++; assert.equal(D.quetes[e.quete].rew.etin, id) }
+    else {
+      cach++; const m = D.cartes[e.map], p = m.etins.filter(z => z.id == id);
+      assert.equal(p.length, 1, id);
+      assert.ok(D.exin(p[0].x, p[0].y) && !D.exside(p[0].x, p[0].y).length && !D.in(p[0].x, p[0].y), id + ' : en marge, hors bords');
+      assert.ok(!m.rocks.some(r => r[0] == p[0].x && r[1] == p[0].y), id + ' : pas sur un rocher');
+      assert.ok(!/^(terrier|enclos|archives|reves|pyr|crypte)\d$|^(v|cb|sv)_/.test(e.map), id + ' : pas en donjon ni en ville');
+    }
+  }
+  assert.deepEqual([cach, boss, qu], [9, 3, 3]);
+});
