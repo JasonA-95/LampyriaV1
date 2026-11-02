@@ -3,10 +3,10 @@ const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
 const DF0=()=>(typeof XP!='undefined'&&XP.diff)||{};   // réglages de difficulté (voir XP.diff dans xp.js)
 class Combat{
 constructor(D,cfg){const c=D.classes[cfg.classe],G={pv:0,res:0,pm:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0,rneutre:0,rvent:0,rfoudre:0,rtenebres:0,rlumiere:0,...(cfg.gear||{})};this.res=G.res;this.N=D.taille;this.in=D.in;this.cells=D.cells;this.rocks=new Set(D.rochers.map(r=>r.join(',')));
-this.S=[...(cfg.sorts||c.sorts),...cfg.lueurs.map(id=>D.lueurs[id].sort)];
+this.S=[...(cfg.sorts||c.sorts),...cfg.lueurs.map(id=>D.lueurSort?D.lueurSort(id,(cfg.lien||{})[id]):D.lueurs[id].sort)];
 const mx=c.hp+8*(cfg.niv-1)+G.pv;this.hero={x:D.heros.x,y:D.heros.y,hp:cfg.hp>0?Math.min(Math.round(cfg.hp),mx):mx,max:mx,e:c.e,rage:false,mur:0,garde:0,etats:[]};
 const DF=DF0();this.foes=D.rencontres[cfg.renc].m.map(m=>{const f={...m,sortCd:0,etats:[]};if(!f.form){const big=!!f.boss,kh=big?DF.bossHp||1:DF.hp||1,kd=big?DF.bossD||1:DF.d||1;f.hp=Math.round(f.hp*kh);f.max=Math.round(f.max*kh);f.d=Math.round(f.d*kd)}return f});this.bonus=cfg.niv-1;this.RE=D.regleElem;this.hres={neutre:G.rneutre,vent:G.rvent,foudre:G.rfoudre,tenebres:G.rtenebres,lumiere:G.rlumiere};this.elem={neutre:G.neutre,vent:G.vent,foudre:G.foudre,tenebres:G.tenebres,lumiere:G.lumiere};this.PA=D.heros.pa;this.PM=D.heros.pm+G.pm;this.pa=this.PA;this.pm=this.PM;
-this.ash=new Set(this.foes.filter(f=>f.cendre).map(f=>f.x+','+f.y));this.turn=1;this.cd=this.S.map(()=>0);this.result=null;this.noMove=0;this.malus=0;this.vuln=0;this.warn=new Set()}
+this.ash=new Set(this.foes.filter(f=>f.cendre).map(f=>f.x+','+f.y));this.turn=1;this.cd=this.S.map(()=>0);this.result=null;this.noMove=0;this.malus=0;this.vuln=0;this.warn=new Set();this.allies=[]}
 addEtat(u,e){if(!u||u.form||!e||!DATA.etats[e.id]||(e.id=='etourdi'&&u.boss))return false;
 u.etats=u.etats||[];const old=u.etats.find(x=>x.id==e.id);if(old){old.t=Math.max(old.t,e.t||0);if(e.v!=null)old.v=Math.max(old.v||0,e.v)}else u.etats.push({id:e.id,t:e.t||0,...(e.v==null?{}:{v:e.v})});return true}
 hasEtat(u,id){return !!u&&!!u.etats&&u.etats.some(e=>e.id==id&&e.t>0)}
@@ -37,7 +37,7 @@ resistK(f,el){const r=f.rs&&f.rs[el];return r?1-Math.max(-100,Math.min(this.RE.r
 bossInv(){return this.foes.some(f=>this.shield(f))}
 zone(i){const s=this.S[i],r=[];for(const [x,y] of this.cells){const m=this.dist(this.hero,{x,y});if(m>=s.r[0]&&m<=s.r[1]&&this.ok(x,y))r.push([x,y])}return r}
 ok(x,y){return this.in(x,y)&&!this.rocks.has(x+','+y)}
-at(x,y){const h=this.hero;return x==h.x&&y==h.y?h:this.foes.find(f=>f.hp>0&&f.x==x&&f.y==y)}
+at(x,y){const h=this.hero;return x==h.x&&y==h.y?h:this.foes.find(f=>f.hp>0&&f.x==x&&f.y==y)||this.allies.find(a=>a.hp>0&&a.x==x&&a.y==y)}
 free(x,y){return this.ok(x,y)&&!this.at(x,y)}
 dist(a,b){return Math.abs(a.x-b.x)+Math.abs(a.y-b.y)}
 // Tacle : quitter une case voisine d'un monstre éveillé coûte 1 PM de plus (on ne se dégage plus d'un monstre en courant).
@@ -60,7 +60,7 @@ return true}
 ranged(i){const s=this.S[i],h=this.hero,r=[];
 for(const [x,y] of this.cells){const m=this.dist(h,{x,y}),u=this.at(x,y);
 if(m<s.r[0]||m>s.r[1]||!this.ok(x,y)||(s.los&&!this.los(h,{x,y})))continue;
-if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge||(s.etats&&s.etats.length&&s.aoe==null))&&!(u&&u!==h))continue;
+if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge||(s.etats&&s.etats.length&&s.aoe==null))&&!(u&&u!==h&&!u.ally))continue;if(s.invoque&&(u||this.liveAllies().length>=(s.max||2)))continue;
 if(s.charge&&!DIRS.some(([dx,dy])=>this.free(u.x+dx,u.y+dy)))continue;r.push([x,y])}return r}
 move(x,y){const d=this.reach()[x+','+y];if(!(d>0))return{ok:false,tag:'loin'};
 this.pm-=d;this.hero.x=x;this.hero.y=y;return{ok:true,tag:''}}
@@ -85,6 +85,7 @@ if(s.rage){h.rage=true;this.malus=Math.min(2,this.malus+1)}
 if(s.mur){h.mur=2;this.noMove=1;this.pm=0}
 if(s.sleep){const t=this.at(x,y);if(t.boss)r.resist=1;else t.sleep=true}
 if(s.swap){const f=this.at(x,y);[f.x,h.x]=[h.x,f.x];[f.y,h.y]=[h.y,f.y]}
+if(s.invoque){const q=s.invoque,hp=Math.round((q.hp||20)+this.bonus*(q.k||2)),a={pm:3,...q,x,y,hp,max:hp,d:Math.round((q.d||6)+this.bonus*(q.kd||.5)),ally:1,etats:[],sortCd:0};this.allies.push(a);r.summon=a;r.effects.push({cible:a,texte:'✦',couleur:'#9be3a1'})}
 {const mk=this.foes.find(g=>g.form&&g.hp>0&&g.mock);if(mk&&['farce','sommeil','mur','fuite','rage','ombre'].includes(s.say)){mk.hp=Math.max(0,mk.hp-Math.ceil(mk.max*mk.mock));r.mocked=1}}
 if(inv0&&!this.foes.some(g=>g.form&&g.hp>0)){this.vuln=this.p2?2:3;r.formDown=1}
 this.applyEtats(h,s.etatsSoi,r.events);if(h.hp>0)this.checkWin();return r}
@@ -123,12 +124,20 @@ f.pmActif=Math.max(1,f.pm+((DF0().pmMelee&&!f.ia&&!f.boss)?DF0().pmMelee:0)-tick
 let ally=f.ia=='soin'?this.injuredAlly(f):null;
 if(f.ia=='dist'&&f.sort){const low=Math.max(f.garde?.[0]??f.sort.r[0],f.sort.r[0]),high=Math.min(f.garde?.[1]??f.sort.r[1],f.sort.r[1]);if(!this.moveToRange(f,h,low<=high?[low,high]:f.sort.r,{los:!!f.sort.los}))this.moveToRange(f,h,[1,1])}
 else if(f.ia=='soin'&&ally){const ready=f.sort&&f.sortCd===0&&this.inSpellRange(f,ally,f.sort),safe=this.dist(f,h)>=3;if(!ready||!safe){const toSafe=this.moveToRange(f,ally,f.sort.r,{los:!!f.sort.los,safeHero:3});if(!toSafe&&!this.moveToRange(f,ally,f.sort.r,{los:!!f.sort.los}))this.moveToRange(f,h,[1,1])}}
-else this.moveToRange(f,h,[1,1]);
+else if(!(this.dist(f,h)>1&&!f.boss&&this.allies.some(a=>a.hp>0&&this.dist(a,f)==1)))this.moveToRange(f,h,[1,1]);   // un monstre au contact d'une invocation (et pas du héros) reste la frapper
 if(f.boss)this.followForm(f);if(f.cendre){this.ash.add(f.x+','+f.y);if(f.spread){const A=[...this.ash];for(let i=0;i<f.spread;i++){const bs=A[(this.turn*7+i*3)%A.length].split(',').map(Number),d=DIRS[(this.turn+i)%4],nx=bs[0]+d[0],ny=bs[1]+d[1];if(this.ok(nx,ny))this.ash.add(nx+','+ny)}}}
 let action=null;if(f.sort&&f.sortCd===0){if(f.ia=='soin'){ally=this.injuredAlly(f);if(ally&&this.inSpellRange(f,ally,f.sort))action=this.castFoe(f,f.sort,ally)}else if(this.inSpellRange(f,h,f.sort))action=this.castFoe(f,f.sort,h)}
 if(!action&&this.dist(f,h)==1){const hit=this.applyDamage(h,this.damageFrom(f,f.d),false,f.elem||'neutre'),amount=hit.damage;if(hit.absorbed)this.event(events,h,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.');action={dmg:amount,text:f.n+' te frappe : -'+amount+' PV.',tag:'contact',cible:h,effects:amount?[{cible:h,texte:'-'+amount,couleur:'#e5564a'}]:[]}}
+if(!action){const al=this.allies.find(a=>a.hp>0&&this.dist(a,f)==1);if(al){const hit=this.applyDamage(al,this.damageFrom(f,f.d),false,f.elem||'neutre');action={dmg:hit.damage,text:f.n+' frappe '+al.n+' : -'+hit.damage+' PV.',tag:'allie',cible:al,effects:hit.damage?[{cible:al,texte:'-'+hit.damage,couleur:'#e5564a'}]:[]}}}
 if(action){events.push(...(action.events||[]));action.events=events;action.effects=[...events,...(action.effects||[]).filter(e=>!events.includes(e))];const tickText=events.map(e=>e.text).filter(Boolean).join(' ');if(tickText)action.text=(action.text?action.text+' ':'')+tickText;delete f.pmActif;this.checkWin();return action}
 delete f.pmActif;this.checkWin();return{skip:true,text:events.map(e=>e.text).filter(Boolean).join(' '),effects:events,events}}
+liveAllies(){return this.allies.filter(a=>a.hp>0)}
+allyTurn(a){const events=[],none=(text='')=>({skip:true,text,effects:[],events});if(a.hp<=0||this.result)return none();const foes=this.foes.filter(f=>f.hp>0&&!f.form);if(!foes.length)return none();
+const rg=a.r||[1,1],t=foes.slice().sort((x,y)=>this.dist(a,x)-this.dist(a,y)||x.hp-y.hp)[0],inR=()=>{const d=this.dist(a,t);return d>=rg[0]&&d<=rg[1]&&(!a.los||this.los(a,t))};
+if(!inR())this.moveToRange(a,t,rg,{los:a.los});if(!inR())return none(a.n+' avance.');
+if(this.shield(t))return{skip:false,dmg:0,text:a.n+' ne peut pas blesser '+t.n+' : il est protégé.',tag:'ally',cible:t,effects:[{cible:t,texte:'Protégé',couleur:'#9ecbff'}],events};
+const raw=this.weak(t)?Math.round(a.d*1.5):a.d,rk=this.resistK(t,a.elem||'neutre'),hit=this.applyDamage(t,Math.max(1,Math.round(raw*rk)),false),effects=[];t.sleep=false;if(hit.damage)effects.push({cible:t,texte:'-'+hit.damage,couleur:'#9be3a1'});this.resolveTickDeath(t,events);
+return{skip:false,dmg:hit.damage,text:a.n+' frappe '+t.n+' : -'+hit.damage+' PV.',tag:'ally',cible:t,effects:[...effects,...events],events}}
 newTurn(){const h=this.hero;this.turn++;const tick=this.tickEtats(h);if(h.hp<=0)return tick;this.pa=this.PA;this.pm=this.noMove>0?0:Math.max(1,this.PM-this.malus-tick.slow);this.malus=0;h.garde=Math.max(0,(h.garde||0)-1);
 {const cb=this.foes.find(f=>f.boss&&f.cycle&&f.hp>0);if(cb){const n0=((this.turn-2)%(cb.cycle.a+cb.cycle.b))<cb.cycle.a,n1=this.nuit(cb);if(n0!==n1)this.notice=n1?(cb.cycle.h||cb.n+' replonge dans l’ombre : elle est protégée.'):(cb.cycle.l||'La lumière revient ! '+cb.n+' est vulnérable (dégâts ×1,5).')}
 const rb=this.foes.find(f=>f.boss&&f.renfort&&f.hp>0);if(rb&&this.turn%rb.renfort.every==0&&this.foes.filter(g=>g.renfortNe&&g.hp>0).length<rb.renfort.max){for(const [a,c] of DIRS){const x=rb.x+a,y=rb.y+c;if(this.free(x,y)){const n={...rb.renfort.m,x,y,renfortNe:1,hp:rb.renfort.m.max,sortCd:0,etats:[]};this.foes.push(n);this.notice=rb.n+' appelle du renfort : '+n.n+' !';break}}}}

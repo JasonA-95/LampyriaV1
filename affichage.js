@@ -107,7 +107,7 @@ if(typeof playSound=='function')playSound(spell?(spell.heal||spell.drain?'heal':
 function act(x,y){if(busy||C.result||displayPending())return;const ok=mode=='move'?C.reach()[x+','+y]>0:C.ranged(mode).some(t=>t[0]==x&&t[1]==y);
 if(!ok){pend=null;msg(mode=='move'?MSG.loin:MSG.cible);draw();return}
 if(!pend||pend.x!=x||pend.y!=y){pend={x,y};msg(mode=='move'?'Déplacement : '+C.reach()[x+','+y]+' PM. Touche encore la case pour confirmer.':'Zone affichée. Touche encore la même case pour lancer le sort.');draw();return}
-pend=null;const before=unitSnapshots([C.hero,...C.foes]),spell=Number.isInteger(mode)?C.S[mode]:null,hp0=C.hero.hp,pth=mode=='move'?C.path(x,y):null;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
+pend=null;const before=unitSnapshots([C.hero,...C.foes,...C.allies]),spell=Number.isInteger(mode)?C.S[mode]:null,hp0=C.hero.hp,pth=mode=='move'?C.path(x,y):null;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
 if(!r.ok){msg(MSG[r.tag]);return}
 // Sens de marche : le héros se tourne vers son dernier pas ; un sort le retourne vers sa cible (voir SPR.draw).
 if(pth&&pth.length){const a=pth.length>1?pth[1]:[before[0].x,before[0].y],b=pth[0];C.hero.face={right:(b[0]-b[1])>(a[0]-a[1]),back:(b[0]+b[1])<(a[0]+a[1])}}else if(spell)C.hero.face=null;
@@ -130,11 +130,12 @@ if(C.result=='lose'){ui();draw();setTimeout(()=>endFight('lose'),500);return}
 if(C.result=='win'){const rw=reward();ui();draw();setTimeout(()=>endFight('win',rw),500);return}
 ui();draw();lockActionsDuringAnimation()}
 async function endTurn(){if(busy||C.result||displayPending())return;busy=true;mode='move';pend=null;ui();const reports=[];
-for(const f of C.foes){if(f.hp<=0)continue;await new Promise(r=>setTimeout(r,400));const before=unitSnapshots([C.hero,...C.foes]),action=C.foeTurn(f);animateUnitChanges(before,C.rocks);
+for(const a of C.allies){if(a.hp<=0||C.result)continue;await new Promise(r=>setTimeout(r,350));const before=unitSnapshots([C.hero,...C.foes,...C.allies]),action=C.allyTurn(a);animateUnitChanges(before,C.rocks);if(action.text)msg(action.text);(action.effects||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));if(action.tag=='ally'&&typeof playSound=='function')playSound('melee');draw();ui();await waitDisplaySafe();if(C.result){busy=false;ui();draw();endFight('win',reward());return}}
+for(const f of C.foes){if(f.hp<=0)continue;await new Promise(r=>setTimeout(r,400));const before=unitSnapshots([C.hero,...C.foes,...C.allies]),action=C.foeTurn(f);animateUnitChanges(before,C.rocks);
 if(action.text){msg(action.text);reports.push(action.text)}if(action.tag=='contact')pop(C.hero,'-'+action.dmg,'#e5564a');if(typeof playSound=='function'){if(action.tag=='contact')playSound('melee');else if(action.tag=='heal')playSound('heal');else if(action.tag=='spell')playSound('magic');if(action.dmg>0&&action.cible===C.hero)playSound('hit');if(action.skip&&action.text.includes('étourdi'))playSound('stun')}if(action.skip&&action.text.includes('étourdi'))addDisplayEffect('pulse',{at:{x:f.x,y:f.y},radius:.8,color:'#ffe08a',duration:220});(action.effects||[]).forEach(e=>pop(e.cible,e.texte,e.couleur));if(action.tag=='heal'&&action.cible)addDisplayEffect('heal',{at:{x:action.cible.x,y:action.cible.y},color:'#7fd18b',duration:260});else if(action.tag=='spell')addDisplayEffect('projectile',{from:{x:f.x,y:f.y},to:{x:C.hero.x,y:C.hero.y},color:'#e5564a',duration:220});
 draw();ui();await waitDisplaySafe();
 if(C.result){busy=false;ui();draw();if(C.result=='lose')endFight('lose');else endFight('win',reward());return}}
-const before=unitSnapshots([C.hero,...C.foes]),tick=C.newTurn();if(C.notice){toast(C.notice);msg(C.notice);C.notice=''}animateUnitChanges(before,C.rocks);if(tick.blocked)addDisplayEffect('pulse',{at:{x:C.hero.x,y:C.hero.y},radius:.9,color:'#ffe08a',duration:220});
+const before=unitSnapshots([C.hero,...C.foes,...C.allies]),tick=C.newTurn();if(C.notice){toast(C.notice);msg(C.notice);C.notice=''}animateUnitChanges(before,C.rocks);if(tick.blocked)addDisplayEffect('pulse',{at:{x:C.hero.x,y:C.hero.y},radius:.9,color:'#ffe08a',duration:220});
 if(C.result){msg(tick.events.map(e=>e.text).filter(Boolean).join(' '));ui();draw();await waitDisplaySafe();busy=false;endFight('lose');return}
 const tickText=tick.events.map(e=>e.text).filter(Boolean).join(' ');msg([reports.join(' '),tickText,tick.blocked?'Étourdi ! Ton tour est passé automatiquement.':C.pm==0?'À toi de jouer (tu ne peux pas te déplacer ce tour).':'À toi de jouer.'].filter(Boolean).join(' '));ui();draw();await waitDisplaySafe();busy=false;ui();draw();
 if(tick.blocked){busy=true;ui();setTimeout(()=>{busy=false;endTurn()},700)}}
@@ -170,13 +171,13 @@ F.appendChild(btn('⚙️ Options','','',()=>openMenu('options'),busy));F.append
 // ---------- dessin ----------
 const col=l=>'rgb('+[38+82*l,32+52*l,51-3*l].map(Math.round)+')';
 function dia(cx,cy,f){g.beginPath();g.moveTo(cx,cy-th/2);g.lineTo(cx+tw/2,cy);g.lineTo(cx,cy+th/2);g.lineTo(cx-tw/2,cy);g.closePath();g.fillStyle=f;g.fill();g.strokeStyle='rgba(0,0,0,.25)';g.stroke()}
-function draw(){if(EX.on)return EX.draw();if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
+function draw(){if(EX.on)return EX.draw();if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);
 const pp={},zone=new Set();if(pend&&!C.result){if(mode=='move')C.path(pend.x,pend.y).forEach(t=>pp[t.join(',')]=1);
 else{const s=C.S[mode];for(const [x,y] of DATA.cells)if(C.ok(x,y)&&C.dist({x,y},pend)<=(s.aoe??0))zone.add(x+','+y)}}
 g.textAlign='center';g.textBaseline='middle';g.font=Math.round(tw*.7)+'px serif';
 const biome=DATA.rencontres[cfg.renc].biome,occupied=new Set(C.rocks);
-for(const u of [h,...C.foes])if(u.hp>0)occupied.add(u.x+','+u.y);
+for(const u of [h,...C.foes,...C.allies])if(u.hp>0)occupied.add(u.x+','+u.y);
 const decor=OPT.fx=='off'?[]:terrainDecorCells(N,biome,occupied,null,DATA.decor[biome]),decorAt=new Map(decor.map(item=>[item.x+','+item.y,item]));
 fillOuter(biome,N);for(const [x,y] of DATA.cells){const k=x+','+y,cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy,l=Math.max(0,1-Math.hypot(x-hp.x,y-hp.y)/6.5)*((x+y)%2?.9:1);
 if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,x,y,l);const detail=decorAt.get(k);if(detail)drawTerrainDecor(g,cx,cy,tw,th,biome,detail)}
@@ -188,7 +189,7 @@ gr.addColorStop(0,'rgba(255,180,84,.28)');gr.addColorStop(1,'rgba(255,180,84,0)'
 g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';drawDisplayEffects(g,tw,th,ox,oy);
 for(const u of units){if(u.hp<=0&&!displayUnitActive(u))continue;const p=positions.get(u)||displayPosition(u,u.x,u.y,C.rocks),style=displayUnitStyle(u,undefined,tw,th),cx=(p.x-p.y)*tw/2+ox+style.x,cy=(p.x+p.y)*th/2+oy+style.y;
 const lift=SPR.lift(u,h,th);g.save();g.globalAlpha=style.alpha;drawGroundShadow(g,cx,cy,tw,th,u.boss?1.2:1);g.translate(cx,cy);g.scale(style.scale,style.scale);g.fillStyle='#fff';g.font=Math.round(tw*.7)+'px serif';{const sp=SPR.draw(g,u,h,C.foes,tw,th);if(!sp)g.fillText(u.sleep?'💤':u.e,0,-th*.3);else if(u.sleep)g.fillText('💤',0,-th*1.7)}if(u.boss&&u.hp>0&&C.bossInv())g.fillText('🛡️',tw*.32,-th*.75);g.restore();if(u.hp<=0)continue;
-g.fillStyle='#000a';g.fillRect(cx-tw*.25,cy-th*.95-lift,tw*.5,4);g.fillStyle=u===h?'#7fd18b':'#e5564a';g.fillRect(cx-tw*.25,cy-th*.95-lift,tw*.5*Math.max(0,u.hp)/u.max,4);
+g.fillStyle='#000a';g.fillRect(cx-tw*.25,cy-th*.95-lift,tw*.5,4);g.fillStyle=u===h||u.ally?'#7fd18b':'#e5564a';g.fillRect(cx-tw*.25,cy-th*.95-lift,tw*.5*Math.max(0,u.hp)/u.max,4);
 const states=(u.etats||[]).filter(e=>e.t>0),shown=states.slice(0,3),badgeW=Math.max(11,tw*.5),badgeH=Math.max(10,th*.48),count=Math.min(3,shown.length)+(states.length>3?1:0),start=cx-count*badgeW/2,by=cy-th*1.5-lift;g.font='bold '+Math.max(8,Math.round(tw*.32))+'px sans-serif';
 shown.forEach((e,i)=>{const label=DATA.etats[e.id].e+e.t+(e.id=='bouclier'?'·'+e.v:'');g.fillStyle='#120d1add';g.fillRect(start+i*badgeW,by,badgeW,badgeH);g.fillStyle='#fff';g.fillText(label,start+i*badgeW+badgeW/2,by+badgeH/2)});
 if(states.length>3){g.fillStyle='#120d1add';g.fillRect(start+3*badgeW,by,badgeW,badgeH);g.fillStyle='#fff';g.fillText('+',start+3*badgeW+badgeW/2,by+badgeH/2)}}
