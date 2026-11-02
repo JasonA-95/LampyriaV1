@@ -43,9 +43,8 @@ n.innerHTML=h}
 else{say('defaite');n.innerHTML='<h2>Défaite</h2><p>'+(EX.group?'Tu te réveilles au village, sans rien avoir perdu.':'Aucune perte : réessaie avec un autre équipement ou d\'autres Lueurs.')+'</p>'}
 const fin=()=>EX.group?EX.back(res,C.turn):openMenu('jouer');
 after=fin;msg(win?'Victoire !':'Défaite.');ui();draw();
-const B=EX.group?[['Continuer',fin,'pri']]:win?[['Menu',()=>openMenu('jouer')],['Rejouer',()=>startTraining(cfg.renc),'pri']]:[['Menu',()=>openMenu('jouer')],['Réessayer',()=>startTraining(cfg.renc),'pri']];
+const B=[['Continuer',fin,'pri']];
 modal(n,B)}
-function startTraining(i){EX.group=null;EX.on=false;EX.tok++;cfg.renc=i;hideMenu();$('game').classList.remove('hide');startScreenTransition();init()}
 function leaveFight(){combatLive=false;if(EX.group){const q=EX.group;EX.group=null;EX.start()}else openMenu('jouer')}
 
 // ---------- dimensions et initialisation ----------

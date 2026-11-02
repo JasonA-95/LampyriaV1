@@ -1347,3 +1347,18 @@ const inD=id=>DATA.rencontres.some(e=>(e.drops||[]).some(d=>d.id==id));
 for(const id in DATA.objets){const o=DATA.objets[id];if(inD(id))o.drop=1;if(o.cout||!o.drop)continue;const n=o.niv||1,ok=R.filter(r=>DATA.resHero[r]<=n),top=ok.slice(-5),h=hs(id),pick=[top[top.length-1]];
 for(const j of [1,2]){const c=top[(h>>>(j*3))%top.length];if(!pick.includes(c)&&pick.length<3)pick.push(c)}
 const f=1+(o.r||0)*.25;o.cout={};pick.forEach((r,i)=>{o.cout[r]=Math.max(1,Math.round((i==0?3+n/6:i==1?2+n/10:1+n/15)*f))});if(rel[id])o.cout[rel[id]]=(o.r||0)>=3?3:2}})();
+
+// Panoplies par tranche de niveau (5 pièces, fabrication uniquement) : un élément et un profil de stats différents par panoplie.
+// [id, nom, niveau (= palier de la ressource de zone), élément, ressource de zone, ressource d'appoint, emoji, profil 0 PV / 1 résistance / 2 mobilité]
+(()=>{const T=[['lucioles','Panoplie des lucioles',10,'lumiere','mousse','champi','✨',0],['brumes','Panoplie des brumes',15,'vent','toison','laine','☁️',1],['greffe','Panoplie du greffe',20,'neutre','encre','cendre','🖋️',2],['nenuphars','Panoplie des nénuphars',25,'vent','nenuphar','roseau','🪷',0],['orgues','Panoplie des orgues',32,'foudre','tuyau','sable','🎷',1],['mirages','Panoplie des mirages',38,'tenebres','verre','fil','🔮',2],['marees','Panoplie des marées',44,'vent','perle','fil','🦪',0],['cierges','Panoplie des cierges',50,'lumiere','cire','eclat','🕯️',1],['etoiles','Panoplie des étoiles',58,'foudre','os','gravat','🦴',2]];
+const SL=[['arme','Lame','⚔️'],['tete','Heaume','⛑️'],['corps','Cuirasse','🛡️'],['bottes','Bottes','🥾'],['acc','Anneau','💍']];
+for(const [k,nom,n,el,A,B,em,f] of T){const P=Math.round(n*.6),R=Math.max(2,Math.round(n/6)),E=Math.max(2,Math.round(n/7)),r=n<20?1:n<35?2:3,r_='r'+el;
+SL.forEach(([sl,nm,e])=>{const id=k+'_'+sl;let st;
+if(sl=='arme')st={[el]:E};
+else if(sl=='tete')st={pv:P,[r_]:3};
+else if(sl=='corps')st={pv:P,res:R,[r_]:3};
+else if(sl=='bottes')st=f==2?{pv:Math.round(P*.6),pm:1,[r_]:3}:{pv:Math.round(P*.6),res:Math.round(R*.5),[r_]:3};
+else st=f==1?{res:Math.round(R*1.5),[r_]:2}:{pv:Math.round(P*.5),[el]:Math.round(E/3)+1,[r_]:2};
+const q=Math.round(3+n/8)+(sl=='arme'||sl=='corps'?2:0);
+DATA.objets[id]={n:nm+' '+nom.replace('Panoplie ',''),e,slot:sl,r,st,niv:n,set:k,cout:{[A]:q,[B]:Math.max(1,Math.round(q/2))}}});
+DATA.sets[k]={n:nom,bonus:{2:{pv:Math.round(n*.33)},4:Object.assign({res:Math.max(2,Math.round(n/7)),[el]:1+Math.floor(n/25)},f==2?{pm:1}:{},{[r_]:5})}};DATA.setElem[k]=el}})();
