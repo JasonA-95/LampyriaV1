@@ -32,7 +32,7 @@ r.liens=cfg.test?[]:cfg.lueurs.map(k=>{const a=DATA.lien.niv(sv.lien[k]);sv.lien
 if((DATA.rencontres[cfg.renc].base??cfg.renc)==sv.renc&&sv.renc<DATA.rencontres.length-1)sv.renc++;
 if(e.etin&&!sv.etin.got.includes(e.etin)){sv.etin.got.push(e.etin);r.etin=e.etin}
 if(e.unlock&&!sv.deb.includes(e.unlock)){sv.deb.push(e.unlock);r.lueur=e.unlock}
-r.rel=DJ.roll();r.items=rollDrops(cfg.renc);r.eq=r.items.map(autoEquip);store();return r}
+if(!cfg.test)besNote(DATA.rencontres[cfg.renc]);r.rel=DJ.roll();r.items=rollDrops(cfg.renc);r.eq=r.items.map(autoEquip);store();return r}
 function endFight(res,r){combatLive=false;const win=res=='win',n=el('div','');if(typeof playSound=='function')playSound(win?'victory':'defeat');
 if(win){say(DATA.rencontres[cfg.renc].vic||'victoire');let h='<h2>Victoire !</h2>';
 if(r.test)h+='<p>Mode test : aucun gain.</p>';

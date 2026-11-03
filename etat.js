@@ -8,7 +8,7 @@ const $=i=>document.getElementById(i);
 let sv,savedData=false;try{const raw=localStorage.getItem(slotKey(SLOT));savedData=raw!=null;sv=JSON.parse(raw)}catch(e){}
 sv=sv&&typeof sv=='object'?sv:{};
 const hadStoryHistory=!!sv.hist&&typeof sv.hist=='object'&&!Array.isArray(sv.hist);
-const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,etin:{got:[],eq:[]},tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],lien:{},pv:null,conso:{},met:{},rep:{},q:{},hist:{vus:[],flags:{}}};
+const SV0={niv:1,xp:0,res:{braise:0,champi:0,laine:0},cap:3,renc:0,deb:['gourmande'],inv:[],eq:{},pity:0,etin:{got:[],eq:[]},tal:{pv:0,neutre:0,vent:0,foudre:0,tenebres:0,lumiere:0},sp:{eq:[],rg:{},seen:[]},classe:'porte',lueurs:['gourmande'],lien:{},pv:null,conso:{},bes:{},met:{},rep:{},q:{},hist:{vus:[],flags:{}}};
 for(const k in SV0)if(sv[k]==null)sv[k]=JSON.parse(JSON.stringify(SV0[k]));
 function normaliseStoryHistory(save,existed,hadHistory){if(!save.hist||typeof save.hist!='object'||Array.isArray(save.hist))save.hist={vus:[],flags:{}};
 if(!Array.isArray(save.hist.vus))save.hist.vus=[];save.hist.vus=[...new Set(save.hist.vus.filter(id=>typeof id=='string'))];
@@ -18,6 +18,7 @@ sv=normaliseStoryHistory(sv,savedData,hadStoryHistory);
 XP.migrer(sv);
 const ALL_SORT_IDS=new Set(Object.values(DATA.classes).flatMap(c=>c.sorts.map(s=>s.id)));
 if(!sv.sp||typeof sv.sp!='object'||Array.isArray(sv.sp))sv.sp={eq:[],rg:{},seen:[]};
+if(!sv.bes||typeof sv.bes!='object'||Array.isArray(sv.bes))sv.bes={};
 if(!Array.isArray(sv.sp.eq))sv.sp.eq=[];
 if(!sv.sp.rg||typeof sv.sp.rg!='object'||Array.isArray(sv.sp.rg))sv.sp.rg={};
 if(!Array.isArray(sv.sp.seen))sv.sp.seen=[];
@@ -150,6 +151,11 @@ t.res=Math.min(t.res,40);for(const k of EL_IDS)t['r'+k]=Math.min(t['r'+k],40);re
 function equip(slot,id){if(id&&itemNiv(id)>sv.niv&&!cfg.test){toast('Niveau '+itemNiv(id)+' requis pour porter '+DATA.objets[id].n+'.');return}if(id){for(const s in sv.eq)if(sv.eq[s]==id)delete sv.eq[s];sv.eq[slot]=id}else delete sv.eq[slot];store()}
 function autoEquip(id){if(itemNiv(id)>sv.niv&&!cfg.test)return false;const t=DATA.objets[id].slot,c=t=='acc'?['acc1','acc2']:[t],s=c.find(x=>!sv.eq[x]||!sv.inv.includes(sv.eq[x]));if(s){sv.eq[s]=id;return true}return false}
 // Butin : chaque objet a sa chance ; garantie anti-malchance (4 combats sans objet, 1 contre un boss).
+// Bestiaire : sv.bes[nom du monstre] = nombre de victoires contre lui. Les fiches se lisent dans DATA.rencontres (rien d'autre n'est stocké).
+function besNote(R){for(const m of R.m)if(!m.form&&m.n)sv.bes[m.n]=(sv.bes[m.n]||0)+1}
+let BES_IDX=null;
+function besIndex(){if(BES_IDX)return BES_IDX;const I={};for(const R of DATA.rencontres)for(const m of R.m){if(m.form||!m.n)continue;const f=I[m.n]||(I[m.n]={n:m.n,e:m.e,elem:m.elem,hp:m.max||m.hp,rs:m.rs,boss:!!m.boss,niv:R.niv||0,zones:[]});
+if(m.boss)f.boss=true;if(R.niv&&(!f.niv||R.niv<f.niv))f.niv=R.niv;if(R.n&&!f.zones.includes(R.n))f.zones.push(R.n)}return BES_IDX=I}
 function rollDrops(ri){const R=DATA.rencontres[ri],D=R.drops||[],got=[];
 for(const d of D)if(!sv.inv.includes(d.id)&&Math.random()*100<d.p)got.push(d.id);
 if(!got.length){const left=D.filter(d=>!sv.inv.includes(d.id));sv.pity=(sv.pity||0)+1;

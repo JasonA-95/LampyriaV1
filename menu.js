@@ -168,7 +168,7 @@ if(sp.length){d.appendChild(el('h3','','Récompenses spéciales'));sp.forEach(id
 B.appendChild(d)}
 
 // ---------- onglet Quêtes (journal) ----------
-let showDone=false;
+let showDone=false,showBes=false;
 const qMapOf=(id,key)=>{for(const m of Object.values(DATA.cartes)){const l=(m[key]||[]);if(key=='npcs'?l.some(n=>(n.quests||[]).includes(id)):l.some(o=>o.quest==id))return m.n}return null};
 const qGiver=(id)=>{const q=DATA.quetes[id];return q.donneur||'Maître Lampiste'};
 const qGiverPlace=(id)=>qMapOf(id,'npcs')||'le village';
@@ -203,7 +203,17 @@ B.appendChild(card('Journal','<b style="color:var(--ink)">'+g.fini.length+' quê
 ['rendre','cours'].forEach(k=>g[k].forEach(id=>B.appendChild(questCard(id,k))));
 if(!g.rendre.length&&!g.cours.length)B.appendChild(card('Quêtes','Aucune quête en cours. Explore : les habitants qui ont du travail pour toi portent un « ! » (rouge pour l\'histoire principale).'));
 if(g.fini.length){B.appendChild(row('<span class="em">📚</span><span class="tx"><span class="nm">Quêtes terminées ('+g.fini.length+')</span><span class="mt">'+(showDone?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showDone=!showDone;renderMenu()}));
-if(showDone)g.fini.forEach(id=>B.appendChild(questCard(id,'fini')))}}
+if(showDone)g.fini.forEach(id=>B.appendChild(questCard(id,'fini')))}
+bestiaryPart(B)}
+// Bestiaire : un monstre vaincu au moins une fois est révélé ; ses résistances le sont à 5 victoires.
+function bestiaryPart(B){const I=besIndex(),L=Object.values(I).sort((a,b)=>a.niv-b.niv||a.n.localeCompare(b.n)),vu=L.filter(f=>sv.bes[f.n]>0).length;
+B.appendChild(row('<span class="em">📖</span><span class="tx"><span class="nm">Bestiaire ('+vu+'/'+L.length+')</span><span class="mt">'+(showBes?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showBes=!showBes;renderMenu()}));
+if(!showBes)return;const NM={neutre:'Neutre',vent:'Vent',foudre:'Foudre',tenebres:'Ténèbres',lumiere:'Lumière'};
+for(const f of L){const k=sv.bes[f.n]||0;if(!k){B.appendChild(row('<span class="em">❔</span><span class="tx"><span class="nm">???</span><span class="mt">Pas encore vaincu</span></span>'));continue}
+let t='Niv '+f.niv+' · '+f.hp+' PV'+(f.elem?' · '+(NM[f.elem]||f.elem):'')+(f.boss?' · Boss':'')+' · vaincu '+k+' fois';
+if(f.zones.length)t+='<br>'+escHtml(f.zones.slice(0,3).join(', '));
+if(k>=5&&f.rs)t+='<br>Résistances : '+Object.keys(NM).map(e=>NM[e]+' '+(f.rs[e]||0)+' %').join(' · ');
+B.appendChild(row('<span class="em">'+f.e+'</span><span class="tx"><span class="nm">'+escHtml(f.n)+'</span><span class="mt">'+t+'</span></span>'))}}
 
 function tabHeros(B){heroPart(B,'heros')}
 function tabEquip(B){heroPart(B,'equip')}
