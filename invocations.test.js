@@ -97,7 +97,7 @@ test('Fossoyeur lot 1 : classe fragile, sorts valides, invocations lancees depui
 
 test('Fossoyeur lot 2 : soin d une invocation, sacrifice explosif, renfort plus solide, malediction', () => {
   const F = DATA.classes.fossoyeur;
-  assert.equal(F.sorts.slice(5).map(s => s.id).join(), 'heure,sacrifice,renfort,malediction');
+  assert.equal(F.sorts.slice(5, 9).map(s => s.id).join(), 'heure,sacrifice,renfort,malediction');
   const c = new Combat(DATA, { classe: 'fossoyeur', renc: 0, niv: 22, lueurs: [] });
   c.pa = 20;
   const I = id => c.S.findIndex(s => s.id == id);
@@ -133,4 +133,40 @@ test('Fossoyeur lot 2 : soin d une invocation, sacrifice explosif, renfort plus 
   assert.ok(rm, 'monstre a portee');
   c.cast(ma, rm[0], rm[1]);
   assert.ok(c.hasEtat(foe2, 'affaibli'));
+});
+
+test('Fossoyeur lot 3 : classe complete (15 sorts), appel de 2 unites, soin de zone, degats selon les invocations, cercueil et vent', () => {
+  const F = DATA.classes.fossoyeur;
+  assert.equal(F.sorts.length, 15);
+  assert.equal(F.sorts.slice(9).map(s => s.id).join(), 'appel,benediction,cercueil,vent_large,legion,dernier');
+  const mk = () => { const c = new Combat(DATA, { classe: 'fossoyeur', renc: 0, niv: 56, lueurs: [], sorts: F.sorts }); c.pa = 40; return c };
+  const I = (c, id) => c.S.findIndex(s => s.id == id);
+  // appel : 2 unites sur des cases differentes ; avec 1 invocation deja la, une seule de plus
+  let c = mk(); let ap = I(c, 'appel'); let p = c.ranged(ap)[0];
+  assert.ok(c.cast(ap, p[0], p[1]).ok);
+  assert.equal(c.liveAllies().length, 2);
+  assert.notEqual(c.allies[0].x + ',' + c.allies[0].y, c.allies[1].x + ',' + c.allies[1].y);
+  c = mk(); ap = I(c, 'appel'); const sq = I(c, 'squelette'); p = c.ranged(sq)[0]; c.cast(sq, p[0], p[1]); c.cd[ap] = 0;
+  p = c.ranged(ap)[0]; if (p) { c.cast(ap, p[0], p[1]); assert.ok(c.liveAllies().length <= 2) }
+  // benediction : soigne et protege toutes les invocations
+  c = mk(); ap = I(c, 'appel'); p = c.ranged(ap)[0]; c.cast(ap, p[0], p[1]);
+  c.allies.forEach(a => { a.hp = 1 });
+  const be = I(c, 'benediction'); assert.ok(c.cast(be, c.hero.x, c.hero.y).ok);
+  assert.ok(c.allies.every(a => a.hp > 1 && c.hasEtat(a, 'bouclier')));
+  // dernier service : plus fort avec des invocations
+  const foeAt = cc => { const f = cc.foes.find(z => !z.form); f.x = cc.hero.x + 1; f.y = cc.hero.y; f.hp = f.max = 9999; return f };
+  c = mk(); foeAt(c); const d0 = c.cast(I(c, 'dernier'), c.hero.x, c.hero.y);
+  c = mk(); ap = I(c, 'appel'); p = c.ranged(ap)[0]; c.cast(ap, p[0], p[1]); const f2 = foeAt(c);
+  const d2 = c.cast(I(c, 'dernier'), c.hero.x, c.hero.y);
+  assert.ok(d2.dmg > d0.dmg, 'bonus par invocation : ' + d0.dmg + ' -> ' + d2.dmg);
+  // cercueil : degats de zone et etourdissement
+  c = mk(); const fz = c.foes.find(z => !z.form); fz.x = c.hero.x + 3; fz.y = c.hero.y; fz.hp = fz.max = 9999;
+  const ce = I(c, 'cercueil'), rc = c.ranged(ce).find(t => c.at(t[0], t[1]) === fz);
+  assert.ok(rc && c.cast(ce, rc[0], rc[1]).ok);
+  assert.ok(fz.hp < 9999 && c.hasEtat(fz, 'etourdi'));
+  // vent du large : degats et recul
+  c = mk(); const fv = c.foes.find(z => !z.form); fv.x = c.hero.x + 3; fv.y = c.hero.y; fv.hp = fv.max = 9999;
+  const vl = I(c, 'vent_large'), rv = c.ranged(vl).find(t => c.at(t[0], t[1]) === fv), x0 = fv.x;
+  assert.ok(rv && c.cast(vl, rv[0], rv[1]).ok && fv.hp < 9999);
+  assert.ok(fv.x > x0, 'recul : ' + x0 + ' -> ' + fv.x);
 });

@@ -1383,7 +1383,7 @@ for(const id in DATA.etin){const e=DATA.etin[id];e.e='✨';if(e.boss!=null)DATA.
 const c=DATA.excells.filter(([x,y])=>!DATA.in(x,y)&&!rocks.has(x+','+y)&&!DATA.exside(x,y).length&&!near.some(p=>Math.abs(p[0]-x)+Math.abs(p[1]-y)<3)).map(c=>[hx(c[0],c[1],key),c]).sort((a,b)=>a[0]-b[0])[0][1];(m.etins=m.etins||[]).push({x:c[0],y:c[1],id})}}})();
 
 // Fossoyeur (4e classe, invocations) : fragile, sa puissance vient de ses serviteurs (2 actives au plus, mortes à la fin du combat). Lot 1 : niveaux 1 à 8.
-DATA.classes.fossoyeur={n:'Fossoyeur',e:'⚰️',hp:45,info:'invocations, fragile',wip:1,sorts:[
+DATA.classes.fossoyeur={n:'Fossoyeur',e:'⚰️',hp:45,info:'invocations, fragile',sorts:[
 {id:'pelle',n:'Coup de pelle',niv:1,pa:2,r:[1,1],dmg:11,rg:[{dmg:3},{pa:-1},{dmg:3},{dmg:3}]},
 {id:'squelette',n:'Squelette de service',niv:1,pa:3,r:[1,3],cd:2,max:2,invoque:{n:'Squelette de service',e:'💀',hp:24,d:7,pm:3,k:2.5,kd:.6},rg:[{ihp:6},{ida:2},{cd:-1},{ihp:8,ida:2}]},
 {id:'spectre',n:'Spectre farceur',niv:3,elem:'vent',pa:3,r:[1,3],cd:2,max:2,invoque:{n:'Spectre farceur',e:'👻',hp:14,d:8,pm:3,r:[2,4],los:1,elem:'vent',k:1.2,kd:.7},rg:[{ihp:4},{ida:2},{cd:-1},{ihp:6,ida:2}]},
@@ -1393,4 +1393,11 @@ DATA.classes.fossoyeur={n:'Fossoyeur',e:'⚰️',hp:45,info:'invocations, fragil
 {id:'heure',n:'Heure sup’',niv:11,elem:'lumiere',pa:2,r:[1,4],los:1,cd:2,healA:14,rg:[{heal:4},{cd:-1},{heal:5},{heal:6}]},
 {id:'sacrifice',n:'Sacrifice utile',niv:14,elem:'tenebres',pa:1,r:[1,4],los:1,cd:2,dmg:18,aoe:1,sacrifice:1,rg:[{dmg:5},{cd:-1},{dmg:5},{dmg:6}]},
 {id:'renfort',n:'Fossoyeuse de renfort',niv:18,pa:4,r:[1,3],cd:3,max:2,invoque:{n:'Fossoyeuse de renfort',e:'🧟',hp:40,d:11,pm:3,k:3.2,kd:.9},rg:[{ihp:8},{ida:3},{cd:-1},{ihp:10,ida:3}]},
-{id:'malediction',n:'Malédiction du dimanche',niv:22,elem:'foudre',pa:3,r:[2,5],los:1,dmg:16,cd:2,etats:[{id:'affaibli',v:25,t:2}],rg:[{dmg:4},{cd:-1},{dmg:4},{dmg:5}]}]};
+{id:'malediction',n:'Malédiction du dimanche',niv:22,elem:'foudre',pa:3,r:[2,5],los:1,dmg:16,cd:2,etats:[{id:'affaibli',v:25,t:2}],rg:[{dmg:4},{cd:-1},{dmg:4},{dmg:5}]},
+// Lot 3 : niveaux 27 à 56
+{id:'appel',n:'Appel du cimetière',niv:27,pa:4,r:[1,3],cd:3,max:2,invoque:{n:'Squelette pressé',e:'☠️',hp:16,d:6,pm:3,k:1.6,kd:.5,nb:2},rg:[{ihp:4},{ida:1},{cd:-1},{ihp:5,ida:2}]},
+{id:'benediction',n:'Bénédiction tardive',niv:32,elem:'lumiere',pa:3,r:[0,0],cd:3,healAll:16,rg:[{heal:4},{cd:-1},{heal:5},{pa:-1}]},
+{id:'cercueil',n:'Cercueil piégé',niv:38,elem:'foudre',pa:4,r:[2,4],los:1,dmg:24,aoe:1,cd:2,etats:[{id:'etourdi',t:1}],rg:[{dmg:5},{cd:-1},{dmg:5},{dmg:6}]},
+{id:'vent_large',n:'Vent du large',niv:44,elem:'vent',pa:3,r:[2,4],los:1,dmg:22,push:2,cd:2,rg:[{dmg:5},{cd:-1},{rmax:1},{dmg:6}]},
+{id:'legion',n:'Légion épuisée',niv:50,pa:5,r:[1,3],cd:4,max:2,invoque:{n:'Colosse épuisé',e:'🗿',hp:90,d:16,pm:3,k:5,kd:1.2},rg:[{ihp:15},{ida:3},{cd:-1},{ihp:20,ida:4}]},
+{id:'dernier',n:'Dernier service',niv:56,elem:'tenebres',pa:6,r:[0,0],dmg:30,aoe:2,parAllie:8,cd:3,rg:[{dmg:6},{cd:-1},{dmg:6},{parAllie:4}]}]};
