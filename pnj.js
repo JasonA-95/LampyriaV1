@@ -153,6 +153,7 @@ const LOOKS={
 'Général Gréviste':{r:'#4a5a30',t:'#ffd24a',h:'#9a9a9a',b:'short',hat:'helm',hc:'#5a6a3a',star:1,prop:'sign',mood:'flat'},
 'La lanterne-prison':'prison',
 'Pèlerin Cendré':{old:1,r:'#8a8a92',t:'#c8c8d0',hood:'#8a8a92',h:'#c8c8d0',hs:'none',b:'long',prop:'staff',pc:'#d0d0d8',long:1,s:'#cfc4b8'},
+'Fossoyeur Cendrelin':{r:'#6a6258',t:'#4a4038',h:'#d8d0c0',hat:'cap',hc:'#3a342c',prop:'lantern',mood:'calm'},
 'Gardien du Parvis':{r:'#d8d0b0',t:'#c8a860',h:'#f0f0f0',hs:'none',hat:'turban',hc:'#f6f2ea',tr:'#c8a860',prop:'cane',mood:'sleep',long:1},
 'La lanterne d’ombre':'ombre',
 'Capitaine fantôme':{r:'#8a98b8',t:'#d8e0f0',s:'#e0eaf8',h:'#cfd8ec',b:'short',hat:'tri',hc:'#46506a',tail:1,g:1,aura:'#bcd0ff',eye:'#7ad0ff'},
