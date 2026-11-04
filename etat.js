@@ -58,7 +58,7 @@ if(sv.map!=null&&!knownId(DATA.cartes,sv.map))delete sv.map;
 if(!DATA.classes[sv.classe])sv.classe='porte';
 // Si l'écriture échoue (stockage plein ou bloqué), le joueur est prévenu une fois. `tto` est déclaré ici car toast() peut être appelé dès le chargement (migration d'ancienne sauvegarde).
 let saveWarned=false,tto;
-const store=()=>{try{sv.maj=Date.now();localStorage.setItem(slotKey(SLOT),JSON.stringify(sv))}catch(e){if(!saveWarned){saveWarned=true;toast('Sauvegarde impossible : stockage du navigateur plein ou bloqué. Exporte ta sauvegarde depuis le menu Jouer.')}}};
+const store=()=>{try{if(typeof succCheck=='function')succCheck();sv.maj=Date.now();localStorage.setItem(slotKey(SLOT),JSON.stringify(sv))}catch(e){if(!saveWarned){saveWarned=true;toast('Sauvegarde impossible : stockage du navigateur plein ou bloqué. Exporte ta sauvegarde depuis le menu Jouer.')}}};
 const heroEmoji=()=>(sv.hero&&sv.hero.asp)||DATA.classes[cfg.classe].e;
 if(savedData&&!hadStoryHistory)store();
 const cfg={classe:sv.classe,renc:0,test:false,lueurs:sv.lueurs.filter(k=>DATA.lueurs[k])};

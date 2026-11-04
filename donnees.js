@@ -1377,9 +1377,10 @@ e_mousse:{n:'Étincelle de mousse',st:{pv:6},map:'sentier'},e_laine:{n:'Étincel
 e_vase:{n:'Étincelle de vase',st:{rtenebres:4},map:'gue'},e_basalte:{n:'Étincelle de basalte',st:{foudre:1},map:'os5'},e_sable:{n:'Étincelle de sable',st:{vent:1},map:'mirage'},
 e_ecume:{n:'Étincelle d’écume',st:{rvent:4},map:'port'},e_cierge:{n:'Étincelle de cierge',st:{lumiere:1},map:'cloitre'},e_rempart:{n:'Étincelle de rempart',st:{pm:1},map:'cour'},
 e_chambellan:{n:'Étincelle de poussière',st:{pv:8},boss:3},e_duchesse:{n:'Étincelle de cendre',st:{res:3},boss:6},e_general:{n:'Étincelle de grève',st:{rfoudre:5},boss:10},
-e_gamin:{n:'Étincelle de suie',st:{pv:10},quete:'cb5'},e_pelerin:{n:'Étincelle de veille',st:{rlumiere:5},quete:'sv5'},e_mirage:{n:'Étincelle de mirage',st:{tenebres:1},quete:'o2'}};
+e_gamin:{n:'Étincelle de suie',st:{pv:10},quete:'cb5'},e_pelerin:{n:'Étincelle de veille',st:{rlumiere:5},quete:'sv5'},e_mirage:{n:'Étincelle de mirage',st:{tenebres:1},quete:'o2'},
+s_memoire:{n:'Étincelle de mémoire',st:{pv:12},succ:1},s_chasse:{n:'Étincelle de chasse',st:{neutre:1},succ:1},s_atelier:{n:'Étincelle d’atelier',st:{res:3},succ:1},s_journal:{n:'Étincelle de journal',st:{rlumiere:6},succ:1}};
 (()=>{const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+29)*73856093)^((y+43)*19349663)^(k*83492791))>>>0;
-for(const id in DATA.etin){const e=DATA.etin[id];e.e='✨';if(e.boss!=null)DATA.rencontres[e.boss].etin=id;else if(e.quete)DATA.quetes[e.quete].rew.etin=id;else{const m=DATA.cartes[e.map],key=hs(id),rocks=new Set(m.rocks.map(r=>r.join(','))),near=['npcs','groups','nodes','picks','hides','coffres'].flatMap(q=>m[q]||[]).concat(m.exits.filter(z=>z.don)).map(o=>[o.x,o.y]);
+for(const id in DATA.etin){const e=DATA.etin[id];e.e='✨';if(e.boss!=null)DATA.rencontres[e.boss].etin=id;else if(e.quete)DATA.quetes[e.quete].rew.etin=id;else if(e.map){const m=DATA.cartes[e.map],key=hs(id),rocks=new Set(m.rocks.map(r=>r.join(','))),near=['npcs','groups','nodes','picks','hides','coffres'].flatMap(q=>m[q]||[]).concat(m.exits.filter(z=>z.don)).map(o=>[o.x,o.y]);
 const c=DATA.excells.filter(([x,y])=>!DATA.in(x,y)&&!rocks.has(x+','+y)&&!DATA.exside(x,y).length&&!near.some(p=>Math.abs(p[0]-x)+Math.abs(p[1]-y)<3)).map(c=>[hx(c[0],c[1],key),c]).sort((a,b)=>a[0]-b[0])[0][1];(m.etins=m.etins||[]).push({x:c[0],y:c[1],id})}}})();
 
 // Fossoyeur (4e classe, invocations) : fragile, sa puissance vient de ses serviteurs (2 actives au plus, mortes à la fin du combat). Lot 1 : niveaux 1 à 8.

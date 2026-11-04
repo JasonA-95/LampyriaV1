@@ -251,9 +251,10 @@ test('panoplies par tranche : 9 nouvelles de 5 pièces, fabricables, niveau éga
   }
 });
 
-test('étincelles : 15 (9 cachées, 3 de boss, 3 de quêtes), bien placées, chacune obtenable une seule fois', () => {
-  const E = Object.entries(D.etin);
+test('étincelles : 15 (9 cachées, 3 de boss, 3 de quêtes), bien placées, chacune obtenable une seule fois (+ 4 de succès)', () => {
+  const E = Object.entries(D.etin).filter(([, e]) => !e.succ);
   assert.equal(E.length, 15);
+  assert.equal(Object.keys(D.etin).length - E.length, 4, '4 étincelles de succès');
   let cach = 0, boss = 0, qu = 0;
   for (const [id, e] of E) {
     assert.ok(Object.keys(e.st).length == 1, id + ' : un seul bonus');

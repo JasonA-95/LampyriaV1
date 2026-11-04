@@ -168,7 +168,7 @@ if(sp.length){d.appendChild(el('h3','','Récompenses spéciales'));sp.forEach(id
 B.appendChild(d)}
 
 // ---------- onglet Quêtes (journal) ----------
-let showDone=false,showBes=false;
+let showDone=false,showBes=false,showSucc=false;
 const qMapOf=(id,key)=>{for(const m of Object.values(DATA.cartes)){const l=(m[key]||[]);if(key=='npcs'?l.some(n=>(n.quests||[]).includes(id)):l.some(o=>o.quest==id))return m.n}return null};
 const qGiver=(id)=>{const q=DATA.quetes[id];return q.donneur||'Maître Lampiste'};
 const qGiverPlace=(id)=>qMapOf(id,'npcs')||'le village';
@@ -204,7 +204,12 @@ B.appendChild(card('Journal','<b style="color:var(--ink)">'+g.fini.length+' quê
 if(!g.rendre.length&&!g.cours.length)B.appendChild(card('Quêtes','Aucune quête en cours. Explore : les habitants qui ont du travail pour toi portent un « ! » (rouge pour l\'histoire principale).'));
 if(g.fini.length){B.appendChild(row('<span class="em">📚</span><span class="tx"><span class="nm">Quêtes terminées ('+g.fini.length+')</span><span class="mt">'+(showDone?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showDone=!showDone;renderMenu()}));
 if(showDone)g.fini.forEach(id=>B.appendChild(questCard(id,'fini')))}
-bestiaryPart(B)}
+bestiaryPart(B);succPart(B)}
+// Succès : compteur et récompense affichés ; un succès débloqué reste lisible.
+function succPart(B){const n=SUCCES.filter(s=>sv.succ[s.id]).length;
+B.appendChild(row('<span class="em">🏆</span><span class="tx"><span class="nm">Succès ('+n+'/'+SUCCES.length+')</span><span class="mt">'+(showSucc?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showSucc=!showSucc;renderMenu()}));
+if(!showSucc)return;for(const s of SUCCES){const ok=!!sv.succ[s.id],c=Math.min(s.need,s.v());
+B.appendChild(row('<span class="em">'+(ok?'🏆':'🔒')+'</span><span class="tx"><span class="nm">'+escHtml(s.n)+'</span><span class="mt">'+escHtml(s.d)+(ok?'':' · '+c+'/'+s.need)+(s.rew?'<br>Récompense : '+escHtml(succRew(s.rew)):'')+'</span></span>'))}}
 // Bestiaire : un monstre vaincu au moins une fois est révélé ; ses résistances le sont à 5 victoires.
 function bestiaryPart(B){const I=besIndex(),L=Object.values(I).sort((a,b)=>a.niv-b.niv||a.n.localeCompare(b.n)),vu=L.filter(f=>sv.bes[f.n]>0).length;
 B.appendChild(row('<span class="em">📖</span><span class="tx"><span class="nm">Bestiaire ('+vu+'/'+L.length+')</span><span class="mt">'+(showBes?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showBes=!showBes;renderMenu()}));
