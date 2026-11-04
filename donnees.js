@@ -1410,3 +1410,12 @@ DATA.classes.fossoyeur={n:'Fossoyeur',e:'⚰️',hp:40,info:'invocations, fragil
 {id:'vent_large',n:'Vent du large',niv:44,elem:'vent',pa:3,r:[2,4],los:1,dmg:22,push:2,cd:2,rg:[{dmg:5},{cd:-1},{rmax:1},{dmg:6}]},
 {id:'legion',n:'Légion épuisée',niv:50,pa:5,r:[1,3],cd:4,max:2,invoque:{n:'Colosse épuisé',e:'🗿',hp:70,d:11,pm:3,k:3,kd:.5},rg:[{ihp:15},{ida:3},{cd:-1},{ihp:20,ida:4}]},
 {id:'dernier',n:'Dernier service',niv:56,elem:'tenebres',pa:6,r:[0,0],dmg:30,aoe:2,parAllie:6,cd:3,rg:[{dmg:6},{cd:-1},{dmg:6},{parAllie:4}]}]};
+
+// Tireurs d'élite : un monstre de quelques groupes devient fragile (PV ×0,55) mais tire de très loin (portée 3-7, recharge 2, dégâts = 1,3 × son contact).
+// Appliqué en dernier, sur les stats déjà calées de chaque zone. [groupe, monstre remplacé, n° parmi les monstres du même nom, nouveau nom, emoji, sort]
+(()=>{const T=[[4,'Le crapaud cendreux',1,'Le héron de cendre','🦩','Coup de bec'],[7,'Chaussette lanceuse',0,'Le tireur de mirages','🎯','Tir de mirage'],[9,'Squelette gréviste',1,'Le lanceur de pancartes','🪧','Pancarte de revendication'],[14,'Archer osseux',0,'Le veilleur au guet','🔭','Regard perçant'],
+[24,'La pelote enragée',0,'La pelote-canon','🧶','Pelote express'],[29,'Le classeur mordant',0,'Le classeur-catapulte','🗄️','Dossier lancé'],[5,'Le crapaud cendreux',0,'Le crapaud cracheur','🐸','Jet de cendre'],[8,'Scorpion de sable',0,'Le scorpion à dard long','🦂','Dard lointain'],
+[11,'Luciole terne',0,'La luciole éblouissante','✨','Éblouissement'],[12,'Pèlerin éteint',0,'Le pèlerin archer','🏹','Flèche de pèlerin'],[49,'La mouette pillarde',0,'La mouette tireuse d’élite','🕊️','Piqué de loin'],[126,'Le cobra de sable',0,'Le cobra cracheur','🐍','Venin craché'],
+[145,'La méduse luisante',0,'La méduse à filaments','🪼','Filament lointain'],[105,'Le loup de brume',0,'Le loup lanceur de brume','🐺','Souffle de brume'],[165,'Le crapaud cendreux',0,'Le crapaud cracheur','🐸','Jet de cendre']];
+for(const [ri,from,nth,n,e,sn] of T){const m=DATA.rencontres[ri].m.filter(x=>x.n==from)[nth];
+m.hp=m.max=Math.max(1,Math.round(m.max*.55));m.n=n;m.e=e;m.pm=2;m.ia='dist';m.garde=[3,5];m.sort={n:sn,r:[3,7],los:1,dmg:Math.round(m.d*1.3),cd:2}}})();
