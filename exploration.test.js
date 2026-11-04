@@ -16,7 +16,7 @@ function loadExploration(save) {
     TextEncoder, btoa, atob, W: 0, startScreenTransition() {},
     localStorage: { getItem: () => JSON.stringify(save), setItem: () => {} }
   });
-  for (const f of ['donnees.js', 'histoire.js', 'xp.js', 'donjons.js', 'etat.js', 'exploration.js', 'scenes.js']) vm.runInContext(source(f), context, { filename: f });
+  for (const f of ['donnees.js', 'histoire.js', 'xp.js', 'donjons.js', 'etat.js', 'exploration.js', 'alea.js', 'scenes.js']) vm.runInContext(source(f), context, { filename: f });
   return context;
 }
 const run = (ctx, expr) => vm.runInContext(expr, ctx);
