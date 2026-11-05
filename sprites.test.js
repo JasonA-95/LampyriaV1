@@ -18,7 +18,7 @@ function load() {
 
 test('chaque sprite de monstre correspond a un monstre existant (pas de faute de nom)', () => {
   const context = load();
-  const noms = new Set(vm.runInContext('DATA.rencontres.flatMap(r=>r.m.map(m=>m.n))', context));
+  const noms = new Set(vm.runInContext('DATA.rencontres.flatMap(r=>r.m.map(m=>m.n)).concat(Object.values(DATA.lueurs).map(l=>l.n))', context));
   const sprites = vm.runInContext('SPR.names', context);
   assert.ok(sprites.length >= 4);
   for (const nom of sprites) assert.ok(noms.has(nom), 'monstre inconnu : ' + nom);
