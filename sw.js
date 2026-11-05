@@ -1,4 +1,4 @@
-const V='lampyria-v124',S='lampyria-sons';
+const V='lampyria-v125',S='lampyria-sons';
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(
   caches.keys().then(k=>Promise.all(k.filter(n=>n!=V&&n!=S).map(n=>caches.delete(n)))).then(()=>clients.claim())
