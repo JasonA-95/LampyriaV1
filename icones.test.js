@@ -13,3 +13,4 @@ test('chaque objet a une apparence unique (forme + motif + couleurs), chaque rel
 for(const [id,o] of Object.entries(D.objets)){const sig=I.kindOf(o)+'|'+I.spec(o).join('|'),prev=seen.get(sig);assert.ok(!prev,id+' = '+prev);seen.set(sig,id)}
 const rel=Object.keys(D.res).filter(k=>/^rel\d+$/.test(k));assert.equal(new Set(rel.map(k=>I.REL[k].join('|'))).size,rel.length);for(const k of rel)assert.ok(I.REL[k],k)});
 test('chaque étincelle a un motif propre',()=>{const m=Object.values(D.etin).map(e=>I.spark(e));assert.equal(new Set(m).size,m.length)});
+test('chaque potion a une icône',()=>{for(const k of Object.keys(D.conso))assert.ok(ok(I.conso(k)),k)});

@@ -101,4 +101,6 @@ const relic=(k,name)=>{const c=PAL[hash(k+name)%PAL.length];return svg(P('M16 2L
 const res=k=>{try{if(RS[k])return svg(RS[k]());if(REL[k])return relic2(k);return ''}catch(e){return ''}};
 const SPM={mousse:'leaf',laine:'cloud',tampon:'seal',vase:'drop',basalte:'hex',sable:'sand','écume':'wave',cierge:'lantern',rempart:'shield','poussière':'ash',cendre:'flame','grève':'bell',suie:'moon',veille:'eye',mirage:'sun','mémoire':'flower',chasse:'feather',atelier:'key',journal:'book'};
 const spark=e=>{try{const c=PAL[hash(e.n)%PAL.length],w=e.n.toLowerCase().replace('étincelle d','').replace(/^[’' e]+/,'').trim(),m=SPM[w]||'star';return svg(`<circle cx="16" cy="16" r="14" fill="${c}" opacity=".3"/>`+P('M16 2L20 12L30 16L20 20L16 30L12 20L2 16L12 12Z','#ffe68a')+motif(m,16,16,1.15,c))}catch(x){return '✨'}};
-return{obj:obj2,res,spark,kindOf:kindOf2,W,RS,spec,REL}})();
+const CO={tisane:['#e8a050','#fff0c0'],baume:['#6aa84f','#e0f4c8'],elixir:['#9a8aa8','#e8e0f0'],fiole:['#ffd84a','#fffbe0']};
+const conso=k=>{try{const [a,b]=CO[k];return svg(`<circle cx="16" cy="16" r="15" fill="${a}" opacity=".22"/>`+P('M13 3H19V9L25 24Q26 29 21 29H11Q6 29 7 24L13 9Z','#cfe4ec','fill-opacity=".55"')+P('M9.4 19H22.6L25 24Q26 29 21 29H11Q6 29 7 24Z',a)+P('M12.5 3H19.5V6H12.5Z','#8a6a4a')+C(14,23.5,1.6,b))}catch(e){return ''}};
+return{obj:obj2,conso,res,spark,kindOf:kindOf2,W,RS,spec,REL}})();

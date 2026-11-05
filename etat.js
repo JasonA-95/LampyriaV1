@@ -100,11 +100,11 @@ const say=k=>{let r=DATA.repliques[k];if(!r)return;if(Array.isArray(r[0])){const
 const msg=t=>$('msgEl').textContent=t;
 
 // ---------- ressources ----------
-const rn=k=>DATA.res[k].split(' ')[0];
-const rl=o=>Object.keys(o).map(k=>rn(k)+' '+o[k]).join(' ');
+const rn=k=>DATA.res[k].split(' ')[0],rni=k=>ICO.res(k)||rn(k);
+const rl=o=>Object.keys(o).map(k=>rn(k)+' '+o[k]).join(' '),rli=o=>Object.keys(o).map(k=>rni(k)+' '+o[k]).join(' ');
 const canPay=c=>Object.keys(c).every(k=>sv.res[k]>=c[k]);
 const pay=c=>Object.keys(c).forEach(k=>sv.res[k]-=c[k]);
-const costChips=c=>'<span class="chips">'+Object.keys(c).map(k=>'<span class="chip '+(sv.res[k]>=c[k]?'ok':'no')+'">'+rn(k)+' '+c[k]+'</span>').join('')+'</span>';
+const costChips=c=>'<span class="chips">'+Object.keys(c).map(k=>'<span class="chip '+(sv.res[k]>=c[k]?'ok':'no')+'">'+rni(k)+' '+c[k]+'</span>').join('')+'</span>';
 
 // ---------- description des sorts ----------
 const rg=r=>r[0]==r[1]?r[0]:r[0]+'-'+r[1];
