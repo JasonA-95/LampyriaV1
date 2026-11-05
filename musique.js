@@ -21,14 +21,20 @@ combat:{r:165,s:'min',p:'b',bpm:132,w:'sawtooth',m:4,k:1,bs:1},
 boss:{r:139,s:'har',p:'d',bpm:144,w:'sawtooth',m:4,k:1,bs:1}};
 // Instruments GM échantillonnés (WebAudioFont, chargés à la demande) : m mélodie, b basse, a arpège, p nappe. Repli sur le synthé si indisponibles.
 const MUS_I={titre:{m:46,b:42,a:46,p:89},village:{m:73,b:32,a:46,p:48},foret:{m:73,b:42,a:46,p:89},collines:{m:73,b:32,a:24,p:48},marais:{m:71,b:42,a:46,p:89},roseliere:{m:46,b:42,a:46,p:52},desert:{m:68,b:42,a:46,p:89},mer:{m:46,b:42,a:48,p:52},temple:{m:52,b:42,a:46,p:89},manoir:{m:0,b:42,a:46,p:89},citadelle:{m:56,b:33,a:48,p:48},serre:{m:11,b:42,a:46,p:89},trone:{m:19,b:42,a:46,p:52},combat:{m:56,b:33,a:48,p:48},boss:{m:56,b:33,a:48,p:19}};
-const MUS_CDN='https://surikov.github.io/webaudiofontdata/sound/',MUS_PLAYER='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js',MUS_L={player:null,tried:false,req:{}};
-function musScript(src,ok){if(typeof document=='undefined')return;const sc=document.createElement('script');sc.src=src;sc.async=true;sc.onload=ok;sc.onerror=()=>{};document.head.appendChild(sc)}
-function musVar(n){const id=String(n*10).padStart(4,'0');return{id,v:'_tone_'+id+'_FluidR3_GM_sf2_file'}}
-function musLoad(theme){if(typeof document=='undefined'||!soundAudio)return;const go=()=>{if(!MUS_L.player)try{MUS_L.player=new WebAudioFontPlayer}catch(e){return}
-for(const n of Object.values(MUS_I[theme]||{})){const x=musVar(n);if(MUS_L.req[x.id])continue;MUS_L.req[x.id]=1;musScript(MUS_CDN+x.id+'_FluidR3_GM_sf2_file.js',()=>{try{MUS_L.player.loader.decodeAfterLoading(soundAudio,x.v)}catch(e){}})}};
-if(typeof WebAudioFontPlayer!='undefined')go();else if(!MUS_L.tried){MUS_L.tried=true;musScript(MUS_PLAYER,()=>musLoad(MUS.theme))}}
-function musPreset(n){const x=musVar(n),p=globalThis[x.v];return p&&p.zones&&p.zones.every(z=>z.buffer)?p:null}
-function musPlay(voice,hz,t,dur,wave,lvl){try{if(MUS_L.player){const pr=musPreset((MUS_I[MUS.theme]||{})[voice]);if(pr){MUS_L.player.queueWaveTable(soundAudio,MUS.bus,pr,t,Math.round(69+12*Math.log2(hz/440)),dur,Math.min(1,lvl*2.2));return}}}catch(e){}musNote(hz,t,dur,wave,lvl)}
+// Échantillons FluidR3 (licence MIT, voir CREDITS.md) lus par notre propre lecteur : aucun code tiers. Fichiers cherchés d'abord dans sons/ (hébergés avec le jeu), puis sur le site de WebAudioFont ; repli sur le synthé si indisponibles.
+const MUS_DIR='sons/',MUS_CDN='https://surikov.github.io/webaudiofontdata/sound/',MUS_L={req:{}};
+function musScript(src,ok,ko){if(typeof document=='undefined')return;const sc=document.createElement('script');sc.src=src;sc.async=true;sc.onload=ok;sc.onerror=ko||(()=>{});document.head.appendChild(sc)}
+function musVar(n){const id=String(n*10).padStart(4,'0');return{id,file:id+'_FluidR3_GM_sf2_file.js',v:'_tone_'+id+'_FluidR3_GM_sf2_file'}}
+function musB64(b){const t=atob(b),u=new Uint8Array(t.length);for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i);return u}
+function musDecode(z){if(z.buffer||z.pend||!soundAudio)return;z.pend=1;try{if(z.file){const u=musB64(z.file);soundAudio.decodeAudioData(u.buffer,b=>{z.buffer=b},()=>{})}else if(z.sample){const u=musB64(z.sample),n=u.length>>1,b=soundAudio.createBuffer(1,n,z.sampleRate||44100),d=b.getChannelData(0);for(let i=0;i<n;i++){let v=u[2*i]|(u[2*i+1]<<8);if(v>=32768)v-=65536;d[i]=v/32768}z.buffer=b}}catch(e){}}
+function musLoad(theme){if(typeof document=='undefined'||!soundAudio)return;for(const n of Object.values(MUS_I[theme]||{})){const x=musVar(n);if(MUS_L.req[x.id])continue;MUS_L.req[x.id]=1;const done=()=>{const p=globalThis[x.v];if(p&&p.zones)p.zones.forEach(musDecode)};musScript(MUS_DIR+x.file,done,()=>musScript(MUS_CDN+x.file,done))}}
+function musPreset(n){const p=globalThis[musVar(n).v];return p&&p.zones&&p.zones.length&&p.zones.every(z=>z.buffer)?p:null}
+// hauteur : rapport de lecture d'une zone pour une note MIDI
+function musRate(z,midi){return Math.pow(2,(midi*100-(z.originalPitch||6000)+(z.coarseTune||0)*100+(z.fineTune||0))/1200)}
+function musSample(pr,midi,t,dur,lvl){const z=pr.zones.find(z=>midi>=(z.keyRangeLow||0)&&midi<=(z.keyRangeHigh==null?127:z.keyRangeHigh))||pr.zones[0],src=soundAudio.createBufferSource(),g=soundAudio.createGain(),end=t+Math.max(.15,dur),rel=.25;
+src.buffer=z.buffer;src.playbackRate.setValueAtTime(musRate(z,midi),t);if(z.loopStart>0&&z.loopEnd>z.loopStart){src.loop=true;src.loopStart=z.loopStart/z.sampleRate;src.loopEnd=z.loopEnd/z.sampleRate}
+g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(lvl,t+.01);g.gain.setValueAtTime(lvl,end);g.gain.exponentialRampToValueAtTime(.0001,end+rel);src.connect(g);g.connect(MUS.bus);src.start(t);src.stop(end+rel+.02)}
+function musPlay(voice,hz,t,dur,wave,lvl){try{const pr=musPreset((MUS_I[MUS.theme]||{})[voice]);if(pr){musSample(pr,Math.round(69+12*Math.log2(hz/440)),t,dur,Math.min(1,lvl*2.2));return}}catch(e){}musNote(hz,t,dur,wave,lvl)}
 const MUS={theme:null,pend:null,step:0,next:0,timer:null,bus:null,seed:1,ev:[]};
 function musRnd(){MUS.seed=(Math.imul(MUS.seed,1664525)+1013904223)>>>0;return MUS.seed/4294967296}
 // Compose une boucle de 8 mesures (64 croches) : [croche, Hz, durée en croches, voix]

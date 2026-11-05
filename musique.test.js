@@ -17,3 +17,6 @@ const play=new Function(fs.readFileSync('son.js','utf8')+';soundUnlocked=true;so
 globalThis.__ctx=ctx();globalThis.OPT={son:60};globalThis.soundNoiseSeed=1;const ps=play();ctx2=null;
 const mk=()=>{const c=ctx();c.sampleRate=8000;c.createBuffer=(a,l)=>({getChannelData:()=>new Float32Array(l)});c.createBufferSource=()=>({connect(){},start(){},stop(){}});c.createBiquadFilter=()=>({connect(){},frequency:{setValueAtTime(){},linearRampToValueAtTime(){}}});return c};globalThis.__ctx=mk();const ps2=play();
 for(const t of['click','step','shot','magic','melee','heal','zone','hit','death','harvest','level','victory','defeat','state','stun','dialogue','succes','quete','quete_fin','invoque','boss','coffre','foudre','lumiere','tenebres','vent'])assert.equal(ps2(t),true,t);assert.equal(ps2('inconnu'),false)});
+test('lecteur maison : hauteur et décodage PCM sans code tiers',()=>{const m=new Function(fs.readFileSync('son.js','utf8')+fs.readFileSync('musique.js','utf8')+';return {musRate,musDecode}')();
+const z={originalPitch:6900,coarseTune:0,fineTune:0};assert.equal(m.musRate(z,69),1);assert.ok(Math.abs(m.musRate(z,81)-2)<1e-9);assert.ok(Math.abs(m.musRate(z,57)-.5)<1e-9);
+assert.ok(!/WebAudioFontPlayer|queueWaveTable/.test(fs.readFileSync('musique.js','utf8')))});
