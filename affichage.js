@@ -87,7 +87,7 @@ function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('g
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
-function init(){if(typeof playMusic=='function'&&!cfg.test){const R=DATA.rencontres[cfg.renc];playMusic(R&&(R.type=='boss'||(R.m||[]).some(m=>m.boss))?'boss':'combat')}size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes(),lien:sv.lien,hp:cfg.test?0:sv.pv});C.hero.e=heroEmoji();resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
+function init(){if(typeof playMusic=='function'&&!cfg.test){const R=DATA.rencontres[cfg.renc];const B=R&&(R.type=='boss'||(R.m||[]).some(m=>m.boss));playMusic(B?'boss':'combat');if(B&&typeof playSound=='function')playSound('boss')}size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes(),lien:sv.lien,hp:cfg.test?0:sv.pv});C.hero.e=heroEmoji();resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
 hideBubble();say(DATA.rencontres[cfg.renc].say||'debut');$('tip').textContent='Maintiens un sort pour lire sa description. Tacle : quitter une case voisine d’un monstre coûte 1 PM de plus.'+(C.foes.some(f=>f.cendre)?' Duchesse : protégée sur la cendre grise (≈), disperse-la avec un sort pour la rendre vulnérable.':'');
 msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw()}
 cv.onclick=e=>{if(moved){moved=false;return}if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);
@@ -103,7 +103,7 @@ if(spell.push)addDisplayEffect('wave',{at,radius:spell.push,color,duration:230})
 for(const hit of result.hit||[]){const old=before.find(item=>item.unit===hit);if(old&&old.hp>hit.hp&&hit.hp>0)flashHit(hit)}
 if(heroBefore.hp>C.hero.hp){flashHit(C.hero);if(typeof playSound=='function')playSound('hit')}
 if((result.events||[]).length){addDisplayEffect('pulse',{at,radius:.8,color:'#ffe08a',duration:220});if(typeof playSound=='function')playSound('state')}
-if(typeof playSound=='function')playSound(spell?(spell.heal||spell.drain?'heal':spell.aoe!=null?'zone':spell.r&&spell.r[1]>1&&spell.dmg?'shot':spell.dmg?'melee':'magic'):'step')}
+if(typeof playSound=='function'){if(spell&&spell.invoque)playSound('invoque');else if(spell&&spell.elem&&spell.dmg)playSound(spell.elem)}if(typeof playSound=='function')playSound(spell?(spell.heal||spell.drain?'heal':spell.aoe!=null?'zone':spell.r&&spell.r[1]>1&&spell.dmg?'shot':spell.dmg?'melee':'magic'):'step')}
 function act(x,y){if(busy||C.result||displayPending())return;const ok=mode=='move'?C.reach()[x+','+y]>0:C.ranged(mode).some(t=>t[0]==x&&t[1]==y);
 if(!ok){pend=null;msg(mode=='move'?MSG.loin:MSG.cible);draw();return}
 if(!pend||pend.x!=x||pend.y!=y){pend={x,y};msg(mode=='move'?'Déplacement : '+C.reach()[x+','+y]+' PM. Touche encore la case pour confirmer.':'Zone affichée. Touche encore la même case pour lancer le sort.');draw();return}

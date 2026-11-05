@@ -35,5 +35,5 @@ for(const s of SUCCES){if(sv.succ[s.id]||s.v()<s.need)continue;sv.succ[s.id]=Dat
 for(const k in r.res||{})sv.res[k]=(sv.res[k]||0)+r.res[k];
 for(const k in r.conso||{})sv.conso[k]=Math.min(50,(sv.conso[k]||0)+r.conso[k]);
 if(r.etin&&!sv.etin.got.includes(r.etin))sv.etin.got.push(r.etin)}
-if(neufs.length)toast('🏆 '+(neufs.length>1?neufs.length+' succès : ':'Succès : ')+neufs.map(s=>s.n).join(', '));return neufs}
+if(neufs.length&&typeof playSound=='function')playSound('succes');if(neufs.length)toast('🏆 '+(neufs.length>1?neufs.length+' succès : ':'Succès : ')+neufs.map(s=>s.n).join(', '));return neufs}
 function succRew(r){const t=[];for(const k in r.res||{})t.push(r.res[k]+' '+DATA.res[k]);for(const k in r.conso||{})t.push(r.conso[k]+' '+DATA.conso[k].n);if(r.etin)t.push(DATA.etin[r.etin].n);return t.join(', ')}

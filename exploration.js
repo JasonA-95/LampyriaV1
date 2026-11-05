@@ -62,10 +62,10 @@ EX.markInfo=p=>{const Q=qs();let m='',main=false;for(const id of (p.quests||[]))
 EX.npcMark=p=>EX.markInfo(p).m;
 EX.talkNormal=p=>{const Q=qs(),B=[],variant=(p.variantes||[]).find(v=>storyCondition(v.si,sv,sv.hist.flags));let t=variant?variant.txt:p.txt;
 (p.quests||[]).forEach(id=>{const q=DATA.quetes[id],s=Q[id];
-if(!s){if((q.req||0)<=sv.renc&&(!q.apres||(Q[q.apres]||{}).s==2)&&(!q.rend||p.n==q.donneur))B.push(['Accepter : '+q.n,q.desc,false,()=>{Q[id]={s:1,n:q.kind=='craft'&&sv.inv.includes(q.item)?q.need:0,got:[]};if(q.kind=='escorte'){sv.hist.flags['esc_'+id]=true;EX.fol={x:p.x,y:p.y}}store();EX.marks(EX.map);exStory({quand:'quete',id,etat:'acceptee'},()=>{speak(p.n,q.say,{at:{x:p.x,y:p.y}});EX.ui();EX.draw();toast('Quête acceptée : '+q.n)})},q.kind=='escorte'&&!!EX.escort()])}
+if(!s){if((q.req||0)<=sv.renc&&(!q.apres||(Q[q.apres]||{}).s==2)&&(!q.rend||p.n==q.donneur))B.push(['Accepter : '+q.n,q.desc,false,()=>{Q[id]={s:1,n:q.kind=='craft'&&sv.inv.includes(q.item)?q.need:0,got:[]};if(typeof playSound=='function')playSound('quete');if(q.kind=='escorte'){sv.hist.flags['esc_'+id]=true;EX.fol={x:p.x,y:p.y}}store();EX.marks(EX.map);exStory({quand:'quete',id,etat:'acceptee'},()=>{speak(p.n,q.say,{at:{x:p.x,y:p.y}});EX.ui();EX.draw();toast('Quête acceptée : '+q.n)})},q.kind=='escorte'&&!!EX.escort()])}
 else if(s.s==1){const ok=s.n>=q.need,afford=!q.cost||Object.keys(q.cost).every(k=>sv.res[k]>=q.cost[k]);
 if(ok)B.push(['Terminer : '+q.n,q.cost?'coût : '+rl(q.cost):'récompense','pri',()=>{
-if(q.cost)Object.keys(q.cost).forEach(k=>sv.res[k]-=q.cost[k]);s.s=2;const g=EX.gain(q.rew);EX.marks(EX.map);exStory({quand:'quete',id,etat:'terminee'},()=>{speak(p.n,q.fin,{at:{x:p.x,y:p.y}});msg('Quête terminée !'+g);toast('Quête terminée !'+g);EX.ui();EX.draw()})},!afford])
+if(q.cost)Object.keys(q.cost).forEach(k=>sv.res[k]-=q.cost[k]);if(typeof playSound=='function')playSound('quete_fin');s.s=2;const g=EX.gain(q.rew);EX.marks(EX.map);exStory({quand:'quete',id,etat:'terminee'},()=>{speak(p.n,q.fin,{at:{x:p.x,y:p.y}});msg('Quête terminée !'+g);toast('Quête terminée !'+g);EX.ui();EX.draw()})},!afford])
 else t+=' ('+q.n+' : '+s.n+'/'+q.need+')'}});
 (p.actions||[]).forEach(a=>{if(a.si&&!storyCondition(a.si,sv,sv.hist.flags))return;const ok=!a.ok||storyCondition(a.ok,sv,sv.hist.flags);
 B.push([a.t,ok?a.sub:a.why,a.cls||'',()=>{if(a.fight!=null){EX.fightNpc(a.fight,p);return}if(a.open){openMenu(a.open);return}const g=a.rew?EX.gain(a.rew):'';EX.storyTrigger({quand:'action',id:a.id},()=>{EX.ui();EX.draw();if(g){msg(g.trim());toast(g.trim())}})},!ok])});
@@ -104,7 +104,7 @@ EX.walking=false;if(!ent){msg('');return}
 if(ent.t=='n')EX.harvest(ent.o);else if(ent.t=='p')EX.talk(ent.o)
 else if(ent.t=='e'){const e0=DJ.pass(ent.o),e=ent.o.don||e0.to!=ent.o.to?e0:{...e0,...exArrive(ent.o.d,EX.x,EX.y,DATA.cartes[e0.to])};EX.enter(e.to,e.tx,e.ty);msg('Tu entres : '+DATA.cartes[e.to].n+'.'+DJ.note);EX.ui();EX.draw();EX.storyTrigger({quand:'entree',carte:EX.map},EX.ambush)}
 else EX.fight(ent.o)};
-EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
+EX.harvest=n=>{if(n.coffre){EX.nodes=EX.nodes.filter(z=>z!==n);sv.hist.flags['coffre_'+n.id]=true;const t=[];for(const k in n.res){sv.res[k]+=n.res[k];t.push('+'+n.res[k]+' '+rn(k))}store();pop(n,'Coffre secret !','#ffe08a');if(typeof playSound=='function')playSound('coffre');msg('Coffre de la Farceuse : '+t.join(', '));EX.ui();EX.draw();return}
 if(n.etin){EX.nodes=EX.nodes.filter(z=>z!==n);if(!sv.etin.got.includes(n.etin))sv.etin.got.push(n.etin);store();pop(n,'Étincelle !','#ffe08a');if(typeof playSound=='function')playSound('harvest');msg('✨ '+DATA.etin[n.etin].n+' : à équiper dans la Lanterne.');EX.draw();return}
 if(n.pick){EX.nodes=EX.nodes.filter(z=>z!==n);EX.prog(n.quest,n.id);pop(n,'Trouvé !','#ffe08a');if(typeof playSound=='function')playSound('harvest');EX.draw();return}
 if(n.until>Date.now()){msg('Déjà cueilli : repousse dans '+Math.ceil((n.until-Date.now())/1000)+' s.');return}

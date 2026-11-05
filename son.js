@@ -24,5 +24,15 @@ case'defeat':soundTone(360,180,.22,'triangle',0,.4);soundTone(240,90,.3,'sine',.
 case'state':soundTone(560,780,.12,'sine',0,.25);break;
 case'stun':soundTone(260,160,.18,'triangle',0,.28);break;
 case'dialogue':soundTone(600,550,.055,'sine',0,.12);break;
+case'succes':soundTone(660,880,.14,'triangle',0,.4);soundTone(880,1100,.14,'triangle',.12,.4);soundTone(1100,1320,.3,'sine',.24,.45);soundTone(1320,1320,.35,'sine',.24,.18);break;
+case'quete':soundTone(440,520,.1,'sine',0,.35);soundTone(660,780,.16,'sine',.1,.35);break;
+case'quete_fin':soundTone(520,660,.12,'triangle',0,.38);soundTone(660,880,.12,'triangle',.11,.38);soundTone(880,1040,.24,'sine',.22,.42);break;
+case'invoque':soundTone(110,220,.3,'sawtooth',0,.3);soundTone(330,165,.25,'sine',.08,.3);soundNoise(.18,.18);break;
+case'boss':soundTone(110,82,.5,'sawtooth',0,.5);soundTone(165,82,.55,'square',.05,.3);soundNoise(.25,.3);break;
+case'coffre':soundTone(520,780,.1,'triangle',0,.4);soundTone(780,1170,.12,'triangle',.09,.4);soundTone(1040,1560,.25,'sine',.19,.42);break;
+case'foudre':soundNoise(.06,.5);soundTone(1400,200,.13,'sawtooth',0,.3);break;
+case'lumiere':soundTone(880,1320,.2,'sine',0,.3);soundTone(1320,1760,.16,'sine',.05,.2);break;
+case'tenebres':soundTone(220,70,.3,'sawtooth',0,.3);soundTone(150,60,.28,'sine',.04,.3);break;
+case'vent':soundNoise(.22,.3);soundTone(300,700,.2,'sine',0,.12);break;
 default:return false}return true}catch(e){return false}}
 if(typeof window!='undefined'&&window.addEventListener){window.addEventListener('pointerdown',unlockSound,{once:true,capture:true});window.addEventListener('keydown',unlockSound,{once:true,capture:true})}
