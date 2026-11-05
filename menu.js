@@ -7,7 +7,7 @@ const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];r
 const heroMax=pvMax;
 
 function itemRow(id,extra){const o=DATA.objets[id];
-return '<span class="em">'+o.e+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
+return '<span class="em">'+ICO.obj(o)+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
 function card(title,...kids){const c=el('div','card',title?'<h3>'+title+'</h3>':'');kids.forEach(k=>{if(k)c.appendChild(typeof k=='string'?el('p','',k):k)});return c}
 function row(html,fn,cls){const r=el(fn?'button':'div','row '+(cls||''),html);if(fn)r.onclick=fn;return r}
 function bonusLabel(s,rank){const b=s.rg[rank-2]||{},parts=[];if(b.dmg)parts.push((b.dmg>0?'+':'')+b.dmg+' dégâts');if(b.pa)parts.push((b.pa>0?'+':'')+b.pa+' PA');if(b.cd)parts.push((b.cd>0?'+':'')+b.cd+' recharge');if(b.rmax)parts.push('+'+b.rmax+' portée max');if(b.push)parts.push('+'+b.push+' poussée');if(b.garde)parts.push('+'+b.garde+' tour de garde');return parts.join(' · ')||'aucun bonus'}
@@ -99,7 +99,7 @@ clean();if(ch)renderMenu();return}clean()};
 node.addEventListener('pointerup',end);node.addEventListener('pointercancel',end);node.addEventListener('contextmenu',e=>{if(e.pointerType!='mouse')e.preventDefault()})}
 function invPart(B){const sel=invSel&&invSel.id&&sv.inv.includes(invSel.id)?invSel:null,eqIds=Object.values(sv.eq),wrap=el('div','inv'),left=el('div','card'),right=el('div','card invbag');
 left.appendChild(el('h3','','Équipement'));const sl=el('div','invslots');
-SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,b=el('button','islot'+(id?' full':'')+(sel&&sel.slot==s?' sel':''),id?'<span class="ie">'+DATA.objets[id].e+'</span>':'<span class="ie ghostic">'+ic+'</span>');b.dataset.slot=s;b.style.gridArea=INV_AREA[s];b.title=n;b.setAttribute('aria-label',n);
+SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,b=el('button','islot'+(id?' full':'')+(sel&&sel.slot==s?' sel':''),id?'<span class="ie">'+ICO.obj(DATA.objets[id])+'</span>':'<span class="ie ghostic">'+ic+'</span>');b.dataset.slot=s;b.style.gridArea=INV_AREA[s];b.title=n;b.setAttribute('aria-label',n);
 if(id){b.style.setProperty('--rc',RC[DATA.objets[id].r]);invDrag(b,id,s)}
 b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel=id?{id,slot:s}:{id:null,slot:s};renderMenu()};sl.appendChild(b)});left.appendChild(sl);
 const tot=Object.fromEntries(Object.entries(gear().t).filter(([k,v])=>v));left.appendChild(el('p','mt','Total équipé : '+(Object.keys(tot).length?fmtSt(tot):'aucun bonus')));
@@ -114,7 +114,7 @@ if(sel.slot)d.appendChild(btn('Retirer','','',()=>{equip(sel.slot,null);invSel={
 else{const f=SLOTS.filter(s=>slotType(s[0])==o.slot).map(s=>s[0]),to=f.find(s=>!sv.eq[s])||f[0];d.appendChild(btn('Équiper','Ou glisse l\'objet sur un emplacement.','pri',()=>{equip(to,sel.id);invSel={id:sel.id,slot:to};renderMenu()}))}}
 else d.appendChild(el('p','','Glisse un objet du sac sur un emplacement, ou touche-le pour le détail. Glisse un objet équipé dans le sac pour le retirer.'));right.appendChild(d)}
 else if(invCat=='conso'){right.appendChild(el('p','mt','PV : <b>'+pvNow()+' / '+pvMax()+'</b>. Les potions se boivent hors combat ; la montée de niveau et les auberges soignent aussi.'));const ks=Object.keys(DATA.conso).filter(k=>sv.conso[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune potion. Fabrique-les à La Fiole Tiède (Cour des Ouvrages).'));ks.forEach(k=>{const o=DATA.conso[k];right.appendChild(row('<span class="em">'+o.e+'</span><span class="tx"><span class="nm">'+o.n+'</span><span class="mt">'+o.d+'</span></span><span class="chip">×'+sv.conso[k]+'</span>',()=>usePotion(k)))})}
-else if(invCat=='res'){const ks=Object.keys(DATA.res).filter(k=>sv.res[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune ressource. Elles se récoltent en explorant et en combattant.'));ks.forEach(k=>{const[e,...n]=DATA.res[k].split(' ');right.appendChild(row('<span class="em">'+e+'</span><span class="tx"><span class="nm">'+n.join(' ')+'</span></span><span class="chip">×'+sv.res[k]+'</span>'))})}
+else if(invCat=='res'){const ks=Object.keys(DATA.res).filter(k=>sv.res[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune ressource. Elles se récoltent en explorant et en combattant.'));ks.forEach(k=>{const[e,...n]=DATA.res[k].split(' ');right.appendChild(row('<span class="em">'+(ICO.res(k)||e)+'</span><span class="tx"><span class="nm">'+n.join(' ')+'</span></span><span class="chip">×'+sv.res[k]+'</span>'))})}
 else{const q=questItems();if(!q.length)right.appendChild(el('p','','Aucun objet de quête pour l\'instant.'));q.forEach(x=>right.appendChild(row('<span class="em">'+x.e+'</span><span class="tx"><span class="nm">'+escHtml(x.n)+'</span><span class="mt">'+x.m+'</span></span>')))}
 wrap.append(left,right);B.appendChild(wrap)}
 
@@ -130,7 +130,7 @@ B.appendChild(c);
 const SP=card('Étincelles','Petites Lueurs de taille 1 : un bonus fixe. 2 équipées au plus, elles prennent de la place dans la lanterne. <b>'+sv.etin.got.length+'/'+Object.keys(DATA.etin).length+'</b> trouvées.');
 Object.keys(DATA.etin).forEach(id=>{const e=DATA.etin[id],has=sv.etin.got.includes(id),on=sv.etin.eq.includes(id);if(!has){SP.appendChild(row('<span class="em">🔒</span><span class="tx"><span class="nm">???</span><span class="mt">'+(e.boss!=null?'Offerte par un boss':e.quete?'Récompense de quête':'Cachée dans une zone')+'</span></span>',null,'lock'));return}
 const why=!on&&(sv.etin.eq.length>=2?'2 étincelles maximum':used+1>cap?'Pas assez de place dans la lanterne':'');
-SP.appendChild(row('<span class="em">'+(on?'✨':'💡')+'</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+fmtSt(e.st)+(why?' · <span style="color:var(--bad)">'+why+'</span>':'')+'</span></span>',()=>{if(why){toast(why);return}sv.etin.eq=on?sv.etin.eq.filter(z=>z!=id):[...sv.etin.eq,id];normL();saveCfg();renderMenu()},why?'lock':''))});
+SP.appendChild(row('<span class="em">'+(ICO.spark(e)||(on?'✨':'💡'))+'</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+fmtSt(e.st)+(why?' · <span style="color:var(--bad)">'+why+'</span>':'')+'</span></span>',()=>{if(why){toast(why);return}sv.etin.eq=on?sv.etin.eq.filter(z=>z!=id):[...sv.etin.eq,id];normL();saveCfg();renderMenu()},why?'lock':''))});
 B.appendChild(SP);
 const L=card('Lueurs','Chaque Lueur ajoute un sort. Les grandes Lueurs prennent plus de place dans la lanterne.');
 const av=avail();
