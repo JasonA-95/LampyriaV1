@@ -63,3 +63,5 @@ MUS.theme=name;MUS.ev=musCompose(name);musLoad(name);MUS.step=0;MUS.next=soundAu
 if(!MUS.timer)MUS.timer=setInterval(musTick,150);musTick()}
 function playMusic(name){MUS.pend=name;if(name==MUS.theme&&MUS.timer)return;try{musStart(name)}catch(e){}}
 if(typeof window!='undefined'&&window.addEventListener){const go=()=>setTimeout(()=>{if(MUS.pend&&!MUS.theme)playMusic(MUS.pend)},0);window.addEventListener('pointerdown',go,{capture:true});window.addEventListener('keydown',go,{capture:true})}
+// Pause du son quand la page n'est plus visible (changement d'appli ou d'onglet), reprise au retour.
+if(typeof document!='undefined'&&document.addEventListener){const vis=()=>{try{if(!soundAudio)return;if(document.hidden)soundAudio.suspend();else if(OPT.son)soundAudio.resume()}catch(e){}};document.addEventListener('visibilitychange',vis);if(typeof window!='undefined')window.addEventListener('pagehide',()=>{try{soundAudio&&soundAudio.suspend()}catch(e){}})}

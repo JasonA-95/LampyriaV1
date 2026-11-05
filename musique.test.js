@@ -21,3 +21,7 @@ test('lecteur maison : hauteur et décodage PCM sans code tiers',()=>{const m=ne
 const z={originalPitch:6900,coarseTune:0,fineTune:0};assert.equal(m.musRate(z,69),1);assert.ok(Math.abs(m.musRate(z,81)-2)<1e-9);assert.ok(Math.abs(m.musRate(z,57)-.5)<1e-9);
 assert.ok(!/WebAudioFontPlayer|queueWaveTable/.test(fs.readFileSync('musique.js','utf8')))});
 test('écran Crédits : bouton et notice FluidR3',()=>{const t=fs.readFileSync('titre.js','utf8');assert.ok(t.includes("btn('Crédits'")&&t.includes('Frank Wen')&&t.includes('THE SOFTWARE IS PROVIDED'))});
+test('le son se met en pause quand la page est masquée',()=>{const calls=[];const doc={hidden:false,addEventListener(n,f){doc[n]=f}};
+const ac={suspend(){calls.push('s')},resume(){calls.push('r')}};
+new Function('document','window','soundAudio','OPT',fs.readFileSync('musique.js','utf8').replace(/^const MUS_S/m,'var MUS_S').split('\n').filter(l=>!/^function musNote|^if\(typeof window/.test(l)).join('\n')+';')(doc,undefined,ac,{son:60});
+doc.hidden=true;doc.visibilitychange();doc.hidden=false;doc.visibilitychange();assert.deepEqual(calls,['s','r'])});
