@@ -14,7 +14,7 @@ if(auto=='play'){startPlay();return}
 $('menu').classList.add('hide');$('game').classList.add('hide');renderTitle()}
 function titleSparks(T){if(OPT.fx=='off')return;const box=el('div','sparks');box.setAttribute('aria-hidden','true');
 for(let i=0;i<(OPT.fx=='eleve'?16:7);i++){const s=el('i');s.style.cssText='left:'+(5+Math.random()*90).toFixed(1)+'%;top:'+(10+Math.random()*80).toFixed(1)+'%;animation-delay:'+(-Math.random()*8).toFixed(1)+'s;animation-duration:'+(5+Math.random()*6).toFixed(1)+'s';box.appendChild(s)}T.appendChild(box)}
-function renderTitle(){const T=$('titre');T.className='';T.replaceChildren();titleSparks(T);
+function renderTitle(){if(typeof playMusic=='function')playMusic('titre');const T=$('titre');T.className='';T.replaceChildren();titleSparks(T);
 const main=el('div','tmain'),infos=[1,2,3].map(slotInfo),any=infos.some(Boolean);
 const left=el('div','tleft'),right=el('div','tright');left.appendChild(el('div','tlamp','🏮'));left.appendChild(el('h1','','Lampyria'));left.appendChild(el('p','tsub','Les Sept Lueurs'));
 const list=el('div','tslots');

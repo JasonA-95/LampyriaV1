@@ -228,4 +228,4 @@ EX.dock=F=>{const D=el('div','dock');TABS.forEach(([id,n,ic])=>{const dot=(id=='
 EX.regen=()=>{if(!EX.on||sv.pv==null)return;const m=pvMax();sv.pv+=1;if(sv.pv>=m)sv.pv=null;store();EX.hud()};
 if(typeof setInterval=='function')setInterval(()=>{if(typeof document=='undefined'||!document.hidden)EX.regen()},1000);
 // Affiche ou masque l'info-bulle de groupe à chaque redessin.
-{const d0=EX.draw;EX.draw=function(){const r=d0.apply(this,arguments);EX.tip();return r}}
+{const d0=EX.draw;EX.draw=function(){const r=d0.apply(this,arguments);EX.tip();if(typeof playMusic=='function'&&DATA.cartes[EX.map])playMusic(DATA.cartes[EX.map].biome);return r}}
