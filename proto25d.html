@@ -3,14 +3,14 @@
 <title>Lampyria — prototype 2.5D</title>
 <style>
 html,body{margin:0;height:100%;background:#120d1a;color:#f3e7cf;font:14px system-ui,sans-serif;overflow:hidden;touch-action:none}
-#c{width:100%;height:100%;display:block;outline:none}
+#c{width:100%;height:calc(100% - 52px);display:block;outline:none}
 #lb{position:fixed;inset:0;pointer-events:none}
 .lab{position:absolute;transform:translate(-50%,-100%);text-align:center;font-size:11px;white-space:nowrap;text-shadow:0 1px 2px #000}
 .bar{width:44px;height:5px;background:#3a1f1f;border:1px solid #120a0e;margin:2px auto 0}.bar i{display:block;height:100%;background:#e5564a}.lab.h .bar i{background:#6fcf7a}
-#ui{position:fixed;left:0;right:0;bottom:0;background:#1d1520ee;border-top:1px solid #5a4030;padding:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-#ui button{background:#3b2a24;color:#f3e7cf;border:1px solid #8a6a4a;border-radius:6px;padding:7px 9px;font:inherit}
+#ui{position:fixed;left:0;right:0;bottom:0;background:#1d1520ee;border-top:1px solid #5a4030;padding:6px;display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;height:40px;align-items:center}
+#ui button{flex:none;background:#3b2a24;color:#f3e7cf;border:1px solid #8a6a4a;border-radius:6px;padding:7px 9px;font:inherit}
 #ui button.on{background:#7a4a2a;border-color:#ffd678}#ui button:disabled{opacity:.4}
-#st{margin-right:auto;font-weight:600}#msg{position:fixed;top:6px;left:8px;right:8px;font-size:12px;opacity:.9;pointer-events:none;text-shadow:0 1px 2px #000}
+#st{flex:none;margin-right:6px;font-weight:600}#msg{position:fixed;top:6px;left:8px;right:8px;font-size:12px;opacity:.9;pointer-events:none;text-shadow:0 1px 2px #000}
 #end{position:fixed;inset:0;display:none;place-items:center;background:#000a;font-size:28px}
 </style></head><body>
 <canvas id="c"></canvas><div id="lb"></div><div id="msg">Chargement…</div>
@@ -30,7 +30,7 @@ const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial
 const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#2f8f90','#134a4a'),range:mat('#b8742c','#5a3010'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c')};
 // caméra isométrique orthographique fixe (rotation par pas de 90°)
 const cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt(3)),60,new B.Vector3(6.5,0,6.5),sc);cam.mode=B.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=.1;cam.maxZ=300;
-function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=a<1?20:12.5;cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
+function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=Math.max(13.5/a,9.5);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('d',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 function fin(m,mt,ol=true){m.material=mt;if(m.convertToFlatShadedMesh&&!m.name.startsWith('b'))m.convertToFlatShadedMesh();if(ol){m.renderOutline=true;m.outlineWidth=.025;m.outlineColor=new B.Color3(.07,.04,.05)}return m}
 const root=n=>new B.TransformNode(n,sc);
