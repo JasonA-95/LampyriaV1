@@ -17,10 +17,11 @@ function reachable(rk){const q=[[H.x,H.y]],seen=new Set([H.x+','+H.y]);while(q.l
 for(let t=0;t<400&&rocks.size<target;t++){const [x,y]=free[Math.floor(rnd()*free.length)],k=x+','+y;if(rocks.has(k)||C.at(x,y))continue;rocks.add(k);if(!reachable(rocks))rocks.delete(k)}
 C.rocks=rocks;return rocks}
 function start(o){
+if(!document.getElementById('r3css')){const st=document.createElement('style');st.id='r3css';st.textContent='.lab{position:fixed;transform:translate(-50%,-100%);text-align:center;font-size:11px;white-space:nowrap;color:#f3e7cf;text-shadow:0 1px 2px #000;pointer-events:none}.lab .bar{width:44px;height:5px;background:#3a1f1f;border:1px solid #120a0e;margin:2px auto 0}.lab .bar i{display:block;height:100%;background:#e5564a}.lab.h .bar i{background:#6fcf7a}';document.head.appendChild(st)}
 const B=BABYLON,C=o.C,cv=o.canvas,DIRS=DIRS3,biome=o.biome||'foret',BI=BIO[biome]||BIO.foret;
 const eng=new B.Engine(cv,true,{stencil:true}),sc=new B.Scene(eng);let rot=-3*Math.PI/4,Z=.9;
 const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial('m',sc);m.diffuseColor=hx(h);m.specularColor=B.Color3.Black();if(e)m.emissiveColor=hx(e);return m};
-const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#2f8f90','#134a4a'),range:mat('#e08a2c','#7a4010'),range2:mat('#7a5230','#2e1a0a'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c')};
+const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#2f8f90','#134a4a'),range:mat('#e08a2c','#7a4010'),range2:mat('#7a5230','#2e1a0a'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c'),path:mat('#6fe0e0','#2a7a7a'),aoe:mat('#d04040','#6a1818')};
 M.a.diffuseColor=hx(BI.a);M.b.diffuseColor=hx(BI.b);M.leaf1.diffuseColor=hx(BI.L[0]);M.leaf2.diffuseColor=hx(BI.L[1]);M.leaf3.diffuseColor=hx(BI.L[2]);sc.clearColor=B.Color4.FromHexString(BI.sky+'ff');
 if(biome=='desert'){M.rock.diffuseColor=hx('#8a7a62');M.rock2.diffuseColor=hx('#9a8a70');M.cactus=mat('#4a7a4a')}if(biome=='marais'){M.bark.diffuseColor=hx('#3a2e28');M.rock.diffuseColor=hx('#4a463e')}M.pil=mat('#8a8096');M.cactus=M.cactus||mat('#4a7a4a');
 const cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt(3)),60,new B.Vector3(6.5,0,6.5),sc);cam.mode=B.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=.1;cam.maxZ=300;
@@ -57,11 +58,15 @@ const hd=B.MeshBuilder.CreateSphere('h',{diameter:.42,segments:5},sc);hd.positio
 let eq=null;if(isH){eq=root('eq');eq.parent=t}
 const l=document.createElement('div');l.className='lab'+(isH?' h':'');l.innerHTML='<span></span><div class=bar><i></i></div>';o.labels.appendChild(l);
 const ob={t,l,x:u.x,y:u.y,eq};t.position.set(u.x,0,u.y);U.set(u,ob);return ob}
-let drag=null,moved=0;
+let drag=null,moved=0,pt=new Map(),pinch=null;
+cv.addEventListener('wheel',e=>{e.preventDefault();Z=Math.max(.2,Math.min(1.6,Z*(e.deltaY<0?.87:1.15)));fit()},{passive:false});
+cv.addEventListener('pointerdown',e=>{pt.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pt.size==2){const [p,q]=[...pt.values()];pinch={d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:Z};moved+=99}});
+cv.addEventListener('pointermove',e=>{if(!pt.has(e.pointerId))return;pt.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pt.size==2&&pinch){const [p,q]=[...pt.values()];Z=Math.max(.2,Math.min(1.6,pinch.z*pinch.d/(Math.hypot(p.x-q.x,p.y-q.y)||1)));fit()}});
+const pu=e=>{pt.delete(e.pointerId);if(pt.size<2)pinch=null};cv.addEventListener('pointerup',pu);cv.addEventListener('pointercancel',pu);
 sc.onPointerObservable.add(pi=>{const e=pi.event;
 if(pi.type==B.PointerEventTypes.POINTERDOWN){drag={x:e.clientX,y:e.clientY};moved=0}
 else if(pi.type==B.PointerEventTypes.POINTERUP)drag=null;
-else if(pi.type==B.PointerEventTypes.POINTERMOVE&&drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};moved+=Math.abs(dx)+Math.abs(dy);const k=2*cam.orthoTop/cv.clientHeight;cam.target.x+=-dx*k*(-Math.sin(rot))+dy*k/.816*(-Math.cos(rot));cam.target.z+=-dx*k*Math.cos(rot)+dy*k/.816*(-Math.sin(rot))}
+else if(pi.type==B.PointerEventTypes.POINTERMOVE&&drag&&pt.size<2){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};moved+=Math.abs(dx)+Math.abs(dy);const k=2*cam.orthoTop/cv.clientHeight;cam.target.x+=-dx*k*(-Math.sin(rot))+dy*k/.816*(-Math.cos(rot));cam.target.z+=-dx*k*Math.cos(rot)+dy*k/.816*(-Math.sin(rot))}
 else if(pi.type==B.PointerEventTypes.POINTERTAP&&moved<12){const p=sc.pick(sc.pointerX,sc.pointerY,m=>tl.includes(m));if(p.hit&&o.onTap)o.onTap(p.pickedMesh.metadata.x,p.pickedMesh.metadata.y)}});
 let t0=performance.now();
 sc.onBeforeRenderObservable.add(()=>{const dt=Math.min(.05,(performance.now()-t0)/1000);t0=performance.now();
@@ -74,7 +79,7 @@ const p=B.Vector3.Project(new B.Vector3(ob.x,1.9,ob.y),B.Matrix.Identity(),tm,vp
 ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Math.max(0,u.hp);ob.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}});
 eng.runRenderLoop(()=>sc.render());const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
 return{
-setTiles(map){for(const k in tiles){const b=tiles[k],c=map&&map[k];b.material=c=='reach'?M.reach:c=='range'?M.range:c=='range2'?M.range2:b.metadata.base}},
+setTiles(map){for(const k in tiles){const b=tiles[k],c=map&&map[k];b.material=c=='aoe'?M.aoe:c=='path'?M.path:c=='reach'?M.reach:c=='range'?M.range:c=='range2'?M.range2:b.metadata.base}},
 zoom(f){Z=Math.max(.2,Math.min(1.6,Z*f));fit()},rotate(d){rot+=d*Math.PI/2},
 setEquip(list){EQ=(list||[]).filter(x=>OBJ[x]);dress()},
 stop(){removeEventListener('resize',onR);eng.stopRenderLoop();for(const [,ob] of U)ob.l.remove();sc.dispose();eng.dispose()}}}

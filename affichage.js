@@ -33,7 +33,7 @@ if((DATA.rencontres[cfg.renc].base??cfg.renc)==sv.renc&&sv.renc<DATA.rencontres.
 if(e.etin&&!sv.etin.got.includes(e.etin)){sv.etin.got.push(e.etin);r.etin=e.etin}
 if(e.unlock&&!sv.deb.includes(e.unlock)){sv.deb.push(e.unlock);r.lueur=e.unlock}
 if(!cfg.test)besNote(DATA.rencontres[cfg.renc]);r.rel=DJ.roll();r.items=rollDrops(cfg.renc);r.eq=r.items.map(autoEquip);store();return r}
-function endFight(res,r){combatLive=false;const win=res=='win',n=el('div','');if(typeof playSound=='function')playSound(win?'victory':'defeat');
+function endFight(res,r){combatLive=false;stop3D();const win=res=='win',n=el('div','');if(typeof playSound=='function')playSound(win?'victory':'defeat');
 if(win){say(DATA.rencontres[cfg.renc].vic||'victoire');let h='<h2>Victoire !</h2>';
 if(r.test)h+='<p>Mode test : aucun gain.</p>';
 else{h+='<p>+'+r.xp+' XP'+(r.lv?' · <b style="color:var(--ember)">Niveau '+sv.niv+' !</b> (+'+r.lv+' point'+(r.lv>1?'s':'')+' de talent)':'')+'</p>';
@@ -49,7 +49,7 @@ const fin=()=>EX.group?EX.back(res,C.turn):openMenu('jouer');
 after=fin;msg(win?'Victoire !':'Défaite.');ui();draw();
 const B=[['Continuer',fin,'pri']];
 modal(n,B)}
-function leaveFight(){combatLive=false;if(EX.group){const q=EX.group;EX.group=null;EX.start()}else openMenu('jouer')}
+function leaveFight(){combatLive=false;stop3D();if(EX.group){const q=EX.group;EX.group=null;EX.start()}else openMenu('jouer')}
 
 // ---------- dimensions et initialisation ----------
 // Caméra libre : on zoome (pincement ou molette) et on déplace la vue en faisant glisser. Aucun suivi automatique.
@@ -87,9 +87,19 @@ function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('g
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
+// --- 2.5D (opt-in : ?3d=1 ou localStorage lampyria3d=1) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
+let R3=null,c3=null,l3=null,b3=0;
+const want3D=()=>{try{return /[?&]3d=1/.test(location.search)||localStorage.getItem('lampyria3d')=='1'}catch(e){return false}};
+function loadBabylon(cb){if(typeof BABYLON!='undefined')return cb();const U=['https://cdnjs.cloudflare.com/ajax/libs/babylonjs/6.49.0/babylon.js','https://cdn.babylonjs.com/v6.49.0/babylon.js','https://cdn.jsdelivr.net/npm/babylonjs@6.49.0/babylon.js'];(function t(i){if(i>=U.length)return;const s=document.createElement('script');s.src=U[i];s.onload=cb;s.onerror=()=>t(i+1);document.head.appendChild(s)})(0)}
+function start3D(){stop3D();if(!want3D()||typeof Rendu3D=='undefined'||EX.on||!C)return;const me=C,tok=++b3;
+loadBabylon(()=>{if(tok!=b3||C!==me||!combatLive||!Rendu3D.available())return;try{c3=document.createElement('canvas');c3.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none';l3=document.createElement('div');l3.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:2';
+$('stage').insertBefore(c3,ambCv);document.body.appendChild(l3);cv.style.visibility='hidden';
+R3=Rendu3D.start({canvas:c3,labels:l3,C,biome:DATA.rencontres[cfg.renc].biome,equip:Object.values(sv.eq||{}).filter(id=>id&&sv.inv.includes(id)),onTap:(x,y)=>{if(!busy&&!C.result)act(x,y)}});draw()}catch(e){console.error(e);stop3D()}})}
+function stop3D(){b3++;if(R3){try{R3.stop()}catch(e){}R3=null}if(c3){c3.remove();c3=null}if(l3){l3.remove();l3=null}cv.style.visibility=''}
+function sync3D(rc,rs,rz,pp,zone){const m={};for(const k in rc)if(rc[k]>0)m[k]='reach';for(const k of rz)m[k]='range2';for(const k of rs)m[k]='range';for(const k in pp)m[k]='path';for(const k of zone)m[k]='aoe';R3.setTiles(m)}
 function init(){if(typeof playMusic=='function'&&!cfg.test){const R=DATA.rencontres[cfg.renc];const B=R&&(R.type=='boss'||(R.m||[]).some(m=>m.boss));playMusic(B?'boss':'combat');if(B&&typeof playSound=='function')playSound('boss')}size();normL();C=new Combat(DATA,{...cfg,niv:sv.niv,gear:gear().t,sorts:sortsEquipes(),lien:sv.lien,hp:cfg.test?0:sv.pv});C.hero.e=heroEmoji();resetView();mode='move';busy=false;pend=null;after=null;combatLive=true;
 hideBubble();say(DATA.rencontres[cfg.renc].say||'debut');$('tip').textContent='Maintiens un sort pour lire sa description. Tacle : quitter une case voisine d’un monstre coûte 1 PM de plus.'+(C.foes.some(f=>f.cendre)?' Duchesse : protégée sur la cendre grise (≈), disperse-la avec un sort pour la rendre vulnérable.':'');
-msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw()}
+msg('Touche une case éclairée pour te déplacer, ou choisis un sort puis une cible.');ui();draw();start3D()}
 cv.onclick=e=>{if(moved){moved=false;return}if(EX.on)return EX.click(e);if(busy||C.result)return;const r=cv.getBoundingClientRect(),a=(e.clientX-r.left-ox)/(tw/2),b=(e.clientY-r.top-oy)/(th/2);
 const x=Math.round((a+b)/2),y=Math.round((b-a)/2);if(!DATA.in(x,y))return;act(x,y)};
 
@@ -193,7 +203,7 @@ g.fillStyle='#000a';g.fillRect(cx-tw*.25,cy-th*.95-lift,tw*.5,4);g.fillStyle=u==
 const states=(u.etats||[]).filter(e=>e.t>0),shown=states.slice(0,3),badgeW=Math.max(11,tw*.5),badgeH=Math.max(10,th*.48),count=Math.min(3,shown.length)+(states.length>3?1:0),start=cx-count*badgeW/2,by=cy-th*1.5-lift;g.font='bold '+Math.max(8,Math.round(tw*.32))+'px sans-serif';
 shown.forEach((e,i)=>{const label=DATA.etats[e.id].e+e.t+(e.id=='bouclier'?'·'+e.v:'');g.fillStyle='#120d1add';g.fillRect(start+i*badgeW,by,badgeW,badgeH);g.fillStyle='#fff';g.fillText(label,start+i*badgeW+badgeW/2,by+badgeH/2)});
 if(states.length>3){g.fillStyle='#120d1add';g.fillRect(start+3*badgeW,by,badgeW,badgeH);g.fillStyle='#fff';g.fillText('+',start+3*badgeW+badgeW/2,by+badgeH/2)}}
-drawDisplayTexts(g,tw,th,ox,oy);updateDisplayTransition();placeBubble();syncAmbience()}
+drawDisplayTexts(g,tw,th,ox,oy);updateDisplayTransition();placeBubble();syncAmbience();if(R3)sync3D(rc,rs,rz,pp,zone)}
 addEventListener('resize',()=>{if(!$('game').classList.contains('hide')){size();draw()}});
 try{new ResizeObserver(()=>{if(!$('game').classList.contains('hide')){size();draw()}}).observe($('stage'))}catch(e){}
 document.addEventListener('visibilitychange',syncAmbience);
