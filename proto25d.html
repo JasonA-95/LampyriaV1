@@ -25,9 +25,27 @@ const URLS=['https://cdnjs.cloudflare.com/ajax/libs/babylonjs/6.49.0/babylon.js'
 function main(){
 const B=BABYLON,$=id=>document.getElementById(id),cv=$('c'),eng=new B.Engine(cv,true,{stencil:true}),sc=new B.Scene(eng);
 sc.clearColor=B.Color4.FromHexString('#1b1322ff');
-const C=new Combat(DATA,CFG);let mode='move',sel=-1,busy=false,rot=-3*Math.PI/4,Z=.9;
+const C=new Combat(DATA,CFG);
+// biome + obstacles aléatoires (remplace C.rocks : aucune modification du moteur)
+const BIO={foret:{a:'#54402f',b:'#4a3527',sky:'#1b1322',L:['#2f5a46','#3d6f55','#4a8062'],obs:['rock','mush'],bord:['tree','tree','mush']},
+collines:{a:'#5a5a34',b:'#505030',sky:'#1c2028',L:['#3f6a3a','#4d7b45','#5c8c52'],obs:['rock','rock','tree'],bord:['tree','rock']},
+marais:{a:'#3f3a34',b:'#363029',sky:'#1a1618',L:['#4a4a3a','#5a5a46','#6a6a52'],obs:['rock','dead'],bord:['dead','dead','mush']},
+desert:{a:'#9a7a4a',b:'#8c6e42',sky:'#2a1e22',L:['#6a8a4a','#7a9a56','#8aaa62'],obs:['rock','cactus'],bord:['cactus','rock']},
+mer:{a:'#3a5a6a',b:'#33505f',sky:'#10202c',L:['#5a7a8a','#6a8a9a','#7a9aaa'],obs:['rock'],bord:['rock','rock','mush']},
+temple:{a:'#5a4a5a',b:'#4e4050',sky:'#1c1426',L:['#5a4a7a','#6a5a8a','#7a6a9a'],obs:['rock','pillar'],bord:['pillar','rock']}};
+BIO.manoir=BIO.citadelle=BIO.trone=BIO.serre=BIO.roseliere=BIO.temple;BIO.village=BIO.foret;
+const biome=Q.get('biome')||DATA.rencontres[CFG.renc].biome||'foret',BI=BIO[biome]||BIO.foret;
+let seed=+Q.get('seed')||Math.floor(Math.random()*1e9);const SEED=seed;const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+(function(){const inC=new Set(C.cells.map(a=>a.join(','))),H=C.hero,foes=C.foes.filter(f=>f.hp>0),near=(x,y)=>Math.abs(x-H.x)+Math.abs(y-H.y)<=2||foes.some(f=>Math.abs(x-f.x)+Math.abs(y-f.y)<=1);
+const rocks=new Set(),target=18+Math.floor(rnd()*10),free=C.cells.filter(([x,y])=>!near(x,y));
+function reachable(rk){const q=[[H.x,H.y]],seen=new Set([H.x+','+H.y]);while(q.length){const [x,y]=q.shift();for(const [dx,dy] of DIRS){const k=(x+dx)+','+(y+dy);if(inC.has(k)&&!rk.has(k)&&!seen.has(k)){seen.add(k);q.push([x+dx,y+dy])}}}return foes.every(f=>DIRS.some(([dx,dy])=>seen.has((f.x+dx)+','+(f.y+dy))||seen.has(f.x+','+f.y)))}
+for(let t=0;t<400&&rocks.size<target;t++){const [x,y]=free[Math.floor(rnd()*free.length)],k=x+','+y;if(rocks.has(k)||C.at(x,y))continue;rocks.add(k);if(!reachable(rocks))rocks.delete(k)}
+C.rocks=rocks})();
+let mode='move',sel=-1,busy=false,rot=-3*Math.PI/4,Z=.9;
 const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial('m',sc);m.diffuseColor=hx(h);m.specularColor=B.Color3.Black();if(e)m.emissiveColor=hx(e);return m};
 const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#2f8f90','#134a4a'),range:mat('#e08a2c','#7a4010'),range2:mat('#7a5230','#2e1a0a'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c')};
+M.a.diffuseColor=hx(BI.a);M.b.diffuseColor=hx(BI.b);M.leaf1.diffuseColor=hx(BI.L[0]);M.leaf2.diffuseColor=hx(BI.L[1]);M.leaf3.diffuseColor=hx(BI.L[2]);sc.clearColor=B.Color4.FromHexString(BI.sky+'ff');
+if(biome=='desert'){M.rock.diffuseColor=hx('#8a7a62');M.rock2.diffuseColor=hx('#9a8a70');M.cactus=mat('#4a7a4a')}if(biome=='marais'){M.bark.diffuseColor=hx('#3a2e28');M.rock.diffuseColor=hx('#4a463e')}M.pil=mat('#8a8096');M.cactus=M.cactus||mat('#4a7a4a');
 // caméra isométrique orthographique fixe (rotation par pas de 90°)
 const cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt(3)),60,new B.Vector3(6.5,0,6.5),sc);cam.mode=B.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=.1;cam.maxZ=300;
 function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=Math.max(12.5/a,7.2)*Z;cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
@@ -38,12 +56,16 @@ function tree(x,z,s,alt){const t=root('t');t.position.set(x,0,z);const k=B.MeshB
 [[.65,1.1,.45,M.leaf1],[.52,1.0,1.05,M.leaf2],[.36,.9,1.6,M.leaf3]].forEach(([r,h,y,m],i)=>{const c=B.MeshBuilder.CreateCylinder('l',{height:h*s,diameterTop:.04*s,diameterBottom:r*2*s,tessellation:6},sc);c.position.y=(y+.4)*s;c.rotation.y=i*.5;c.parent=t;fin(c,alt?M.foe:m)});return t}
 function rock(x,z,s,seed){const t=root('r');t.position.set(x,0,z);[[0,0,.38,M.rock],[.28,.1,.22,M.rock2]].forEach(([dx,dz,r,m],i)=>{const b=B.MeshBuilder.CreateIcoSphere('b',{radius:r*s,subdivisions:1,flat:true},sc);b.scaling.y=.7;b.position.set(dx*s,.16*s,dz*s);b.rotation.y=seed+i;b.parent=t;fin(b,m)});return t}
 function mush(x,z,s,cap){const t=root('m');t.position.set(x,0,z);const st=B.MeshBuilder.CreateCylinder('s',{height:.6*s,diameter:.28*s,tessellation:6},sc);st.position.y=.3*s;st.parent=t;fin(st,M.stem);const c=B.MeshBuilder.CreateSphere('c',{diameter:.9*s,segments:5,slice:.5},sc);c.position.y=.55*s;c.parent=t;fin(c,cap||M.cap);return t}
+function dead(x,z,s){const t=root('d');t.position.set(x,0,z);const k=B.MeshBuilder.CreateCylinder('k',{height:1.5*s,diameterTop:.06*s,diameterBottom:.22*s,tessellation:5},sc);k.position.y=.75*s;k.parent=t;fin(k,M.bark);const br=B.MeshBuilder.CreateCylinder('k',{height:.8*s,diameterTop:.03*s,diameterBottom:.1*s,tessellation:4},sc);br.position.set(.2*s,1.1*s,0);br.rotation.z=-.9;br.parent=t;fin(br,M.bark);return t}
+function cactus(x,z,s){const t=root('c');t.position.set(x,0,z);const k=B.MeshBuilder.CreateCylinder('k',{height:1.1*s,diameter:.3*s,tessellation:6},sc);k.position.y=.55*s;k.parent=t;fin(k,M.cactus);const a=B.MeshBuilder.CreateCylinder('k',{height:.45*s,diameter:.18*s,tessellation:5},sc);a.position.set(.25*s,.7*s,0);a.parent=t;fin(a,M.cactus);return t}
+function pillar(x,z,s){const t=root('p');t.position.set(x,0,z);const k=B.MeshBuilder.CreateCylinder('k',{height:1.3*s,diameterTop:.4*s,diameterBottom:.5*s,tessellation:6},sc);k.position.y=.65*s;k.parent=t;fin(k,M.pil);return t}
+const BUILD={rock:(x,y,h)=>rock(x,y,.9+(h%3)*.15,h),tree:(x,y,h)=>tree(x,y,.9+(h%3)*.15,false),mush:(x,y,h)=>mush(x,y,1.1,h&1?M.cap:M.foe),dead:(x,y,h)=>dead(x,y,.9+(h%3)*.15),cactus:(x,y,h)=>cactus(x,y,.9+(h%3)*.15),pillar:(x,y,h)=>pillar(x,y,.9+(h%3)*.1)};
 // sol : cases réelles de l'arène (DATA.cells)
 const tiles={},tl=[];for(const [x,y] of C.cells){const b=B.MeshBuilder.CreateBox('c',{width:1,height:.5,depth:1},sc);b.position.set(x,-.25,y);b.material=(x+y)&1?M.b:M.a;b.metadata={x,y,base:b.material};tiles[x+','+y]=b;tl.push(b)}
 // décor : rochers réels + arbres/champignons en bordure
-for(const k of C.rocks){const [x,y]=k.split(',').map(Number);rock(x,y,.9+((x+y)&1)*.3,x*3+y)}
+for(const k of C.rocks){const [x,y]=k.split(',').map(Number),h=Math.abs(x*3+y);BUILD[BI.obs[h%BI.obs.length]](x,y,h)}
 const IN=new Set(C.cells.map(a=>a[0]+','+a[1])),seen=new Set();let n=0;
-for(const [x,y] of C.cells)for(const [dx,dy] of DIRS){const X=x+dx,Y=y+dy,k=X+','+Y;if(IN.has(k)||seen.has(k))continue;seen.add(k);const h=((X*7+Y*13)%5+5)%5;n++;if(h<3)tree(X,Y,.9+h*.15,(X*3+Y)%9==0);else if(h==3)mush(X,Y,1.1,(X+Y)&1?M.cap:M.foe)}
+for(const [x,y] of C.cells)for(const [dx,dy] of DIRS){const X=x+dx,Y=y+dy,k=X+','+Y;if(IN.has(k)||seen.has(k))continue;seen.add(k);const h=((X*7+Y*13)%5+5)%5;n++;if(h<4)BUILD[BI.bord[h%BI.bord.length]](X,Y,h+Math.abs(X*3+Y))}
 // unités
 const U=new Map();
 function unit(u,ally){const t=root('u');const isH=u===C.hero;const body=B.MeshBuilder.CreateCylinder('b',{height:.75,diameterTop:.3,diameterBottom:.55,tessellation:6},sc);body.position.y=.38;body.parent=t;fin(body,isH?M.hero:ally?M.cream:mat(u.boss?'#7a2a3a':'#7a4a66'));
@@ -84,6 +106,6 @@ const p=B.Vector3.Project(new B.Vector3(o.x,1.9,o.y),B.Matrix.Identity(),tm,vp);
 o.l.firstChild.textContent=(u===C.hero?'Livreur':u.n||'')+' '+Math.max(0,u.hp);o.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}
 ring.isVisible=false});
 eng.runRenderLoop(()=>sc.render());addEventListener('resize',()=>{eng.resize();fit()});
-msg('Toucher une case bleue = se déplacer. Choisir un sort puis une case orange = lancer. ↺ ↻ = tourner la vue.');ui();
+msg('Biome '+biome+' · graine '+SEED+' · Toucher une case bleue = se déplacer. Choisir un sort puis une case orange = lancer. ↺ ↻ = tourner la vue.');ui();
 }
 </script></body></html>
