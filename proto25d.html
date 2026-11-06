@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Lampyria — prototype 2.5D</title>
+<style>
+html,body{margin:0;height:100%;background:#120d1a;color:#f3e7cf;font:14px system-ui,sans-serif;overflow:hidden;touch-action:none}
+#c{width:100%;height:100%;display:block;outline:none}
+#lb{position:fixed;inset:0;pointer-events:none}
+.lab{position:absolute;transform:translate(-50%,-100%);text-align:center;font-size:11px;white-space:nowrap;text-shadow:0 1px 2px #000}
+.bar{width:44px;height:5px;background:#3a1f1f;border:1px solid #120a0e;margin:2px auto 0}.bar i{display:block;height:100%;background:#e5564a}.lab.h .bar i{background:#6fcf7a}
+#ui{position:fixed;left:0;right:0;bottom:0;background:#1d1520ee;border-top:1px solid #5a4030;padding:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#ui button{background:#3b2a24;color:#f3e7cf;border:1px solid #8a6a4a;border-radius:6px;padding:7px 9px;font:inherit}
+#ui button.on{background:#7a4a2a;border-color:#ffd678}#ui button:disabled{opacity:.4}
+#st{margin-right:auto;font-weight:600}#msg{position:fixed;top:6px;left:8px;right:8px;font-size:12px;opacity:.9;pointer-events:none;text-shadow:0 1px 2px #000}
+#end{position:fixed;inset:0;display:none;place-items:center;background:#000a;font-size:28px}
+</style></head><body>
+<canvas id="c"></canvas><div id="lb"></div><div id="msg">Chargement…</div>
+<div id="ui"><span id="st"></span><span id="sp" style="display:contents"></span><button id="rl">↺</button><button id="rr">↻</button><button id="fin">Fin du tour</button></div>
+<div id="end"></div>
+<script src="donnees.js"></script><script src="xp.js"></script><script src="histoire.js"></script><script src="donjons.js"></script><script src="moteur.js"></script>
+<script>
+// PROTOTYPE 2.5D : affichage Babylon.js branché sur le moteur Combat NON modifié.
+const Q=new URLSearchParams(location.search),CFG={classe:Q.get('classe')||'porte',renc:+(Q.get('renc')||1),niv:+(Q.get('niv')||5),lueurs:[],gear:{}};
+const URLS=['https://cdnjs.cloudflare.com/ajax/libs/babylonjs/6.49.0/babylon.js','https://cdn.babylonjs.com/v6.49.0/babylon.js','https://cdn.jsdelivr.net/npm/babylonjs@6.49.0/babylon.js'];
+(function load(i){if(i>=URLS.length){document.getElementById('msg').textContent='Babylon.js introuvable (réseau ?).';return}const s=document.createElement('script');s.src=URLS[i];s.onload=main;s.onerror=()=>load(i+1);document.head.appendChild(s)})(0);
+function main(){
+const B=BABYLON,$=id=>document.getElementById(id),cv=$('c'),eng=new B.Engine(cv,true,{stencil:true}),sc=new B.Scene(eng);
+sc.clearColor=B.Color4.FromHexString('#1b1322ff');
+const C=new Combat(DATA,CFG);let mode='move',sel=-1,busy=false,rot=-3*Math.PI/4;
+const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial('m',sc);m.diffuseColor=hx(h);m.specularColor=B.Color3.Black();if(e)m.emissiveColor=hx(e);return m};
+const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#2f8f90','#134a4a'),range:mat('#b8742c','#5a3010'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c')};
+// caméra isométrique orthographique fixe (rotation par pas de 90°)
+const cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt(3)),60,new B.Vector3(6.5,0,6.5),sc);cam.mode=B.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=.1;cam.maxZ=300;
+function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=a<1?20:12.5;cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
+new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('d',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
+function fin(m,mt,ol=true){m.material=mt;if(m.convertToFlatShadedMesh&&!m.name.startsWith('b'))m.convertToFlatShadedMesh();if(ol){m.renderOutline=true;m.outlineWidth=.025;m.outlineColor=new B.Color3(.07,.04,.05)}return m}
+const root=n=>new B.TransformNode(n,sc);
+function tree(x,z,s,alt){const t=root('t');t.position.set(x,0,z);const k=B.MeshBuilder.CreateCylinder('k',{height:.9*s,diameterTop:.18*s,diameterBottom:.26*s,tessellation:5},sc);k.position.y=.45*s;k.parent=t;fin(k,M.bark);
+[[.65,1.1,.45,M.leaf1],[.52,1.0,1.05,M.leaf2],[.36,.9,1.6,M.leaf3]].forEach(([r,h,y,m],i)=>{const c=B.MeshBuilder.CreateCylinder('l',{height:h*s,diameterTop:.04*s,diameterBottom:r*2*s,tessellation:6},sc);c.position.y=(y+.4)*s;c.rotation.y=i*.5;c.parent=t;fin(c,alt?M.foe:m)});return t}
+function rock(x,z,s,seed){const t=root('r');t.position.set(x,0,z);[[0,0,.38,M.rock],[.28,.1,.22,M.rock2]].forEach(([dx,dz,r,m],i)=>{const b=B.MeshBuilder.CreateIcoSphere('b',{radius:r*s,subdivisions:1,flat:true},sc);b.scaling.y=.7;b.position.set(dx*s,.16*s,dz*s);b.rotation.y=seed+i;b.parent=t;fin(b,m)});return t}
+function mush(x,z,s,cap){const t=root('m');t.position.set(x,0,z);const st=B.MeshBuilder.CreateCylinder('s',{height:.6*s,diameter:.28*s,tessellation:6},sc);st.position.y=.3*s;st.parent=t;fin(st,M.stem);const c=B.MeshBuilder.CreateSphere('c',{diameter:.9*s,segments:5,slice:.5},sc);c.position.y=.55*s;c.parent=t;fin(c,cap||M.cap);return t}
+// sol : cases réelles de l'arène (DATA.cells)
+const tiles={},tl=[];for(const [x,y] of C.cells){const b=B.MeshBuilder.CreateBox('c',{width:1,height:.5,depth:1},sc);b.position.set(x,-.25,y);b.material=(x+y)&1?M.b:M.a;b.metadata={x,y,base:b.material};tiles[x+','+y]=b;tl.push(b)}
+// décor : rochers réels + arbres/champignons en bordure
+for(const k of C.rocks){const [x,y]=k.split(',').map(Number);rock(x,y,.9+((x+y)&1)*.3,x*3+y)}
+const IN=new Set(C.cells.map(a=>a[0]+','+a[1])),seen=new Set();let n=0;
+for(const [x,y] of C.cells)for(const [dx,dy] of DIRS){const X=x+dx,Y=y+dy,k=X+','+Y;if(IN.has(k)||seen.has(k))continue;seen.add(k);const h=((X*7+Y*13)%5+5)%5;n++;if(h<3)tree(X,Y,.9+h*.15,(X*3+Y)%9==0);else if(h==3)mush(X,Y,1.1,(X+Y)&1?M.cap:M.foe)}
+// unités
+const U=new Map();
+function unit(u,ally){const t=root('u');const isH=u===C.hero;const body=B.MeshBuilder.CreateCylinder('b',{height:.75,diameterTop:.3,diameterBottom:.55,tessellation:6},sc);body.position.y=.38;body.parent=t;fin(body,isH?M.hero:ally?M.cream:mat(u.boss?'#7a2a3a':'#7a4a66'));
+const hd=B.MeshBuilder.CreateSphere('h',{diameter:.42,segments:5},sc);hd.position.y=1.0;hd.parent=t;fin(hd,isH?M.skin:ally?M.cream:mat(u.boss?'#9a3a4a':'#8a5ac0'));
+if(isH){const hat=B.MeshBuilder.CreateCylinder('t',{height:.35,diameterTop:0,diameterBottom:.5,tessellation:6},sc);hat.position.y=1.3;hat.parent=t;fin(hat,M.bark)}
+const l=document.createElement('div');l.className='lab'+(isH?' h':'');l.innerHTML='<span></span><div class=bar><i></i></div>';$('lb').appendChild(l);
+const o={t,l,x:u.x,y:u.y};t.position.set(u.x,0,u.y);U.set(u,o);return o}
+const ring=B.MeshBuilder.CreateTorus('ring',{diameter:1.1,thickness:.05,tessellation:20},sc);ring.material=M.ring;ring.isVisible=false;
+// affichage
+const msg=t=>$('msg').textContent=t;
+function paint(){const reach=mode=='move'?C.reach():{},rg=new Set(mode=='cast'?C.ranged(sel).map(a=>a.join(',')):[]);
+for(const k in tiles){const b=tiles[k];b.material=rg.has(k)?M.range:(reach[k]>0?M.reach:b.metadata.base)}}
+function ui(){$('st').textContent=`Tour ${C.turn} · PA ${C.pa}/${C.PA} · PM ${C.pm}/${C.PM} · PV ${C.hero.hp}/${C.hero.max}`;
+const sp=$('sp');sp.innerHTML='';C.S.forEach((s,i)=>{const b=document.createElement('button');b.textContent=`${s.n} (${s.pa})`+(C.cd[i]>0?` ⏳${C.cd[i]}`:'');b.disabled=busy||C.result||C.pa<s.pa||C.cd[i]>0;if(mode=='cast'&&sel==i)b.className='on';b.onclick=()=>{if(mode=='cast'&&sel==i){mode='move';sel=-1}else{mode='cast';sel=i}ui();paint()};sp.appendChild(b)});$('fin').disabled=busy||!!C.result;paint()}
+function check(){if(C.result){$('end').style.display='grid';$('end').textContent=C.result=='win'?'Victoire !':'Défaite…';return true}return false}
+// entrées : toucher/clic sur une case
+sc.onPointerObservable.add(pi=>{if(pi.type!=B.PointerEventTypes.POINTERTAP||busy||C.result)return;const p=sc.pick(sc.pointerX,sc.pointerY,m=>tl.includes(m));if(!p.hit)return;const {x,y}=p.pickedMesh.metadata;
+if(mode=='cast'){const r=C.cast(sel,x,y);if(r.ok){msg(r.tag||'Sort lancé.');mode='move';sel=-1}else msg(r.tag=='cout'?'PA insuffisants / recharge.':'Cible hors de portée ou invalide.')}
+else{const r=C.move(x,y);if(!r.ok)msg('Case hors de portée.')}ui();check()});
+$('rl').onclick=()=>{rot-=Math.PI/2};$('rr').onclick=()=>{rot+=Math.PI/2};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+$('fin').onclick=async()=>{if(busy||C.result)return;busy=true;mode='move';sel=-1;ui();
+for(const a of C.allies){if(a.hp<=0||C.result)continue;await wait(350);const r=C.allyTurn(a);if(r&&r.text)msg(r.text)}
+for(const f of C.foes){if(f.hp<=0)continue;await wait(420);const r=C.foeTurn(f);if(r&&r.text)msg(r.text);ui();if(C.result)break}
+if(!C.result){await wait(250);const tk=C.newTurn();if(C.notice){msg(C.notice);C.notice=''}if(tk&&tk.blocked)msg('Tu es étourdi : tour passé.')}
+busy=false;ui();check()};
+// boucle de rendu : les unités glissent vers leur case, les barres de vie suivent
+let t0=performance.now();
+sc.onBeforeRenderObservable.add(()=>{const dt=Math.min(.05,(performance.now()-t0)/1000);t0=performance.now();
+cam.alpha+=(rot-cam.alpha)*Math.min(1,dt*8);
+const list=[C.hero,...C.foes,...C.allies],W=eng.getRenderWidth(),H=eng.getRenderHeight(),tm=sc.getTransformMatrix(),vp=cam.viewport.toGlobal(W,H);
+for(const u of list){const alive=u.hp>0&&!(u.form&&u.hp<=0);let o=U.get(u);if(!o){if(!alive)continue;o=unit(u,C.allies.includes(u))}
+o.t.setEnabled(alive);o.l.style.display=alive?'':'none';if(!alive)continue;
+const k=Math.min(1,dt*9);o.x+=(u.x-o.x)*k;o.y+=(u.y-o.y)*k;o.t.position.set(o.x,0,o.y);
+const p=B.Vector3.Project(new B.Vector3(o.x,1.9,o.y),B.Matrix.Identity(),tm,vp);o.l.style.left=p.x/W*innerWidth+'px';o.l.style.top=p.y/H*innerHeight+'px';
+o.l.firstChild.textContent=(u===C.hero?'Livreur':u.n||'')+' '+Math.max(0,u.hp);o.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}
+ring.isVisible=false});
+eng.runRenderLoop(()=>sc.render());addEventListener('resize',()=>{eng.resize();fit()});
+msg('Toucher une case bleue = se déplacer. Choisir un sort puis une case orange = lancer. ↺ ↻ = tourner la vue.');ui();
+}
+</script></body></html>
