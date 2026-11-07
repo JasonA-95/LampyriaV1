@@ -77,7 +77,7 @@ if(u===C.hero&&!ob.dressed){ob.dressed=1;dress()}ob.t.setEnabled(alive);ob.l.sty
 const k=Math.min(1,dt*9);ob.x+=(u.x-ob.x)*k;ob.y+=(u.y-ob.y)*k;ob.t.position.set(ob.x,0,ob.y);
 const p=B.Vector3.Project(new B.Vector3(ob.x,1.9,ob.y),B.Matrix.Identity(),tm,vp);ob.l.style.left=(rc.left-lr.left+p.x/W*rc.width)+'px';ob.l.style.top=(rc.top-lr.top+p.y/H*rc.height)+'px';
 ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Math.max(0,u.hp);ob.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}});
-eng.runRenderLoop(()=>sc.render());const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
+let lf=0;eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;sc.render()});const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
 return{
 setTiles(map){for(const k in tiles){const b=tiles[k],c=map&&map[k];b.material=c=='aoe'?M.aoe:c=='path'?M.path:c=='reach'?M.reach:c=='range'?M.range:c=='range2'?M.range2:b.metadata.base}},
 cellAt(cx,cy){const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const p=sc.pick(cx-r.left,cy-r.top,m=>tl.includes(m));return p.hit?{x:p.pickedMesh.metadata.x,y:p.pickedMesh.metadata.y}:null},

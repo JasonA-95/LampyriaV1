@@ -61,7 +61,7 @@ function clampPan(){const gd=gdim();if(V.z<=1.01){V.px=V.py=0;return}const mx=gd
 function fillOuter(biome,N,inside){const R=40,ins=inside||((x,y)=>x>=0&&x<N&&y>=0&&y<N);for(let s=-2*R;s<=2*N+2*R;s++)for(let x=-R;x<N+R;x++){const y=s-x;if(y<-R||y>=N+R||ins(x,y))continue;const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=.3*((x+y)%2?.9:1);if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,Math.abs(x),Math.abs(y),l);dia(cx,cy,'rgba(0,0,0,.18)')}}
 function cam(){clampPan();ox=W/2+V.px;oy=H/2-gdim().vc/2*th+V.py}
 let ambRAF=0,ambTimer=0,ambLast=0;const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
-function ambienceActive(){return ambienceShouldRun(OPT.fx,document.hidden,$('game').classList.contains('hide'),motionQuery.matches)}
+function ambienceActive(){return !$('game').classList.contains('r3')&&ambienceShouldRun(OPT.fx,document.hidden,$('game').classList.contains('hide'),motionQuery.matches)}
 function stopAmbience(){if(ambRAF)cancelAnimationFrame(ambRAF);if(ambTimer)clearTimeout(ambTimer);ambRAF=ambTimer=ambLast=0;ambCv.style.visibility='hidden';if(ambCv.width&&ambCv.height)ag.clearRect(0,0,W,H)}
 function scheduleAmbience(delay){if(ambTimer||ambRAF)return;if(delay)ambTimer=setTimeout(()=>{ambTimer=0;if(ambienceActive())ambRAF=requestAnimationFrame(ambienceFrame)},delay);else ambRAF=requestAnimationFrame(ambienceFrame)}
 function ambienceFrame(time){ambRAF=0;if(!ambienceActive()){stopAmbience();return}const fps=ambienceFps(OPT.fx);
