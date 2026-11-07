@@ -15,3 +15,9 @@ Publiée sous licence MIT :
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Conversion au format web : Sergey Surikov (WebAudioFont, https://surikov.github.io/webaudiofont). Le lecteur d'échantillons du jeu est écrit pour ce projet : aucun code de WebAudioFont (GPL) n'est utilisé.
+
+## Moteur 3D des combats
+
+Le mode combat 3D utilise **Babylon.js** (https://www.babylonjs.com), chargé depuis un CDN public (cdnjs, avec secours sur cdn.babylonjs.com et jsDelivr). Aucun code de Babylon.js n'est copié dans ce dépôt.
+
+Babylon.js — Copyright (c) Microsoft Corporation et contributeurs. Publié sous licence Apache 2.0 : https://github.com/BabylonJS/Babylon.js/blob/master/license.md
