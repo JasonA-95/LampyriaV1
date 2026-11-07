@@ -54,16 +54,18 @@ acc:(o,id)=>{fin(part(o,B.MeshBuilder.CreateTorus('a',{diameter:.42,thickness:.0
 function dress(){const o=U.get(C.hero);if(!o||!o.eq)return;o.eq.getChildMeshes().forEach(m=>m.dispose());EQ.forEach(id=>{const f=EQB[OBJ[id].slot];if(f)f(o,id)})}
 const U=new Map();
 // Silhouette propre à chaque classe (en plus de l'équipement) : accessoires placés côté gauche ou dans le dos pour ne pas recouvrir l'arme équipée.
-function classProps(t,cl){const P=(m,y,x,z,mt,rx,rz)=>{m.parent=t;m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(rz)m.rotation.z=rz;fin(m,mt);return m},
-Cy=(h,d,n)=>B.MeshBuilder.CreateCylinder('k',{height:h,diameter:d,tessellation:n||6},sc),Bx=(w,h,d)=>B.MeshBuilder.CreateBox('k',{width:w,height:h,depth:d},sc),Sp=d=>B.MeshBuilder.CreateSphere('k',{diameter:d,segments:4},sc),
-dark=mat('#2a1c14'),wood=mat('#6a4a2a'),glow=mat('#ffd678','#ffb030'),steel=mat('#9a9aa0'),cloth=mat('#3a2a4a'),cream=M.cream;
-if(cl=='porte'){P(Cy(.7,.05,5),.62,-.42,0,wood);P(Cy(.05,.2,6),.98,-.42,0,dark);const g=P(Sp(.2),.84,-.42,0,glow);P(Cy(.04,.24,6),.72,-.42,0,dark);P(Bx(.44,.1,.2),.82,0,0,dark)}
-else if(cl=='archer'){P(Cy(.4,.14,6),.82,.1,-.22,wood,.3);[0,.05,-.05].forEach(o=>P(Cy(.14,.03,4),1.05+o*.2,.12+o,-.3,cream,.3));const bw=P(B.MeshBuilder.CreateTorus('k',{diameter:.7,thickness:.04,tessellation:12},sc),.75,-.1,-.22,wood);bw.rotation.x=Math.PI/2;bw.rotation.z=.35}
-else if(cl=='mage'){P(Cy(.3,.85,8),.2,0,0,cloth);P(Sp(.2),1.4,-.35,0,glow);P(Bx(.18,.22,.06),.62,-.3,.18,mat('#7a3a3a'));P(Cy(.55,.04,4),1.1,-.35,0,wood,0,0)}
-else if(cl=='fossoyeur'){P(Cy(.9,.05,5),.7,.12,-.24,wood,.25);P(Bx(.22,.28,.04),1.2,.19,-.35,steel,.25);const sc2=P(B.MeshBuilder.CreateTorus('k',{diameter:.3,thickness:.07,tessellation:8},sc),.8,0,0,mat('#5a2a3a'));P(Sp(.12),.86,-.38,.05,cream)}}
+function classProps(t,cl,body,hd){const P=(m,y,x,z,mt,rx,rz)=>{m.parent=t;m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(rz)m.rotation.z=rz;fin(m,mt);return m},
+Cy=(h,d,n)=>B.MeshBuilder.CreateCylinder('k',{height:h,diameter:d,tessellation:n||6},sc),Cn=(h,d,n)=>B.MeshBuilder.CreateCylinder('k',{height:h,diameterTop:0,diameterBottom:d,tessellation:n||6},sc),Bx=(w,h,d)=>B.MeshBuilder.CreateBox('k',{width:w,height:h,depth:d},sc),Sp=d=>B.MeshBuilder.CreateSphere('k',{diameter:d,segments:4},sc),Tr=(d,th)=>B.MeshBuilder.CreateTorus('k',{diameter:d,thickness:th,tessellation:10},sc),
+dark=mat('#2a1c14'),wood=mat('#6a4a2a'),glow=mat('#ffd678','#ffb030'),steel=mat('#8a8e98'),gold=mat('#c8a050'),cream=M.cream;
+// Couleurs reprises des sprites 2D (heros.js, LOOK).
+const col={porte:'#4a647e',archer:'#4a6a48',mage:'#5c4c9c',fossoyeur:'#3a4a3e'}[cl];if(col&&body)body.material=mat(col);
+if(cl=='porte'){P(Tr(.4,.1),.78,0,0,mat('#a04040'),Math.PI/2);P(Bx(.44,.07,.2),.52,0,0,gold);P(Cy(.7,.05,5),.62,-.42,0,wood);P(Cy(.05,.2,6),.98,-.42,0,dark);P(Sp(.2),.84,-.42,0,glow);P(Cy(.04,.24,6),.72,-.42,0,dark);P(Cn(.2,.46,6),1.14,0,0,mat('#3a2a22'))}
+else if(cl=='archer'){P(Cn(.46,.56,6),1.2,0,-.02,mat('#3c5c3e'));P(Bx(.46,.08,.2),.5,0,0,mat('#5a3a1c'));P(Cy(.4,.14,6),.82,.1,-.22,wood,.3);[0,.05,-.05].forEach(o=>P(Cy(.14,.03,4),1.05+o*.2,.12+o,-.3,cream,.3));const bw=P(Tr(.7,.04),.75,-.1,-.22,wood);bw.rotation.x=Math.PI/2;bw.rotation.z=.35}
+else if(cl=='mage'){P(Cy(.3,.85,8),.2,0,0,mat('#5c4c9c'));P(Cn(.62,.54,6),1.4,0,0,mat('#4a3a88'));P(Tr(.5,.05),1.13,0,0,gold,Math.PI/2);P(Cn(.3,.2,5),.82,0,.15,mat('#f0ece4'),Math.PI);P(Cy(1.2,.05,5),.62,-.4,0,wood);P(Sp(.2),1.28,-.4,0,mat('#8af0ff','#3aa0b0'));P(Bx(.18,.22,.06),.62,-.3,.18,mat('#7a3a3a'))}
+else if(cl=='fossoyeur'){P(Cn(.5,.58,6),1.2,0,-.02,mat('#2a352c'));P(Tr(.3,.07),.8,0,0,mat('#20301f'),Math.PI/2);P(Cy(.9,.05,5),.7,.12,-.24,wood,.25);P(Bx(.22,.28,.04),1.2,.19,-.35,steel,.25);P(Sp(.12),.86,-.38,.05,cream)}}
 function unit(u,ally){const t=root('u');const isH=u===C.hero;const body=B.MeshBuilder.CreateCylinder('b',{height:.75,diameterTop:.3,diameterBottom:.55,tessellation:6},sc);body.position.y=.38;body.parent=t;fin(body,isH?M.hero:ally?M.cream:mat(u.boss?'#7a2a3a':'#7a4a66'));
 const hd=B.MeshBuilder.CreateSphere('h',{diameter:.42,segments:5},sc);hd.position.y=1.0;hd.parent=t;fin(hd,isH?M.skin:ally?M.cream:mat(u.boss?'#9a3a4a':'#8a5ac0'));
-let eq=null;if(isH){eq=root('eq');eq.parent=t;try{classProps(t,o.classe)}catch(e){console.error('classe 3D',e)}}
+let eq=null;if(isH){eq=root('eq');eq.parent=t;try{classProps(t,o.classe,body,hd)}catch(e){console.error('classe 3D',e)}}
 const l=document.createElement('div');l.className='lab'+(isH?' h':'');l.innerHTML='<span></span><div class=bar><i></i></div>';o.labels.appendChild(l);
 const ob={t,l,x:u.x,y:u.y,eq};t.position.set(u.x,0,u.y);U.set(u,ob);return ob}
 let drag=null,moved=0,pt=new Map(),pinch=null;
