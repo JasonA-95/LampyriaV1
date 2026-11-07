@@ -80,6 +80,8 @@ ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Mat
 eng.runRenderLoop(()=>sc.render());const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
 return{
 setTiles(map){for(const k in tiles){const b=tiles[k],c=map&&map[k];b.material=c=='aoe'?M.aoe:c=='path'?M.path:c=='reach'?M.reach:c=='range'?M.range:c=='range2'?M.range2:b.metadata.base}},
+cellAt(cx,cy){const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const p=sc.pick(cx-r.left,cy-r.top,m=>tl.includes(m));return p.hit?{x:p.pickedMesh.metadata.x,y:p.pickedMesh.metadata.y}:null},
+project(x,y){const W=eng.getRenderWidth(),H=eng.getRenderHeight(),r=cv.getBoundingClientRect(),q=B.Vector3.Project(new B.Vector3(x,1.2,y),B.Matrix.Identity(),sc.getTransformMatrix(),cam.viewport.toGlobal(W,H));return{x:r.left+q.x/W*r.width,y:r.top+q.y/H*r.height}},
 zoom(f){Z=Math.max(.2,Math.min(1.6,Z*f));fit()},rotate(d){rot+=d*Math.PI/2},
 setEquip(list){EQ=(list||[]).filter(x=>OBJ[x]);dress()},
 stop(){removeEventListener('resize',onR);eng.stopRenderLoop();for(const [,ob] of U)ob.l.remove();sc.dispose();eng.dispose()}}}
