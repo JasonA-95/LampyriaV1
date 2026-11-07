@@ -10,10 +10,10 @@ temple:{a:'#5a4a5a',b:'#4e4050',sky:'#1c1426',L:['#5a4a7a','#6a5a8a','#7a6a9a'],
 BIO.manoir=BIO.citadelle=BIO.trone=BIO.serre=BIO.roseliere=BIO.temple;BIO.village=BIO.foret;
 const DIRS3=[[1,0],[-1,0],[0,1],[0,-1]];
 // obstacles aléatoires (remplace C.rocks) : NON appelé automatiquement, à décider à l'intégration
-function obstacles(C,seed){let s=seed>>>0;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296};
-const inC=new Set(C.cells.map(a=>a.join(','))),H=C.hero,foes=C.foes.filter(f=>f.hp>0),near=(x,y)=>Math.abs(x-H.x)+Math.abs(y-H.y)<=2||foes.some(f=>Math.abs(x-f.x)+Math.abs(y-f.y)<=1);
+function obstacles(C,seed,keep){keep=keep||[];let s=seed>>>0;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296};
+const inC=new Set(C.cells.map(a=>a.join(','))),H=C.hero,foes=C.foes.filter(f=>f.hp>0),near=(x,y)=>keep.some(c=>c[0]==x&&c[1]==y)||Math.abs(x-H.x)+Math.abs(y-H.y)<=2||foes.some(f=>Math.abs(x-f.x)+Math.abs(y-f.y)<=1);
 const rocks=new Set(),target=18+Math.floor(rnd()*10),free=C.cells.filter(([x,y])=>!near(x,y));
-function reachable(rk){const q=[[H.x,H.y]],seen=new Set([H.x+','+H.y]);while(q.length){const [x,y]=q.shift();for(const [dx,dy] of DIRS3){const k=(x+dx)+','+(y+dy);if(inC.has(k)&&!rk.has(k)&&!seen.has(k)){seen.add(k);q.push([x+dx,y+dy])}}}return foes.every(f=>DIRS3.some(([dx,dy])=>seen.has((f.x+dx)+','+(f.y+dy))||seen.has(f.x+','+f.y)))}
+function reachable(rk){const q=[[H.x,H.y]],seen=new Set([H.x+','+H.y]);while(q.length){const [x,y]=q.shift();for(const [dx,dy] of DIRS3){const k=(x+dx)+','+(y+dy);if(inC.has(k)&&!rk.has(k)&&!seen.has(k)){seen.add(k);q.push([x+dx,y+dy])}}}return keep.every(c=>seen.has(c.join(',')))&&foes.every(f=>DIRS3.some(([dx,dy])=>seen.has((f.x+dx)+','+(f.y+dy))||seen.has(f.x+','+f.y)))}
 for(let t=0;t<400&&rocks.size<target;t++){const [x,y]=free[Math.floor(rnd()*free.length)],k=x+','+y;if(rocks.has(k)||C.at(x,y))continue;rocks.add(k);if(!reachable(rocks))rocks.delete(k)}
 C.rocks=rocks;return rocks}
 function start(o){
