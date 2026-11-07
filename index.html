@@ -109,6 +109,24 @@ canvas{position:absolute;left:0;top:0;touch-action:none;display:block}
 #hud .tag{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--ember);color:#2a1a08;font-weight:700}
 #foes{display:flex;flex-wrap:wrap;gap:3px}
 #game.r3 .foe{min-width:0;padding:2px 6px;gap:1px;background:#1b1410aa;border-color:#ffffff22;font-size:10px}#game.r3 .foe .tags{display:none}#game.r3 .foe:active .tags{display:flex}#game.r3 .foe .hpbar{height:3px}
+#game.r3 #panel{position:absolute;inset:0;z-index:5;width:auto;background:none;border:0;padding:0;overflow:visible;pointer-events:none;display:block}
+#game.r3 #panel>*{pointer-events:auto}#game.r3 #foes,#game.r3 #tip{display:none}
+#game.r3 #msgEl{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:44%;background:#120d1acc;border:1px solid #ffffff33;border-radius:99px;padding:5px 14px;font-size:12px;pointer-events:none}
+#game.r3 #bar{position:absolute;right:14px;top:96px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+#game.r3 #bar button,#game.r3 #bar button.esp{display:grid;grid-template-columns:auto 52px;grid-template-areas:"n i" "m i";column-gap:10px;align-items:center;min-height:0;padding:0;background:none;border:0;box-shadow:none;text-align:right}
+#game.r3 #bar button svg{grid-area:i;width:52px;height:52px;filter:drop-shadow(0 2px 4px #000a)}
+#game.r3 #bar button .nm{grid-area:n;font-size:12px;text-shadow:0 1px 3px #000}#game.r3 #bar button .mt{grid-area:m;font-size:10px;color:#cdb98f;text-shadow:0 1px 3px #000}
+#game.r3 #bar button.on svg{filter:drop-shadow(0 0 10px #ffd678)}#game.r3 #bar button.on .nm{color:#ffd678}#game.r3 #bar button.on,#game.r3 #bar button.esp.on{background:none;box-shadow:none}
+#game.r3 #bar button:disabled{opacity:.4}
+#game.r3 #foot{position:absolute;right:14px;bottom:14px;display:flex;flex-direction:row-reverse;gap:8px}
+#game.r3 #foot button{min-height:0;border-radius:99px;padding:8px 16px;background:#120d1acc;border:1.5px solid #ffd67888;flex-direction:row;align-items:center}
+#game.r3 #foot button.pri{padding:12px 22px;font-weight:700;color:#f4ead6}
+#game.r3 #hud{top:84px;left:16px;right:auto;max-width:200px;flex-direction:column;align-items:flex-start;gap:6px;background:none;border:0;box-shadow:none;padding:0}#game.r3 #hud .pv{min-width:0;width:130px}
+#guir{position:absolute;top:0;left:0;right:0;height:92px;z-index:4;pointer-events:none}#guir svg{position:absolute;left:0;top:0;width:100%;height:60px}
+#guir .rw{position:absolute;top:18px;left:0;right:0;display:flex;justify-content:center;gap:16px}#guir .ln{width:46px;text-align:center;font-size:10px}
+#guir .ln i{display:block;width:2px;height:14px;background:#8a7a62;margin:0 auto}#guir .ln b{display:block;height:38px;border:2.5px solid #d8c8a8;border-radius:9px;background:#1a141acc;font-size:19px;line-height:33px;font-weight:400}
+#guir .ln.on b{border-color:#ffd678;background:#ffd67833;box-shadow:0 0 14px #ffd678}#guir .ln s{display:block;height:3px;background:#2a1010;margin-top:2px;text-decoration:none}#guir .ln s u{display:block;height:100%;background:#6fcf7a;text-decoration:none}#guir .ln.f s u{background:#e5564a}
+
 .foe{display:flex;flex-direction:column;align-items:stretch;gap:3px;max-width:100%;min-width:150px;padding:5px 8px;background:linear-gradient(180deg,#3a2b1fee,#201710ee);border:1px solid var(--line);border-radius:10px;font-size:11px;line-height:1.2;text-align:left}
 .foe .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .foe .hpbar{display:block;height:5px;border-radius:9px;background:#00000070;overflow:hidden}.foe .hpbar i{display:block;height:100%;background:linear-gradient(90deg,#4fbf6a,#9be58a)}
@@ -205,6 +223,7 @@ button.asp.on{background:#3a2a22;border-color:var(--ember);box-shadow:0 0 0 2px 
 <script src="sprites.js"></script>
 <script src="monstres.js"></script>
 <script src="pnj.js"></script>
+<script src="icones-sorts.js"></script>
 <script src="rendu3d.js"></script>
 <script src="affichage.js"></script>
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
