@@ -21,7 +21,7 @@ if(!document.getElementById('r3css')){const st=document.createElement('style');s
 const B=BABYLON,C=o.C,cv=o.canvas,DIRS=DIRS3,biome=o.biome||'foret',BI=BIO[biome]||BIO.foret;
 const eng=new B.Engine(cv,true,{stencil:true}),sc=new B.Scene(eng);let rot=-3*Math.PI/4,Z=1;
 const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial('m',sc);m.diffuseColor=hx(h);m.specularColor=B.Color3.Black();if(e)m.emissiveColor=hx(e);return m};
-const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#2f8f90','#134a4a'),range:mat('#e08a2c','#7a4010'),range2:mat('#7a5230','#2e1a0a'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c'),path:mat('#6fe0e0','#2a7a7a'),aoe:mat('#d04040','#6a1818')};
+const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#6a6a58','#2a3a38'),reach2:mat('#5e6252','#243230'),range:mat('#e08a2c','#7a4010'),range2:mat('#7a5230','#2e1a0a'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c'),path:mat('#6fe0e0','#2a7a7a'),aoe:mat('#d04040','#6a1818')};
 M.a.diffuseColor=hx(BI.a);M.b.diffuseColor=hx(BI.b);M.leaf1.diffuseColor=hx(BI.L[0]);M.leaf2.diffuseColor=hx(BI.L[1]);M.leaf3.diffuseColor=hx(BI.L[2]);sc.clearColor=B.Color4.FromHexString(BI.sky+'ff');
 if(biome=='desert'){M.rock.diffuseColor=hx('#8a7a62');M.rock2.diffuseColor=hx('#9a8a70');M.cactus=mat('#4a7a4a')}if(biome=='marais'){M.bark.diffuseColor=hx('#3a2e28');M.rock.diffuseColor=hx('#4a463e')}M.pil=mat('#8a8096');M.cactus=M.cactus||mat('#4a7a4a');
 const cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt(3)),60,new B.Vector3(6.5,0,6.5),sc);cam.mode=B.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=.1;cam.maxZ=300;
@@ -104,7 +104,7 @@ const p=B.Vector3.Project(new B.Vector3(ob.x,1.9,ob.y),B.Matrix.Identity(),tm,vp
 ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Math.max(0,u.hp);ob.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}});
 let lf=0;eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;sc.render()});const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
 return{
-setTiles(map){for(const k in tiles){const b=tiles[k],c=map&&map[k];b.material=c=='aoe'?M.aoe:c=='path'?M.path:c=='reach'?M.reach:c=='range'?M.range:c=='range2'?M.range2:b.metadata.base}},
+setTiles(map){for(const k in tiles){const b=tiles[k],c=map&&map[k];b.material=c=='aoe'?M.aoe:c=='path'?M.path:c=='reach'?(b.metadata.base===M.a?M.reach:M.reach2):c=='range'?M.range:c=='range2'?M.range2:b.metadata.base}},
 cellAt(cx,cy){const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const p=sc.pick(cx-r.left,cy-r.top,m=>tl.includes(m));return p.hit?{x:p.pickedMesh.metadata.x,y:p.pickedMesh.metadata.y}:null},
 project(x,y,h){const W=eng.getRenderWidth(),H=eng.getRenderHeight(),r=cv.getBoundingClientRect(),q=B.Vector3.Project(new B.Vector3(x,h==null?1.2:h,y),B.Matrix.Identity(),sc.getTransformMatrix(),cam.viewport.toGlobal(W,H));return{x:r.left+q.x/W*r.width,y:r.top+q.y/H*r.height}},
 zoom(f){Z=Math.max(.2,Math.min(1.6,Z*f));fit()},rotate(d){rot+=d*Math.PI/2},
