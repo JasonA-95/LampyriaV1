@@ -66,9 +66,9 @@ else if(cl=='fossoyeur'){P(Cn(.5,.58,6),1.2,0,-.02,mat('#2a352c'));P(Tr(.3,.07),
 function unit(u,ally){const t=root('u');const isH=u===C.hero;const body=B.MeshBuilder.CreateCylinder('b',{height:.75,diameterTop:.3,diameterBottom:.55,tessellation:6},sc);body.position.y=.38;body.parent=t;fin(body,isH?M.hero:ally?M.cream:mat(u.boss?'#7a2a3a':'#7a4a66'));
 const hd=B.MeshBuilder.CreateSphere('h',{diameter:.42,segments:5},sc);hd.position.y=1.0;hd.parent=t;fin(hd,isH?M.skin:ally?M.cream:mat(u.boss?'#9a3a4a':'#8a5ac0'));
 let spr=null;const SP=isH&&o.sprites&&o.sprites[o.classe];
-if(SP){body.setEnabled(false);hd.setEnabled(false);const H=1.9,pl=B.MeshBuilder.CreatePlane('spr',{width:H*SP.cw/SP.ch,height:H},sc);pl.parent=t;pl.position.y=H/2-.02;pl.billboardMode=B.Mesh.BILLBOARDMODE_Y;
+if(SP){body.setEnabled(false);hd.setEnabled(false);const H=1.9,pl=B.MeshBuilder.CreatePlane('spr',{width:H*SP.cw/SP.ch,height:H,updatable:true},sc);pl.parent=t;pl.position.y=H/2-.02;pl.billboardMode=B.Mesh.BILLBOARDMODE_Y;
 const tx=new B.Texture(SP.url,sc,true,true,B.Texture.BILINEAR_SAMPLINGMODE,null,()=>{console.error('sprite introuvable',SP.url);pl.dispose();ob.spr=null;body.setEnabled(true);hd.setEnabled(true);try{classProps(t,o.classe,body,hd)}catch(e){}ob.eq=root('eq');ob.eq.parent=t;dress()});
-tx.hasAlpha=true;tx.uScale=1/9;tx.vScale=1/2;tx.wrapU=tx.wrapV=B.Texture.CLAMP_ADDRESSMODE;const sm=new B.StandardMaterial('sm',sc);sm.diffuseTexture=tx;sm.emissiveTexture=tx;sm.disableLighting=true;sm.useAlphaFromDiffuseTexture=true;sm.backFaceCulling=false;sm.transparencyMode=B.Material.MATERIAL_ALPHATESTANDBLEND;sm.alphaCutOff=.08;pl.alwaysSelectAsActiveMesh=true;pl.material=sm;spr={pl,tx,t:0,face:1,dir:'side'}}
+tx.hasAlpha=true;tx.wrapU=tx.wrapV=B.Texture.CLAMP_ADDRESSMODE;const sm=new B.StandardMaterial('sm',sc);sm.diffuseTexture=tx;sm.emissiveTexture=tx;sm.disableLighting=true;sm.useAlphaFromDiffuseTexture=true;sm.backFaceCulling=false;sm.transparencyMode=B.Material.MATERIAL_ALPHATESTANDBLEND;sm.alphaCutOff=.08;pl.alwaysSelectAsActiveMesh=true;pl.material=sm;spr={pl,tx,t:0,face:1,dir:'side',uv0:pl.getVerticesData(B.VertexBuffer.UVKind).slice(),key:''}}
 let eq=null;if(isH&&!spr){eq=root('eq');eq.parent=t;try{classProps(t,o.classe,body,hd)}catch(e){console.error('classe 3D',e)}}
 const l=document.createElement('div');l.className='lab'+(isH?' h':'');l.innerHTML='<span></span><div class=bar><i></i></div>';o.labels.appendChild(l);
 const ob={t,l,x:u.x,y:u.y,eq,spr};t.position.set(u.x,0,u.y);U.set(u,ob);return ob}
@@ -91,8 +91,9 @@ if(u===C.hero&&!ob.dressed){ob.dressed=1;dress()}ob.t.setEnabled(alive);ob.l.sty
 if(ob.spr){const s=ob.spr,dx=u.x-ob.x,dy=u.y-ob.y,mv=Math.hypot(dx,dy)>.05,al=cam.alpha,
 face=(vx,vy)=>{const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;s.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'front':'back';if(Math.abs(sx)>.02)s.face=sx>0?1:-1};
 if(u.look){face(u.look[0],u.look[1]);u.look=null}if(mv)face(dx,dy);
-s.pl.scaling.x=s.face;s.t+=dt*(mv?(s.dir=='side'?9:6):5);const n=s.dir=='side'?5:2,c0=s.dir=='side'?0:s.dir=='front'?5:7;
-const cu=s.tx.uRotationCenter||0,cv=s.tx.vRotationCenter||0;s.tx.uOffset=(c0+Math.floor(s.t)%n)/9-cu*(1-1/9);s.tx.vOffset=(mv?0:.5)-cv*(1-1/2)}
+s.t+=dt*(mv?(s.dir=='side'?9:6):5);const n=s.dir=='side'?5:2,c0=s.dir=='side'?0:s.dir=='front'?5:7;
+const col=c0+Math.floor(s.t)%n,row=mv?1:0,key=col+'/'+row+'/'+s.face;
+if(key!=s.key){s.key=key;const e=.0003,u0=col/9+e,u1=(col+1)/9-e,v0=(row?0:.5)+e,v1=(row?.5:1)-e,uv=s.uv0.slice();for(let q=0;q<uv.length;q+=2){let a=s.uv0[q]>.5?1:0;const b=s.uv0[q+1]>.5?1:0;if(s.face<0)a=1-a;uv[q]=a?u1:u0;uv[q+1]=b?v1:v0}s.pl.updateVerticesData(B.VertexBuffer.UVKind,uv)}}
 const k=Math.min(1,dt*9);ob.x+=(u.x-ob.x)*k;ob.y+=(u.y-ob.y)*k;ob.t.position.set(ob.x,0,ob.y);
 const p=B.Vector3.Project(new B.Vector3(ob.x,1.9,ob.y),B.Matrix.Identity(),tm,vp);ob.l.style.left=(rc.left-lr.left+p.x/W*rc.width)+'px';ob.l.style.top=(rc.top-lr.top+p.y/H*rc.height)+'px';
 ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Math.max(0,u.hp);ob.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}});
