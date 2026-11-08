@@ -51,7 +51,7 @@ corps:(o,id)=>{const c=mat(hcol(id));fin(part(o,B.MeshBuilder.CreateCylinder('v'
 bottes:(o,id)=>{const c=mat('#3a2418');[-.12,.12].forEach(x=>fin(part(o,B.MeshBuilder.CreateBox('b',{width:.17,height:.14,depth:.24},sc),.07,x,.03),c))},
 arme:(o,id)=>{const c=mat(hcol(id)),e=mat('#ffb04a','#ff7a20');const t=part(o,B.MeshBuilder.CreateCylinder('w',{height:.85,diameter:.07,tessellation:5},sc),.6,.4);t.rotation.z=-.25;fin(t,c);part(o,B.MeshBuilder.CreateSphere('g',{diameter:.14,segments:4},sc),1.04,.48).material=e},
 acc:(o,id)=>{fin(part(o,B.MeshBuilder.CreateTorus('a',{diameter:.42,thickness:.04,tessellation:10},sc),.9),mat(hcol(id)))}};
-function dress(){const o=U.get(C.hero);if(!o||!o.eq)return;o.eq.getChildMeshes().forEach(m=>m.dispose());EQ.forEach(id=>{const f=EQB[OBJ[id].slot];if(f)f(o,id)})}
+function dress(){const o=U.get(C.hero);if(!o||!o.eq||o.spr)return;o.eq.getChildMeshes().forEach(m=>m.dispose());EQ.forEach(id=>{const f=EQB[OBJ[id].slot];if(f)f(o,id)})}
 const U=new Map();
 // Silhouette propre à chaque classe (en plus de l'équipement) : accessoires placés côté gauche ou dans le dos pour ne pas recouvrir l'arme équipée.
 function classProps(t,cl,body,hd){const P=(m,y,x,z,mt,rx,rz)=>{m.parent=t;m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(rz)m.rotation.z=rz;fin(m,mt);return m},
@@ -65,9 +65,12 @@ else if(cl=='mage'){P(Cy(.3,.85,8),.2,0,0,mat('#5c4c9c'));P(Cn(.62,.54,6),1.4,0,
 else if(cl=='fossoyeur'){P(Cn(.5,.58,6),1.2,0,-.02,mat('#2a352c'));P(Tr(.3,.07),.8,0,0,mat('#20301f'),Math.PI/2);P(Cy(.9,.05,5),.7,.12,-.24,wood,.25);P(Bx(.22,.28,.04),1.2,.19,-.35,steel,.25);P(Sp(.12),.86,-.38,.05,cream)}}
 function unit(u,ally){const t=root('u');const isH=u===C.hero;const body=B.MeshBuilder.CreateCylinder('b',{height:.75,diameterTop:.3,diameterBottom:.55,tessellation:6},sc);body.position.y=.38;body.parent=t;fin(body,isH?M.hero:ally?M.cream:mat(u.boss?'#7a2a3a':'#7a4a66'));
 const hd=B.MeshBuilder.CreateSphere('h',{diameter:.42,segments:5},sc);hd.position.y=1.0;hd.parent=t;fin(hd,isH?M.skin:ally?M.cream:mat(u.boss?'#9a3a4a':'#8a5ac0'));
-let eq=null;if(isH){eq=root('eq');eq.parent=t;try{classProps(t,o.classe,body,hd)}catch(e){console.error('classe 3D',e)}}
+let spr=null;const SP=isH&&o.sprites&&o.sprites[o.classe];
+if(SP){body.setEnabled(false);hd.setEnabled(false);const H=1.82,pl=B.MeshBuilder.CreatePlane('spr',{width:H*SP.cw/SP.ch,height:H},sc);pl.parent=t;pl.position.y=H/2-.02;pl.billboardMode=B.Mesh.BILLBOARDMODE_Y;
+const tx=new B.Texture(SP.url,sc,false,true,B.Texture.BILINEAR_SAMPLINGMODE);tx.hasAlpha=true;tx.uScale=1/SP.n;const sm=new B.StandardMaterial('sm',sc);sm.diffuseTexture=tx;sm.emissiveTexture=tx;sm.disableLighting=true;sm.useAlphaFromDiffuseTexture=true;sm.backFaceCulling=false;pl.material=sm;spr={pl,tx,SP,t:0,face:1}}
+let eq=null;if(isH&&!spr){eq=root('eq');eq.parent=t;try{classProps(t,o.classe,body,hd)}catch(e){console.error('classe 3D',e)}}
 const l=document.createElement('div');l.className='lab'+(isH?' h':'');l.innerHTML='<span></span><div class=bar><i></i></div>';o.labels.appendChild(l);
-const ob={t,l,x:u.x,y:u.y,eq};t.position.set(u.x,0,u.y);U.set(u,ob);return ob}
+const ob={t,l,x:u.x,y:u.y,eq,spr};t.position.set(u.x,0,u.y);U.set(u,ob);return ob}
 let drag=null,moved=0,pt=new Map(),pinch=null;
 cv.addEventListener('wheel',e=>{e.preventDefault();Z=Math.max(.2,Math.min(1.6,Z*(e.deltaY<0?.87:1.15)));fit()},{passive:false});
 cv.addEventListener('pointerdown',e=>{pt.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pt.size==2){const [p,q]=[...pt.values()];pinch={d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:Z};moved+=99}});
@@ -84,6 +87,7 @@ cam.alpha+=(rot-cam.alpha)*Math.min(1,dt*8);
 const list=[C.hero,...C.foes,...C.allies],W=eng.getRenderWidth(),H=eng.getRenderHeight(),tm=sc.getTransformMatrix(),vp=cam.viewport.toGlobal(W,H),rc=cv.getBoundingClientRect(),lr=o.labels.getBoundingClientRect();
 for(const u of list){const alive=u.hp>0;let ob=U.get(u);if(!ob){if(!alive)continue;ob=unit(u,C.allies.includes(u))}
 if(u===C.hero&&!ob.dressed){ob.dressed=1;dress()}ob.t.setEnabled(alive);ob.l.style.display=alive?'':'none';if(!alive)continue;
+if(ob.spr){const s=ob.spr,dx=u.x-ob.x,dy=u.y-ob.y,mv=Math.hypot(dx,dy)>.05,sx=dx*(-Math.sin(cam.alpha))+dy*Math.cos(cam.alpha);if(mv&&Math.abs(sx)>.02)s.face=sx>0?1:-1;s.pl.scaling.x=s.face;s.t+=dt*(mv?9:5);const [a,b]=mv?s.SP.walk:s.SP.idle;s.tx.uOffset=(a+Math.floor(s.t)%(b-a))/s.SP.n}
 const k=Math.min(1,dt*9);ob.x+=(u.x-ob.x)*k;ob.y+=(u.y-ob.y)*k;ob.t.position.set(ob.x,0,ob.y);
 const p=B.Vector3.Project(new B.Vector3(ob.x,1.9,ob.y),B.Matrix.Identity(),tm,vp);ob.l.style.left=(rc.left-lr.left+p.x/W*rc.width)+'px';ob.l.style.top=(rc.top-lr.top+p.y/H*rc.height)+'px';
 ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Math.max(0,u.hp);ob.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}});
