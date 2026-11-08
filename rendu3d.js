@@ -67,8 +67,11 @@ function unit(u,ally){const t=root('u');const isH=u===C.hero;const body=B.MeshBu
 const hd=B.MeshBuilder.CreateSphere('h',{diameter:.42,segments:5},sc);hd.position.y=1.0;hd.parent=t;fin(hd,isH?M.skin:ally?M.cream:mat(u.boss?'#9a3a4a':'#8a5ac0'));
 let spr=null;const SP=isH&&o.sprites&&o.sprites[o.classe];
 if(SP){body.setEnabled(false);hd.setEnabled(false);const H=1.9,pl=B.MeshBuilder.CreatePlane('spr',{width:H*SP.cw/SP.ch,height:H,updatable:true},sc);pl.parent=t;pl.position.y=H/2-.02;pl.billboardMode=B.Mesh.BILLBOARDMODE_Y;
-const tx=new B.Texture(SP.url,sc,true,true,B.Texture.NEAREST_SAMPLINGMODE,null,()=>{console.error('sprite introuvable',SP.url);pl.dispose();ob.spr=null;body.setEnabled(true);hd.setEnabled(true);try{classProps(t,o.classe,body,hd)}catch(e){}ob.eq=root('eq');ob.eq.parent=t;dress()});
-tx.hasAlpha=true;tx.wrapU=tx.wrapV=B.Texture.CLAMP_ADDRESSMODE;const sm=new B.StandardMaterial('sm',sc);sm.diffuseTexture=tx;sm.emissiveTexture=tx;sm.disableLighting=true;sm.useAlphaFromDiffuseTexture=true;sm.backFaceCulling=false;sm.transparencyMode=B.Material.MATERIAL_ALPHATESTANDBLEND;sm.alphaCutOff=.08;pl.alwaysSelectAsActiveMesh=true;pl.material=sm;spr={pl,tx,t:0,face:1,dir:'side',uv0:pl.getVerticesData(B.VertexBuffer.UVKind).slice(),key:''}}
+const tx=new B.Texture(SP.url,sc,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,null,()=>{console.error('sprite introuvable',SP.url);pl.dispose();ob.spr=null;body.setEnabled(true);hd.setEnabled(true);try{classProps(t,o.classe,body,hd)}catch(e){}ob.eq=root('eq');ob.eq.parent=t;dress()});
+tx.hasAlpha=true;tx.wrapU=tx.wrapV=B.Texture.CLAMP_ADDRESSMODE;const sm=new B.StandardMaterial('sm',sc);sm.diffuseTexture=tx;sm.emissiveTexture=tx;sm.disableLighting=true;sm.useAlphaFromDiffuseTexture=true;sm.backFaceCulling=false;sm.transparencyMode=B.Material.MATERIAL_ALPHATESTANDBLEND;sm.alphaCutOff=.08;pl.alwaysSelectAsActiveMesh=true;pl.material=sm;const fm=(c,e,a)=>{const m=new B.StandardMaterial('fm',sc);m.diffuseColor=B.Color3.FromHexString(c);m.emissiveColor=B.Color3.FromHexString(e);m.alpha=a;m.disableLighting=true;m.backFaceCulling=false;return m};
+const sh=B.MeshBuilder.CreateDisc('sh',{radius:.46,tessellation:24},sc);sh.parent=t;sh.rotation.x=Math.PI/2;sh.position.y=.03;sh.material=fm('#000000','#000000',.4);sh.isPickable=false;
+const ha=B.MeshBuilder.CreateTorus('ha',{diameter:.98,thickness:.05,tessellation:28},sc);ha.parent=t;ha.position.y=.05;ha.material=fm('#ffd678','#ffd678',.85);ha.isPickable=false;
+spr={sm,sh,ha,pl,tx,t:0,face:1,dir:'side',uv0:pl.getVerticesData(B.VertexBuffer.UVKind).slice(),key:''}}
 let eq=null;if(isH&&!spr){eq=root('eq');eq.parent=t;try{classProps(t,o.classe,body,hd)}catch(e){console.error('classe 3D',e)}}
 const l=document.createElement('div');l.className='lab'+(isH?' h':'');l.innerHTML='<span></span><div class=bar><i></i></div>';o.labels.appendChild(l);
 const ob={t,l,x:u.x,y:u.y,eq,spr};t.position.set(u.x,0,u.y);U.set(u,ob);return ob}
@@ -88,6 +91,8 @@ cam.alpha+=(rot-cam.alpha)*Math.min(1,dt*8);
 const list=[C.hero,...C.foes,...C.allies],W=eng.getRenderWidth(),H=eng.getRenderHeight(),tm=sc.getTransformMatrix(),vp=cam.viewport.toGlobal(W,H),rc=cv.getBoundingClientRect(),lr=o.labels.getBoundingClientRect();
 for(const u of list){const alive=u.hp>0;let ob=U.get(u);if(!ob){if(!alive)continue;ob=unit(u,C.allies.includes(u))}
 if(u===C.hero&&!ob.dressed){ob.dressed=1;dress()}ob.t.setEnabled(alive);ob.l.style.display=alive?'':'none';if(!alive)continue;
+if(ob.spr){const s=ob.spr;s.ha.scaling.x=s.ha.scaling.z=1+.05*Math.sin(performance.now()/260);if(ob.hp!=null&&u.hp<ob.hp)s.fl=1;ob.hp=u.hp;
+if(s.fl>0){s.fl=Math.max(0,s.fl-dt*4);const f=Math.min(1,s.fl*.9);s.sm.emissiveColor.set(f,f,f);s.pl.position.x=Math.sin(s.fl*40)*.07*s.fl}else{s.sm.emissiveColor.set(0,0,0);s.pl.position.x=0}}
 if(ob.spr){const s=ob.spr,dx=u.x-ob.x,dy=u.y-ob.y,mv=Math.hypot(dx,dy)>.05,al=cam.alpha,
 face=(vx,vy)=>{const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;s.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'front':'back';if(Math.abs(sx)>.02)s.face=sx>0?1:-1};
 if(u.look){face(u.look[0],u.look[1]);u.look=null}if(mv)face(dx,dy);
