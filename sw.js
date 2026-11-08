@@ -1,22 +1,44 @@
-const V='lampyria-v126',S='lampyria-sons';
+const V='lampyria-v127',S='lampyria-sons';
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(
-  caches.keys().then(k=>Promise.all(k.filter(n=>n!=V&&n!=S).map(n=>caches.delete(n)))).then(()=>clients.claim())
+  caches.keys().then(k=>Promise.all(k.filter(n=>/^lampyria-v\d+$/.test(n)&&n!=V).map(n=>caches.delete(n)))).then(()=>clients.claim())
 ));
 self.addEventListener('fetch',e=>{
   if(e.request.method!='GET') return;
-  // Instruments (gros fichiers, immuables) : cache persistant, jamais retéléchargés à chaque session ni à chaque version.
-  if(/_FluidR3_GM_sf2_file\.js$/.test(new URL(e.request.url).pathname)){
-    e.respondWith(caches.open(S).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(n=>{if(n.ok||n.type=='opaque')c.put(e.request,n.clone()).catch(()=>{});return n}))));
+  const instrument=/_FluidR3_GM_sf2_file\.js$/.test(new URL(e.request.url).pathname);
+  if(instrument){
+    e.respondWith((async()=>{
+      let cache;
+      try{
+        cache=await caches.open(S);
+        const hit=await cache.match(e.request);
+        if(hit)return hit;
+      }catch(error){console.warn('Lampyria : lecture du cache des instruments impossible.',error)}
+      const response=await fetch(e.request);
+      if(cache&&(response.ok||response.type=='opaque')){
+        try{await cache.put(e.request,response.clone())}
+        catch(error){console.warn('Lampyria : enregistrement des instruments impossible.',error)}
+      }
+      return response;
+    })());
     return;
   }
-  e.respondWith(
-    fetch(e.request,{cache:'no-store'})
-      .then(r=>{
-        const c=r.clone();
-        caches.open(V).then(x=>x.put(e.request,c)).catch(()=>{});
-        return r;
-      })
-      .catch(()=>caches.match(e.request).then(r=>r||new Response('Hors ligne',{status:503})))
+  e.respondWith(fetch(e.request,{cache:'no-store'})
+    .then(async response=>{
+      if(response.ok||response.type=='opaque'){
+        try{
+          const cache=await caches.open(V);
+          await cache.put(e.request,response.clone());
+        }catch(error){console.warn('Lampyria : enregistrement du cache hors ligne impossible.',error)}
+      }
+      return response;
+    })
+    .catch(async()=>{
+      try{
+        const cached=await caches.match(e.request);
+        if(cached)return cached;
+      }catch(error){console.warn('Lampyria : lecture du cache hors ligne impossible.',error)}
+      return new Response('Hors ligne',{status:503});
+    })
   );
 });
