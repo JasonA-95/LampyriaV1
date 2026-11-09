@@ -62,6 +62,11 @@ for(const [x,y] of this.cells){const m=this.dist(h,{x,y}),u=this.at(x,y);
 if(m<s.r[0]||m>s.r[1]||!this.ok(x,y)||(s.los&&!this.los(h,{x,y})))continue;
 if((s.healA||s.sacrifice)&&!(u&&u.ally))continue;if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge||(s.etats&&s.etats.length&&s.aoe==null))&&!(u&&u!==h&&!u.ally))continue;if(s.invoque&&(u||this.liveAllies().length>=(s.max||2)))continue;
 if(s.charge&&!DIRS.some(([dx,dy])=>this.free(u.x+dx,u.y+dy)))continue;r.push([x,y])}return r}
+// Aperçu des dégâts d'un sort offensif sur (x,y) : mêmes fonctions que cast(), mais n'applique rien (ni PA, ni PV, ni rage, ni bouclier).
+preview(i,x,y){const s=this.S[i],h=this.hero;if(!s||!s.dmg||!this.ranged(i).some(t=>t[0]==x&&t[1]==y))return[];
+const m=h.rage?2:1,em=this.spellMult(s),base=s.dmg+this.bonus+(s.parAllie||0)*this.liveAllies().length,dm=this.damageFrom(h,em===1?base*m:Math.round(base*em*m)),el=s.elem||'neutre';
+const T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[this.at(x,y)].filter(f=>f&&this.foes.includes(f)&&f.hp>0);
+return T.map(f=>{if(this.shield(f))return{f,dmg:0,blocked:true};const bd=this.weak(f)?Math.round(dm*1.5):dm,rk=this.resistK(f,el),raw=rk===1?bd:Math.max(1,Math.round(bd*rk)),amount=raw<=0?0:Math.round(raw),sh=f.etats&&f.etats.find(e=>e.id=='bouclier'&&e.t>0),absorbed=sh?Math.min(sh.v,amount):0,dmg=amount-absorbed;return{f,dmg,absorbed,kill:dmg>=f.hp}})}
 move(x,y){const d=this.reach()[x+','+y];if(!(d>0))return{ok:false,tag:'loin'};
 this.pm-=d;this.hero.x=x;this.hero.y=y;return{ok:true,tag:''}}
 cast(i,x,y){const s=this.S[i],h=this.hero;if(this.pa<s.pa||this.cd[i]>0)return{ok:false,tag:'cout'};
