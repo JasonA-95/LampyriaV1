@@ -1,5 +1,8 @@
-const V='lampyria-v127',S='lampyria-sons';
-self.addEventListener('install',()=>self.skipWaiting());
+const V='lampyria-v128',S='lampyria-sons';
+// Pré-chargement à l'installation : le jeu (et le moteur 3D) démarre hors ligne dès la première visite, sans attendre d'avoir tout joué une fois.
+const CORE=['./','index.html','manifest.json','icon-192.png','icon-512.png','donnees.js','xp.js','histoire.js','donjons.js','moteur.js','options.js','icones.js','son.js','musique.js','etat.js','succes.js','menu.js','exploration.js','alea.js','scenes.js','rendu.js','titre.js','tuto.js','heros.js','sprites.js','monstres.js','pnj.js','icones-sorts.js','rendu3d.js','affichage.js','spr-archer.png','spr-fossoyeur.png','spr-mage.png','spr-porte.png','mon-berger.png','mon-bouc.png','mon-champi.png','mon-luc1.png','mon-luc2.png','mon-mouche.png','mon-mouton.png','mon-mycel.png'];
+const BAB='https://cdnjs.cloudflare.com/ajax/libs/babylonjs/6.49.0/babylon.js';
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(V).then(c=>Promise.all(CORE.map(u=>c.add(new Request(u,{cache:'reload'})).catch(err=>console.warn('Pré-chargement raté',u,err))).concat(fetch(BAB,{mode:'no-cors'}).then(r=>c.put(BAB,r)).catch(err=>console.warn('Pré-chargement raté Babylon',err))))))});
 self.addEventListener('activate',e=>e.waitUntil(
   caches.keys().then(k=>Promise.all(k.filter(n=>n.startsWith('lampyria-')&&n!=V&&n!=S).map(n=>caches.delete(n)))).then(()=>clients.claim())
 ));
@@ -17,6 +20,6 @@ self.addEventListener('fetch',e=>{
         if(r.ok||r.type=='opaque'){const c=r.clone();e.waitUntil(caches.open(V).then(x=>x.put(e.request,c)).catch(err=>console.warn('Cache non écrit',err)))}
         return r;
       })
-      .catch(()=>caches.match(e.request).then(r=>r||new Response('Hors ligne',{status:503})))
+      .catch(()=>caches.match(e.request,{ignoreSearch:true}).then(r=>r||(e.request.mode=='navigate'?caches.match('index.html'):null)).then(r=>r||new Response('Hors ligne',{status:503})))
   );
 });
