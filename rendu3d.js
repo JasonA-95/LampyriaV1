@@ -29,9 +29,9 @@ function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=Math.max(11/
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('d',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 // Ambiance : lumière chaude + lucioles (clin d'œil à Lampyria) qui dérivent doucement au-dessus du terrain. Purement décoratif, aucune interaction.
 dl.diffuse=new B.Color3(1,.94,.82);
-const FF=[],ffm=new B.StandardMaterial('ff',sc);ffm.emissiveColor=new B.Color3(1,.9,.45);ffm.disableLighting=true;
-for(let i=0;i<14;i++){const m=B.MeshBuilder.CreateSphere('ff'+i,{diameter:.09,segments:4},sc);m.material=ffm;m.isPickable=false;FF.push({m,x:Math.random()*13,z:Math.random()*13,y:.6+Math.random()*1.6,p:Math.random()*6.28,v:.25+Math.random()*.35})}
-let ft=0;sc.onBeforeRenderObservable.add(()=>{ft+=sc.getEngine().getDeltaTime()/1000;for(const f of FF){f.m.position.set(f.x+Math.sin(ft*f.v+f.p)*.9,f.y+Math.sin(ft*f.v*1.7+f.p)*.25,f.z+Math.cos(ft*f.v*.8+f.p)*.9);f.m.scaling.setAll(.55+.45*Math.sin(ft*2.2*f.v*4+f.p))}});
+const FF=[],ffm=new B.StandardMaterial('ff',sc);ffm.emissiveColor=new B.Color3(1,.9,.45);ffm.disableLighting=true;const ffh=new B.StandardMaterial('ffh',sc);ffh.emissiveColor=new B.Color3(1,.85,.3);ffh.disableLighting=true;ffh.alpha=.22;
+for(let i=0;i<14;i++){const m=B.MeshBuilder.CreateSphere('ff'+i,{diameter:.2,segments:6},sc);m.material=ffm;m.isPickable=false;const hl=B.MeshBuilder.CreateSphere('fh'+i,{diameter:.55,segments:6},sc);hl.material=ffh;hl.isPickable=false;hl.parent=m;FF.push({m,x:Math.random()*13,z:Math.random()*13,y:.6+Math.random()*1.6,p:Math.random()*6.28,v:.25+Math.random()*.35})}
+let ft=0;sc.onBeforeRenderObservable.add(()=>{ft+=sc.getEngine().getDeltaTime()/1000;for(const f of FF){f.m.position.set(f.x+Math.sin(ft*f.v+f.p)*.9,f.y+Math.sin(ft*f.v*1.7+f.p)*.25,f.z+Math.cos(ft*f.v*.8+f.p)*.9);f.m.scaling.setAll(.75+.25*Math.sin(ft*2.2*f.v*4+f.p))}});
 function fin(m,mt,ol=true){m.material=mt;if(m.convertToFlatShadedMesh&&!m.name.startsWith('b'))m.convertToFlatShadedMesh();if(ol){m.renderOutline=true;m.outlineWidth=.025;m.outlineColor=new B.Color3(.07,.04,.05)}return m}
 const root=n=>new B.TransformNode(n,sc);
 function tree(x,z,s,alt){const t=root('t');t.position.set(x,0,z);const k=B.MeshBuilder.CreateCylinder('k',{height:.9*s,diameterTop:.18*s,diameterBottom:.26*s,tessellation:5},sc);k.position.y=.45*s;k.parent=t;fin(k,M.bark);
