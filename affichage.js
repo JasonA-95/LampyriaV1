@@ -164,9 +164,9 @@ if(heroBefore.hp>C.hero.hp){flashHit(C.hero);if(typeof playSound=='function')pla
 if((result.events||[]).length){addDisplayEffect('pulse',{at,radius:.8,color:'#ffe08a',duration:220});if(typeof playSound=='function')playSound('state')}
 if(typeof playSound=='function'){if(spell&&spell.invoque)playSound('invoque');else if(spell&&spell.elem&&spell.dmg)playSound(spell.elem)}if(typeof playSound=='function')playSound(spell?(spell.heal||spell.drain?'heal':spell.aoe!=null?'zone':spell.r&&spell.r[1]>1&&spell.dmg?'shot':spell.dmg?'melee':'magic'):'step')}
 function act(x,y){if(plc||busy||C.result||displayPending())return;const ok=mode=='move'?C.reach()[x+','+y]>0:C.ranged(mode).some(t=>t[0]==x&&t[1]==y);
-if(!ok){pend=null;msg(mode=='move'?MSG.loin:MSG.cible);draw();return}
-if(!pend||pend.x!=x||pend.y!=y){pend={x,y};msg(mode=='move'?'Déplacement : '+C.reach()[x+','+y]+' PM. Touche encore la case pour confirmer.':'Zone affichée. Touche encore la même case pour lancer le sort.');draw();return}
-pend=null;const before=unitSnapshots([C.hero,...C.foes,...C.allies]),spell=Number.isInteger(mode)?C.S[mode]:null,hp0=C.hero.hp,pth=mode=='move'?C.path(x,y):null;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
+if(!ok){clearPv();pend=null;msg(mode=='move'?MSG.loin:MSG.cible);draw();return}
+if(!pend||pend.x!=x||pend.y!=y){pend={x,y};clearPv();if(R3&&Number.isInteger(mode)&&C.S[mode].dmg)pv3D(mode,x,y);msg(mode=='move'?'Déplacement : '+C.reach()[x+','+y]+' PM. Touche encore la case pour confirmer.':'Zone affichée. Touche encore la même case pour lancer le sort.');draw();return}
+clearPv();pend=null;const before=unitSnapshots([C.hero,...C.foes,...C.allies]),spell=Number.isInteger(mode)?C.S[mode]:null,hp0=C.hero.hp,pth=mode=='move'?C.path(x,y):null;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
 if(!r.ok){msg(MSG[r.tag]);return}
 // Sens de marche : le héros se tourne vers son dernier pas ; un sort le retourne vers sa cible (voir SPR.draw).
 if(pth&&pth.length){const a=pth.length>1?pth[1]:[before[0].x,before[0].y],b=pth[0];C.hero.face={right:(b[0]-b[1])>(a[0]-a[1]),back:(b[0]+b[1])<(a[0]+a[1])}}else if(spell){C.hero.face=null;C.hero.look=[x-C.hero.x,y-C.hero.y]}
