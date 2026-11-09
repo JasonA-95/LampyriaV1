@@ -34,6 +34,11 @@ const fist=(x,y,s,r)=>T(x,y,s,r,`<path d="M-7-4h11a3 3 0 0 1 3 3v8a4 4 0 0 1-4 4
 const bolt=(x,y,s,r,f)=>T(x,y,s,r,`<path d="M3-11L-6 1h5l-3 11 10-13h-5z" fill="${f||'#ffe872'}" ${ST}/>`);
 const lines=(a)=>a.map(([x1,y1,x2,y2])=>`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${CR}" stroke-width="1.8" stroke-linecap="round" fill="none"/>`).join('');
 const foot=(x,y,r)=>T(x,y,1,r,`<ellipse cx="0" cy="0" rx="2.6" ry="4" fill="${CR}" ${ST}/><ellipse cx="0" cy="6" rx="2" ry="2.2" fill="${CR}" ${ST}/>`);
+const ar=(x1,y1,x2,y2)=>{const a=Math.atan2(y2-y1,x2-x1)*180/Math.PI,L=Math.hypot(x2-x1,y2-y1);return T(x1,y1,1,a,`<path d="M0 0H${L}" stroke="${INK}" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/><path d="M0 0H${L}" stroke="${CR}" stroke-width="2" stroke-linecap="round"/><path d="M${L+3} 0l-5-3.6v7.2z" fill="${CR}" ${ST}/><path d="M0 0l-3-3M0 0l-3 3M3 0l-3-3M3 0l-3 3" stroke="${CR}" stroke-width="1.5" stroke-linecap="round"/>`)};
+const star=(x,y,s)=>T(x,y,s,0,`<path d="M0-4L1.2-1.2 4 0 1.2 1.2 0 4-1.2 1.2-4 0-1.2-1.2z" fill="#fff4b8" ${ST}/>`);
+const bird=(x,y,s,r)=>T(x,y,s,r,`<path d="M-7 0Q-3.5-5 0 0Q3.5-5 7 0Q3.5-2 0 3Q-3.5-2-7 0z" fill="${CR}" ${ST}/>`);
+const sun=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#ffe08a" ${ST}/>`+lines([[x,y-r-3,x,y-r-1],[x,y+r+1,x,y+r+3],[x-r-3,y,x-r-1,y],[x+r+1,y,x+r+3,y]]);
+const moonc=(x,y)=>`<path d="M${x+3} ${y-5}a6 6 0 1 0 3 9 5 5 0 0 1-3-9z" fill="${CR}" ${ST}/>`;
 const GS={
 coup:()=>`<path d="M5 24Q8 8 22 6" fill="none" stroke="${CR}" stroke-width="1.6" stroke-dasharray="2 2.5" stroke-linecap="round"/>`+lan(19,17,.95,-38),
 balayage:()=>`<path d="M4 22Q16 2 28 22Q16 12 4 22z" fill="${CR}" ${ST}/>`+lines([[6,25,11,22],[16,26,16,21],[26,25,21,22]]),
@@ -49,7 +54,23 @@ rempart:()=>`<rect x="5" y="15" width="9" height="6" fill="${CR}" ${ST}/><rect x
 fracas:()=>`<circle cx="16" cy="16" r="11" fill="none" stroke="${CR}" stroke-width="1.5" stroke-dasharray="3 3" opacity=".8"/>`+bolt(16,16,1.3,0,'#ffe872')+lines([[4,16,8,16],[24,16,28,16]]),
 sillage:()=>lines([[3,9,12,9],[2,16,10,16],[4,23,12,23]])+foot(19,10,35)+foot(24,20,35),
 linceul:()=>lan(16,18,.8,0,'off')+`<path d="M8 12Q16 3 24 12l1 14-3-3-3 3-3-3-3 3-3-3-3 3z" fill="${CR}" fill-opacity=".92" ${ST}/><circle cx="13" cy="16" r="1.5" fill="${INK}"/><circle cx="19" cy="16" r="1.5" fill="${INK}"/>`,
-aube:()=>`<path d="M7 21a9 9 0 0 1 18 0z" fill="#ffe08a" ${ST}/>`+lines([[16,6,16,9],[7,10,9,12],[25,10,23,12],[3,17,6,17],[26,17,29,17]])+`<path d="M3 22h26" stroke="${CR}" stroke-width="2" stroke-linecap="round"/>`+lan(16,25.5,.42,0)};
+aube:()=>`<path d="M7 21a9 9 0 0 1 18 0z" fill="#ffe08a" ${ST}/>`+lines([[16,6,16,9],[7,10,9,12],[25,10,23,12],[3,17,6,17],[26,17,29,17]])+`<path d="M3 22h26" stroke="${CR}" stroke-width="2" stroke-linecap="round"/>`+lan(16,25.5,.42,0),
+// lot 2 : Archer Farceur
+tir:()=>`<circle cx="22" cy="10" r="6" fill="none" stroke="${CR}" stroke-width="1.5"/><circle cx="22" cy="10" r="2.6" fill="${CR}" ${ST}/>`+ar(5,26,20,12),
+tir2:()=>ar(5,19,21,5)+ar(9,26,25,12),
+retrait:()=>ar(10,21,25,9)+`<path d="M4 26h8m-3-3.5L4 26l5 3.5" fill="none" stroke="${CR}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
+repoussant:()=>ar(3,16,16,16)+`<circle cx="21" cy="16" r="4.5" fill="${CR}" ${ST}/>`+lines([[25,12,29,10],[26,16,30,16],[25,20,29,22]]),
+flecheclair:()=>ar(5,25,21,9)+bolt(22,21,.85,10),
+perforant:()=>`<circle cx="16" cy="16" r="7" fill="none" stroke="${CR}" stroke-width="2.4"/>`+ar(4,16,26,16),
+flechesolaire:()=>sun(22,10,3.6)+ar(5,26,19,14),
+flecheombre:()=>moonc(21,10)+ar(5,26,19,14),
+pluie:()=>ar(8,5,8,15)+ar(16,11,16,23)+ar(24,5,24,15),
+pluienuit:()=>moonc(8,9)+ar(15,7,15,18)+ar(23,12,23,24),
+ricochet:()=>`<path d="M4 24L13 13L19 21L25 11" fill="none" stroke="${INK}" stroke-opacity=".75" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 24L13 13L19 21L25 11" fill="none" stroke="${CR}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`+T(26.5,9,1,-55,`<path d="M3 0l-5-3.6v7.2z" fill="${CR}" ${ST}/>`),
+tonnerre:()=>ar(4,26,15,15)+bolt(21,14,1.35,12),
+averse:()=>star(9,8,1)+star(21,7,.8)+star(15,16,1.3)+star(8,23,.8)+star(24,22,1)+lines([[9,12,9,15],[21,10,21,13],[24,26,24,28]]),
+corbeaux:()=>bird(11,10,1.2,-10)+bird(22,15,1.1,8)+bird(10,23,1,5),
+dernierrayon:()=>`<path d="M5 27L22 10" stroke="#ffe08a" stroke-opacity=".55" stroke-width="7" stroke-linecap="round"/>`+ar(5,27,20,12)+sun(23,8,4)};
 const VAR=['arrow','slash','burst'];
 function kind(s){if(s.invoque)return'ghost';if(s.sacrifice)return'skull';if(s.healA||s.healAll||s.heal)return'heart';if(s.garde)return'shield';if(s.charge)return'chev';if(s.recul)return'chevb';if(s.tp||s.swap)return'swap';if(s.mur)return'wall';if(s.sleep)return'moon';if(s.rage)return'flame';if(s.parAllie)return'ghost';if(s.drain&&!s.aoe)return'drop';if(s.aoe)return'burst';if(s.los)return'arrow';return'slash'}
 function make(id,s,pal){const h=hash(id),k=kind(s),e=s.elem||'n',n=1+h%4,a0=h%360,uid='s'+h.toString(36);
