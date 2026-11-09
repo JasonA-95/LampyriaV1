@@ -1,41 +1,16 @@
 # Lampyria : Les Sept Lueurs
 
-RPG tactique au tour par tour, jouable dans un navigateur moderne.
+RPG au tour par tour inspiré de Dofus, jouable dans le navigateur et installable (PWA). JavaScript pur, sans compilation.
 
-## Lancer le jeu
+- **Jouer** : https://jasona-95.github.io/LampyriaV1/
+- **Exploration** en 2D, **combats** en 2D ou en 3D iso (Babylon.js, optionnel).
+- **Combat 3D (bêta)** : Options > « Combat 3D (bêta) », ou `?3d=1` dans l'adresse. Personnages et monstres en sprites pixel art (désactivables dans Options).
+- **Hors ligne** : le jeu et le moteur 3D sont mis en cache à la première visite.
+- **Mise à jour** : Options > « Mettre à jour le jeu » (nécessite une connexion, la sauvegarde est conservée).
 
-Depuis ce dossier, démarrez un serveur web local :
+## Développement
+- Tests : `node --test *.test.js`
+- Moteur de combat (`moteur.js`) sans DOM ; rendu 2D (`rendu.js`), rendu 3D (`rendu3d.js`), interface (`affichage.js`).
+- Après modification, incrémenter la version du cache dans `sw.js`.
 
-```powershell
-py -m http.server 8000
-```
-
-Ouvrez ensuite <http://localhost:8000>. Le service worker nécessite HTTPS ou
-`localhost` ; ouvrir directement `index.html` depuis le disque ne permet pas
-d'utiliser le mode hors ligne.
-
-## Tests
-
-Avec Node.js installé, exécutez toute la suite :
-
-```powershell
-node --test
-```
-
-## Organisation
-
-- `donnees.js` contient les données du monde, des classes et des rencontres.
-- `moteur.js`, `exploration.js` et `alea.js` gèrent les combats et l'exploration.
-- `etat.js`, `sauvegarde.test.js` et `succes.js` couvrent l'état et la progression.
-- `index.html` assemble l'interface et charge les modules JavaScript.
-- `sw.js` gère les caches hors ligne ; les sauvegardes de progression restent
-  dans le stockage local du navigateur.
-
-Le service worker conserve les réponses réseau réussies et réutilise le cache
-si le réseau est indisponible. Les instruments audio gardent un cache séparé.
-Lors de l'activation d'une nouvelle version, seuls les anciens caches nommés
-`lampyria-v<number>` sont supprimés. L'action « Mettre à jour le jeu » vide
-ces caches de version et désenregistre uniquement le service worker de
-Lampyria ; le cache audio et les caches des autres applications de l'origine
-sont conservés. Les ressources sont mises en cache à leur première visite en
-ligne, elles ne sont pas préchargées.
+Crédits et licences : voir `CREDITS.md`. Licence : voir `LICENSE`.
