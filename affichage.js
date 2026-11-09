@@ -102,13 +102,22 @@ let gst=null,gstDone=false;
 function bind3D(bs){C.S.forEach((s,i)=>{const b=bs[i+1];if(!b)return;b.style.touchAction='none';b.onpointerdown=e=>{if(busy||C.result||displayPending()||C.pa<s.pa||C.cd[i]>0)return;gst={i,b,x:e.clientX,y:e.clientY,on:false,cell:'',gh:null}}})}
 // Aperçu des dégâts (3D) : valeurs estimées par Combat.preview() au-dessus des ennemis visés, sans rien appliquer.
 function clearPv(){document.querySelectorAll('.pv3').forEach(d=>d.remove())}
-function pv3D(i,x,y){clearPv();if(!R3)return;const st=$('stage').getBoundingClientRect();for(const e of C.preview(i,x,y)){const p=R3.project(e.f.x,e.f.y,2.4),d=document.createElement('div');d.className='pv3';d.textContent=e.blocked?'Protégé':e.dmg?'−'+e.dmg+(e.kill?' ☠':''):'Absorbé';d.style.cssText='position:absolute;z-index:6;pointer-events:none;transform:translate(-50%,-100%);font:bold 20px Georgia,serif;white-space:nowrap;text-shadow:0 0 4px #120d1a,0 0 4px #120d1a,0 2px 3px #000;color:'+(e.blocked||!e.dmg?'#9ecbff':'#ffb0a0')+';left:'+(p.x-st.left)+'px;top:'+(p.y-st.top)+'px';$('stage').appendChild(d)}}
+const ET3={poison:'Poison',brule:'Brûlé',affaibli:'Affaibli',etourdi:'Étourdi',ralenti:'Ralenti',endormi:'Endormi',bouclier:'Bouclier'};
+const pvOn=s=>!!(s&&(s.dmg||s.heal||s.healAll||s.healA||s.push||s.sleep||(s.etats&&s.etats.length)));
+function pv3D(i,x,y){clearPv();if(!R3)return;const st=$('stage').getBoundingClientRect();for(const e of C.preview(i,x,y)){const l1=[],cl=[];
+if(e.blocked)l1.push('Protégé');else{if(e.dmg)l1.push('−'+e.dmg);else if(e.absorbed)l1.push('Absorbé');if(e.coll)l1.push('💥−'+e.coll);if(e.out)l1.push('Éjecté');if(e.kill||e.out)l1.push('☠')}
+const heal=e.heal>0?'+'+e.heal:'',tags=(e.etats||[]).map(t=>ET3[t]||t).join(' · ');if(!l1.length&&!heal&&!tags)continue;
+const p=R3.project(e.f.x,e.f.y,2.4),d=document.createElement('div');d.className='pv3';
+d.style.cssText='position:absolute;z-index:6;pointer-events:none;transform:translate(-50%,-100%);text-align:center;font:bold 20px Georgia,serif;white-space:nowrap;text-shadow:0 0 4px #120d1a,0 0 4px #120d1a,0 2px 3px #000;left:'+(p.x-st.left)+'px;top:'+(p.y-st.top)+'px';
+const add=(t,c,sz)=>{const q=document.createElement('div');q.textContent=t;q.style.color=c;if(sz)q.style.fontSize=sz;d.appendChild(q)};
+if(l1.length)add(l1.join(' '),e.blocked||(!e.dmg&&!e.coll)?'#9ecbff':'#ffb0a0');if(heal)add(heal,'#7fd18b');if(tags)add(tags,'#ffe08a','13px');
+$('stage').appendChild(d)}}
 function confirm3D(x,y,okFn,noFn){const cf=document.createElement('div');cf.id='conf';const st=$('stage').getBoundingClientRect(),p=R3.project(x,y);cf.style.cssText='position:absolute;z-index:6;display:flex;gap:14px;transform:translate(-50%,-130%);left:'+(p.x-st.left)+'px;top:'+(p.y-st.top)+'px';
 const mkb=(t,c,fn)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='width:52px;height:52px;border-radius:50%;font-size:26px;font-weight:700;color:#fff;border:2.5px solid #fff;background:'+c+';box-shadow:0 2px 10px #000a';b.onclick=fn;return b};
 cf.appendChild(mkb('✓','#2e8b3d',()=>{cf.remove();clearPv();okFn?okFn():act(x,y)}));cf.appendChild(mkb('✗','#b03030',()=>{cf.remove();clearPv();noFn?noFn():(mode='move',pend=null,ui(),draw())}));$('stage').appendChild(cf)}
 addEventListener('pointermove',e=>{if(!gst||!R3)return;if(!gst.on){if(Math.hypot(e.clientX-gst.x,e.clientY-gst.y)<12)return;gst.on=true;{const v=gst.b.querySelector('svg'),h=document.createElement('div');h.id='ghost3';h.style.cssText='position:fixed;z-index:60;width:60px;height:60px;border-radius:50%;border:2.5px solid #ffd678;background:#1a141aee;box-shadow:0 0 16px #ffd678,0 4px 12px #000a;pointer-events:none;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-135%)';if(v){const c=v.cloneNode(true);c.style.cssText='width:44px;height:44px';h.appendChild(c)}document.body.appendChild(h);gst.gh=h}mode=gst.i;pend=null;const cf=$('conf');if(cf)cf.remove();msg('Glisse sur la cible puis relâche.');draw()}
 if(gst.gh){gst.gh.style.left=e.clientX+'px';gst.gh.style.top=e.clientY+'px'}const s=C.S[gst.i],c=s.r[1]==0?{x:C.hero.x,y:C.hero.y}:R3.cellAt(e.clientX,e.clientY),k=c&&C.ranged(gst.i).some(t=>t[0]==c.x&&t[1]==c.y)||(c&&s.r[1]==0)?c.x+','+c.y:'';
-if(c&&s.r[1]!=0)foeInfo(c.x,c.y);if(k!=gst.cell){gst.cell=k;pend=k?{x:c.x,y:c.y}:null;clearPv();if(k&&s.dmg)pv3D(gst.i,c.x,c.y);draw()}});
+if(c&&s.r[1]!=0)foeInfo(c.x,c.y);if(k!=gst.cell){gst.cell=k;pend=k?{x:c.x,y:c.y}:null;clearPv();if(k&&pvOn(s))pv3D(gst.i,c.x,c.y);draw()}});
 addEventListener('pointerup',()=>{if(!gst)return;const g=gst;gst=null;if(g.gh)g.gh.remove();if(!g.on||!R3)return;gstDone=true;setTimeout(()=>gstDone=false,0);
 if(pend){const p=pend;ui();draw();msg('Valide le sort avec ✓ (ou ✗ pour annuler).');confirm3D(p.x,p.y)}else{clearPv();mode='move';pend=null;msg('Sort annulé : relâche sur une case de portée.');ui();draw()}});
 addEventListener('click',e=>{if(gstDone){e.stopImmediatePropagation();e.preventDefault();gstDone=false}},true);
@@ -165,7 +174,7 @@ if((result.events||[]).length){addDisplayEffect('pulse',{at,radius:.8,color:'#ff
 if(typeof playSound=='function'){if(spell&&spell.invoque)playSound('invoque');else if(spell&&spell.elem&&spell.dmg)playSound(spell.elem)}if(typeof playSound=='function')playSound(spell?(spell.heal||spell.drain?'heal':spell.aoe!=null?'zone':spell.r&&spell.r[1]>1&&spell.dmg?'shot':spell.dmg?'melee':'magic'):'step')}
 function act(x,y){if(plc||busy||C.result||displayPending())return;const ok=mode=='move'?C.reach()[x+','+y]>0:C.ranged(mode).some(t=>t[0]==x&&t[1]==y);
 if(!ok){clearPv();pend=null;msg(mode=='move'?MSG.loin:MSG.cible);draw();return}
-if(!pend||pend.x!=x||pend.y!=y){pend={x,y};clearPv();if(R3&&Number.isInteger(mode)&&C.S[mode].dmg)pv3D(mode,x,y);msg(mode=='move'?'Déplacement : '+C.reach()[x+','+y]+' PM. Touche encore la case pour confirmer.':'Zone affichée. Touche encore la même case pour lancer le sort.');draw();return}
+if(!pend||pend.x!=x||pend.y!=y){pend={x,y};clearPv();if(R3&&Number.isInteger(mode)&&pvOn(C.S[mode]))pv3D(mode,x,y);msg(mode=='move'?'Déplacement : '+C.reach()[x+','+y]+' PM. Touche encore la case pour confirmer.':'Zone affichée. Touche encore la même case pour lancer le sort.');draw();return}
 clearPv();pend=null;const before=unitSnapshots([C.hero,...C.foes,...C.allies]),spell=Number.isInteger(mode)?C.S[mode]:null,hp0=C.hero.hp,pth=mode=='move'?C.path(x,y):null;let r;if(mode=='move')r=C.move(x,y);else{r=C.cast(mode,x,y);if(r.ok)mode='move'}
 if(!r.ok){msg(MSG[r.tag]);return}
 // Sens de marche : le héros se tourne vers son dernier pas ; un sort le retourne vers sa cible (voir SPR.draw).

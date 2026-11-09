@@ -50,12 +50,17 @@ test("l'aperçu correspond aux dégâts réellement infligés", () => {
   }
 });
 
-test("l'aperçu tient compte du bouclier d'un ennemi et ignore les sorts sans dégâts", () => {
+test("l'aperçu tient compte du bouclier d'un ennemi et prévoit les soins plafonnés", () => {
   const c = combat(); const [x, y] = cible(c, 0); const f = c.foes[0];
   f.hp = 999; f.etats = [{ id: 'bouclier', v: 4, t: 2 }];
   const [e] = c.preview(0, x, y), hp0 = f.hp;
   c.cast(0, x, y);
   assert.equal(e.absorbed, 4);
   assert.equal(hp0 - f.hp, e.dmg);
-  assert.equal(c.preview(3, c.hero.x, c.hero.y).length, 0);
+  const soin = c.preview(3, c.hero.x, c.hero.y);
+  assert.equal(soin.length, 1);
+  assert.equal(soin[0].dmg, 0);
+  assert.equal(soin[0].heal, 0, 'héros déjà à pleine vie : rien à soigner');
+  c.hero.hp -= 3;
+  assert.equal(c.preview(3, c.hero.x, c.hero.y)[0].heal, 3, 'soin plafonné aux PV manquants');
 });

@@ -18,7 +18,11 @@ if(u===this.hero&&!bypassDefense){const h=this.hero;amount=Math.max(1,Math.round
 const shield=u.etats&&u.etats.find(e=>e.id=='bouclier'&&e.t>0),absorbed=shield?Math.min(shield.v,amount):0;if(shield){shield.v-=absorbed;amount-=absorbed;if(shield.v<=0)u.etats=u.etats.filter(e=>e!==shield)}
 u.hp=Math.max(0,u.hp-amount);if(u===this.hero&&u.hp<=0)this.result='lose';return{damage:amount,absorbed}}
 damageFrom(u,raw){const weak=u.etats&&u.etats.find(e=>e.id=='affaibli'&&e.t>0);return weak?Math.max(1,Math.round(raw*(1-weak.v/100))):raw}
-heal(u,raw){let amount=Math.max(0,Math.round(raw));if(this.hasEtat(u,'poison'))amount=Math.max(1,Math.ceil(amount/2));const actual=Math.min(amount,u.max-u.hp);u.hp+=actual;return actual}
+healCalc(u,raw){let amount=Math.max(0,Math.round(raw));if(this.hasEtat(u,'poison'))amount=Math.max(1,Math.ceil(amount/2));return Math.min(amount,u.max-u.hp)}
+heal(u,raw){const actual=this.healCalc(u,raw);u.hp+=actual;return actual}
+// Collision de poussée : 6 PV par case non parcourue, pour l'unité poussée et pour l'unité qui bloque (défense du héros appliquée).
+pushDmg(rest){return 6*rest}
+collide(u,rest,b,coll){const d=this.pushDmg(rest);for(const t of [u,b]){if(!t||t.hp<=0)continue;const hit=this.applyDamage(t,d,false,'neutre');coll.push({u:t,dmg:hit.damage,absorbed:hit.absorbed})}}
 tickEtats(u){const events=[],result={events,blocked:false,slow:0};if(!u||u.hp<=0||u.form)return result;
 for(const id of ['brule','poison']){const e=u.etats&&u.etats.find(s=>s.id==id&&s.t>0);if(!e)continue;const hit=this.applyDamage(u,e.v,true),d=DATA.etats[id];this.event(events,u,d.e+' -'+hit.damage,d.couleur,hit.damage>0?u.n+' subit '+hit.damage+' dégâts de '+d.n.toLowerCase()+'.':u.n+' : la '+d.n.toLowerCase()+' est entièrement absorbée.');
 if(hit.absorbed)this.event(events,u,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.');if(u.hp<=0)return result}
@@ -62,11 +66,27 @@ for(const [x,y] of this.cells){const m=this.dist(h,{x,y}),u=this.at(x,y);
 if(m<s.r[0]||m>s.r[1]||!this.ok(x,y)||(s.los&&!this.los(h,{x,y})))continue;
 if((s.healA||s.sacrifice)&&!(u&&u.ally))continue;if(s.tp&&u)continue;if(((s.dmg&&s.aoe==null)||s.sleep||s.swap||s.charge||(s.etats&&s.etats.length&&s.aoe==null))&&!(u&&u!==h&&!u.ally))continue;if(s.invoque&&(u||this.liveAllies().length>=(s.max||2)))continue;
 if(s.charge&&!DIRS.some(([dx,dy])=>this.free(u.x+dx,u.y+dy)))continue;r.push([x,y])}return r}
-// Aperçu des dégâts d'un sort offensif sur (x,y) : mêmes fonctions que cast(), mais n'applique rien (ni PA, ni PV, ni rage, ni bouclier).
-preview(i,x,y){const s=this.S[i],h=this.hero;if(!s||!s.dmg||!this.ranged(i).some(t=>t[0]==x&&t[1]==y))return[];
-const m=h.rage?2:1,em=this.spellMult(s),base=s.dmg+this.bonus+(s.parAllie||0)*this.liveAllies().length,dm=this.damageFrom(h,em===1?base*m:Math.round(base*em*m)),el=s.elem||'neutre';
-const T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[this.at(x,y)].filter(f=>f&&this.foes.includes(f)&&f.hp>0);
-return T.map(f=>{if(this.shield(f))return{f,dmg:0,blocked:true};const bd=this.weak(f)?Math.round(dm*1.5):dm,rk=this.resistK(f,el),raw=rk===1?bd:Math.max(1,Math.round(bd*rk)),amount=raw<=0?0:Math.round(raw),sh=f.etats&&f.etats.find(e=>e.id=='bouclier'&&e.t>0),absorbed=sh?Math.min(sh.v,amount):0,dmg=amount-absorbed;return{f,dmg,absorbed,kill:dmg>=f.hp}})}
+// Aperçu d'un sort sur (x,y) : mêmes règles que cast() (dégâts, poussée/collision, états, soins) mais n'applique rien (ni PA, ni PV, ni rage, ni bouclier, ni position).
+// Renvoie une liste d'éléments {f, dmg, absorbed, coll, kill, blocked, etats[], heal}.
+preview(i,x,y){const s=this.S[i],h=this.hero;if(!s||!this.ranged(i).some(t=>t[0]==x&&t[1]==y))return[];
+const items=new Map(),it=u=>{let o=items.get(u);if(!o){o={f:u,dmg:0,absorbed:0};items.set(u,o)}return o},hpv=new Map(),shv=new Map(),hp=u=>hpv.has(u)?hpv.get(u):u.hp;
+const hit=(u,amount)=>{const sh=u.etats&&u.etats.find(e=>e.id=='bouclier'&&e.t>0),left=shv.has(u)?shv.get(u):(sh?sh.v:0),ab=Math.min(left,amount),d=amount-ab;shv.set(u,left-ab);hpv.set(u,hp(u)-d);return{d,ab}};
+const tgt=this.at(x,y),T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[tgt].filter(f=>f&&this.foes.includes(f)&&f.hp>0);
+const sh0=new Set(this.foes.filter(f=>this.shield(f)));
+if(s.dmg){const m=h.rage?2:1,em=this.spellMult(s),base=s.dmg+this.bonus+(s.parAllie||0)*this.liveAllies().length,dm=this.damageFrom(h,em===1?base*m:Math.round(base*em*m)),el=s.elem||'neutre';
+for(const f of T){const o=it(f);if(sh0.has(f)){o.blocked=true;continue}const bd=this.weak(f)?Math.round(dm*1.5):dm,rk=this.resistK(f,el),raw=rk===1?bd:Math.max(1,Math.round(bd*rk)),amount=raw<=0?0:Math.round(raw),r=hit(f,amount);o.dmg=r.d;o.absorbed=r.ab}}
+if(s.etats&&(s.dmg||T.length)){for(const f of T){const o=it(f),tags=s.etats.filter(e=>!(e.id=='etourdi'&&f.boss)&&(!sh0.has(f)||e.id=='etourdi')).map(e=>e.id);if(!s.dmg||hp(f)>0)o.etats=tags}}
+if(s.sleep){const f=tgt;if(f&&this.foes.includes(f)&&!f.boss)it(f).etats=['endormi']}
+if(s.push){const pos=new Map(),P=u=>pos.get(u)||{x:u.x,y:u.y},atV=(cx,cy)=>{if(cx==h.x&&cy==h.y)return h;for(const g of this.foes)if(hp(g)>0&&P(g).x==cx&&P(g).y==cy)return g;return this.allies.find(a=>hp(a)>0&&a.x==cx&&a.y==cy)};
+const col=(u,rest,b)=>{const d=this.pushDmg(rest);for(const t of [u,b]){if(!t||t===h||hp(t)<=0)continue;const r=hit(t,d),o=it(t);o.coll=(o.coll||0)+r.d}};
+for(const f of T){if(f.boss||hp(f)<=0)continue;const ax=f.x-h.x,ay=f.y-h.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay);
+for(let k=0;k<s.push;k++){const q=P(f),nx=q.x+dx,ny=q.y+dy;if(!this.in(nx,ny)){if(f.form)it(f).out=true;else col(f,s.push-k,null);break}if(this.ok(nx,ny)&&!atV(nx,ny))pos.set(f,{x:nx,y:ny});else{col(f,s.push-k,atV(nx,ny)||null);break}}}}
+for(const [u,o] of items)if(hpv.has(u))o.kill=hpv.get(u)<=0;
+const hl=(u,raw)=>{const n=this.healCalc(u,raw);if(n>=0){const o=it(u);o.heal=(o.heal||0)+n}};
+if(s.heal)hl(h,s.heal);if(s.drain&&s.dmg)hl(h,Math.round(s.dmg*(1-h.hp/h.max))+2);
+if(s.healAll)for(const a of this.liveAllies())hl(a,s.healAll+this.bonus*2);
+if(s.healA&&tgt&&tgt.ally)hl(tgt,s.healA+this.bonus*2);
+return [...items.values()]}
 move(x,y){const d=this.reach()[x+','+y];if(!(d>0))return{ok:false,tag:'loin'};
 this.pm-=d;this.hero.x=x;this.hero.y=y;return{ok:true,tag:''}}
 cast(i,x,y){const s=this.S[i],h=this.hero;if(this.pa<s.pa||this.cd[i]>0)return{ok:false,tag:'cout'};
@@ -78,8 +98,8 @@ const T=s.aoe!=null?this.foes.filter(f=>f.hp>0&&this.dist(f,{x,y})<=s.aoe):[this
 const el=s.elem||'neutre',em=this.spellMult(s),dm=this.damageFrom(h,em===1?(s.dmg+this.bonus+(s.parAllie||0)*this.liveAllies().length)*m:Math.round((s.dmg+this.bonus+(s.parAllie||0)*this.liveAllies().length)*em*m)),alive=new Set(T.filter(f=>f.hp>0));for(const f of T){if(sh.has(f)){r.blocked=1;this.applyEtats(f,(s.etats||[]).filter(e=>e.id=='etourdi'),r.events);continue}const bd=this.weak(f)?Math.round(dm*1.5):dm,rk=this.resistK(f,el),hit=this.applyDamage(f,rk===1?bd:Math.max(1,Math.round(bd*rk)),false);f.sleep=false;r.hit.push(f);r.dmg+=hit.damage;if(hit.damage)r.effects.push({cible:f,texte:'-'+hit.damage,couleur:'#ff6b5e'});if(hit.absorbed)this.event(r.events,f,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
 for(const f of r.hit)if(f.hp>0)this.applyEtats(f,s.etats,r.events);for(const k of [...this.ash]){const [ax,ay]=k.split(',').map(Number);if(this.dist({x:ax,y:ay},{x,y})<=(s.aoe??0)){this.ash.delete(k);r.ashCleared=1}}if(r.ashCleared){const bc=this.foes.find(f=>f.cendre&&f.hp>0);if(bc&&!this.ash.has(bc.x+','+bc.y))this.vuln=2}
 for(const f of T)if(alive.has(f)&&f.hp<=0&&f.mort&&this.dist(f,h)<=f.mort.r){const hit=this.applyDamage(h,f.mort.dmg,false,f.mort.elem||f.elem||'neutre'),amount=hit.damage;r.mortEvents=r.mortEvents||[];r.mortEvents.push({text:f.n+' explose : -'+amount+' PV.',dmg:amount});if(amount)r.effects.push({cible:h,texte:'-'+amount,couleur:'#e5564a'});if(hit.absorbed)this.event(r.events,h,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.')}
-if(s.push)for(const f of T){if(f.boss||f.hp<=0)continue;const ax=f.x-h.x,ay=f.y-h.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay);
-for(let i=0;i<s.push;i++){const nx=f.x+dx,ny=f.y+dy;if(!this.in(nx,ny)){if(f.form){f.hp=0;r.out=1}break}if(this.free(nx,ny)){f.x=nx;f.y=ny}else break}}}
+if(s.push){const coll=[];for(const f of T){if(f.boss||f.hp<=0)continue;const ax=f.x-h.x,ay=f.y-h.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay);
+for(let i=0;i<s.push;i++){const nx=f.x+dx,ny=f.y+dy;if(!this.in(nx,ny)){if(f.form){f.hp=0;r.out=1}else this.collide(f,s.push-i,null,coll);break}if(this.free(nx,ny)){f.x=nx;f.y=ny}else{this.collide(f,s.push-i,this.at(nx,ny),coll);break}}}for(const c of coll)if(c.dmg)r.effects.push({cible:c.u,texte:'-'+c.dmg,couleur:'#ffb04a'});r.collisions=coll}}
 if(!s.dmg&&s.etats)for(const f of targets){if(!f||f.hp<=0)continue;if(sh.has(f)){r.blocked=1;this.applyEtats(f,s.etats.filter(e=>e.id=='etourdi'),r.events);continue}this.applyEtats(f,s.etats,r.events)}
 if(s.drain)this.heal(h,Math.round(s.dmg*(1-h.hp/h.max))+2);
 if(s.heal)this.heal(h,s.heal);
@@ -112,13 +132,13 @@ choices.sort((a,b)=>a.cost-b.cost||Math.abs(a.d-mid)-Math.abs(b.d-mid)||spr(b.p)
 while(k!==start){path.unshift(k.split(',').map(Number));k=previous[k]}for(const [x,y] of path.slice(0,f.pmActif??f.pm)){if(!this.free(x,y))break;f.x=x;f.y=y}return true}
 inSpellRange(f,target,s){const d=this.dist(f,target);return d>=s.r[0]&&d<=s.r[1]&&(!s.los||this.los(f,target))}
 injuredAlly(f){return this.foes.filter(g=>g!==f&&!g.form&&g.hp>0&&g.hp/g.max<.7).sort((a,b)=>a.hp/a.max-b.hp/b.max)[0]}
-moveHero(f,kind,count){const h=this.hero;let moved=0;for(let i=0;i<count;i++){if(kind=='pull'&&this.dist(h,f)<=1)break;const ax=kind=='pull'?f.x-h.x:h.x-f.x,ay=kind=='pull'?f.y-h.y:h.y-f.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay),nx=h.x+dx,ny=h.y+dy;if(!this.free(nx,ny))break;h.x=nx;h.y=ny;moved++}return moved}
+moveHero(f,kind,count,coll){const h=this.hero;let moved=0;for(let i=0;i<count;i++){if(kind=='pull'&&this.dist(h,f)<=1)break;const ax=kind=='pull'?f.x-h.x:h.x-f.x,ay=kind=='pull'?f.y-h.y:h.y-f.y,dx=Math.abs(ax)>=Math.abs(ay)?Math.sign(ax):0,dy=dx?0:Math.sign(ay),nx=h.x+dx,ny=h.y+dy;if(!this.free(nx,ny)){if(kind=='push'&&coll)this.collide(h,count-i,this.in(nx,ny)?this.at(nx,ny):null,coll);break}h.x=nx;h.y=ny;moved++}return moved}
 castFoe(f,s,target){f.sortCd=s.cd||0;const effects=[],events=[];let amount=0,text;
 if(s.heal){amount=this.heal(target,s.heal);text=f.n+' soigne '+target.n+' : +'+amount+' PV.';if(amount)effects.push({cible:target,texte:'+'+amount,couleur:'#7fd18b'})}
 else{text=s.pull?f.n+' t\'attire avec sa langue':s.push?f.n+' te repousse avec '+s.n:f.n+' lance '+s.n;const raw=this.damageFrom(f,s.dmg==null?f.d:s.dmg),hit=this.applyDamage(this.hero,raw,false,s.elem||f.elem||'neutre');amount=hit.damage;if(amount)effects.push({cible:this.hero,texte:'-'+amount,couleur:'#e5564a'});if(hit.absorbed){this.event(events,this.hero,'Bouclier absorbé -'+hit.absorbed,'#9ecbff','Le bouclier absorbe '+hit.absorbed+' dégâts.');effects.push(events[events.length-1])}
 if(s.pm){this.malus=Math.min(2,this.malus+s.pm);effects.push({cible:this.hero,texte:'-'+s.pm+' PM',couleur:'#9ecbff'})}
-if(s.pull||s.push){const moved=this.moveHero(f,s.pull?'pull':'push',s.pull||s.push);if(moved)effects.push({cible:this.hero,texte:s.pull?'Attiré !':'Repoussé !',couleur:'#ffe08a'})}
-if(this.hero.hp>0)this.applyEtats(this.hero,s.etats,events);const extra=[];if(amount)extra.push('-'+amount+' PV');if(s.pm)extra.push('-'+s.pm+' PM au prochain tour');if(extra.length)text+=' : '+extra.join(', ')+'.';else text+='.'}
+let cH=0;if(s.pull||s.push){const coll=[],moved=this.moveHero(f,s.pull?'pull':'push',s.pull||s.push,coll);if(moved)effects.push({cible:this.hero,texte:s.pull?'Attiré !':'Repoussé !',couleur:'#ffe08a'});for(const c of coll)if(c.dmg){effects.push({cible:c.u,texte:'-'+c.dmg,couleur:'#ffb04a'});if(c.u===this.hero)cH+=c.dmg}}
+if(this.hero.hp>0)this.applyEtats(this.hero,s.etats,events);const extra=[];if(amount)extra.push('-'+amount+' PV');if(cH)extra.push('collision -'+cH+' PV');if(s.pm)extra.push('-'+s.pm+' PM au prochain tour');if(extra.length)text+=' : '+extra.join(', ')+'.';else text+='.'}
 this.applyEtats(f,s.etatsSoi,events);return{dmg:s.heal?0:amount,text,tag:s.heal?'heal':'spell',cible:target,effects,events}}
 followForm(b){const fm=this.foes.find(g=>g.form&&g.hp>0);if(!fm)return;const h=this.hero,db=this.dist(b,h);
 const c=DIRS.map(([a,d])=>({x:b.x+a,y:b.y+d})).filter(p=>(p.x==fm.x&&p.y==fm.y)||this.free(p.x,p.y));
