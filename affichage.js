@@ -87,9 +87,9 @@ function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('g
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
-// --- 2.5D (opt-in : ?3d=1 ou localStorage lampyria3d=1) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
+// --- 2.5D (activé par défaut ; désactivation : ?3d=0 ou localStorage lampyria3d=0) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
 let R3=null,c3=null,l3=null,b3=0;
-const want3D=()=>{try{return /[?&]3d=1/.test(location.search)||localStorage.getItem('lampyria3d')=='1'}catch(e){return false}};
+const want3D=()=>{try{return !/[?&]3d=0/.test(location.search)&&(/[?&]3d=1/.test(location.search)||localStorage.getItem('lampyria3d')!='0')}catch(e){return true}};
 function loadBabylon(cb,fail){if(typeof BABYLON!='undefined')return cb();const U=['https://cdnjs.cloudflare.com/ajax/libs/babylonjs/6.49.0/babylon.js','https://cdn.babylonjs.com/v6.49.0/babylon.js','https://cdn.jsdelivr.net/npm/babylonjs@6.49.0/babylon.js'];(function t(i){if(i>=U.length){if(fail)fail();return}const s=document.createElement('script');s.src=U[i];s.onload=cb;s.onerror=()=>t(i+1);document.head.appendChild(s)})(0)}
 const LKY={rage:'colerique',fuite:'peureuse',soin:'gourmande',sommeil:'reveuse',mur:'tetue',farce:'farceuse',ombre:'melancolique'};
 const FOOT3='<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#2a4a5a" stroke="#1a1218" stroke-opacity=".75" stroke-width="1.2"/><ellipse cx="13" cy="13" rx="3" ry="4.5" fill="#fff6e0"/><ellipse cx="13" cy="20" rx="2.2" ry="2.4" fill="#fff6e0"/><ellipse cx="20" cy="17" rx="3" ry="4.5" fill="#fff6e0"/><ellipse cx="20" cy="24" rx="2.2" ry="2.4" fill="#fff6e0"/></svg>';

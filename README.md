@@ -4,7 +4,7 @@ RPG au tour par tour inspiré de Dofus, jouable dans le navigateur et installabl
 
 - **Jouer** : https://jasona-95.github.io/LampyriaV1/
 - **Exploration** en 2D, **combats** en 2D ou en 3D iso (Babylon.js, optionnel).
-- **Combat 3D (bêta)** : Options > « Combat 3D (bêta) », ou `?3d=1` dans l'adresse. Personnages et monstres en sprites pixel art (désactivables dans Options).
+- Activé par défaut ; Options > « Combat 3D » (ou `?3d=0` dans l'adresse) pour revenir à la 2D. Personnages et monstres en sprites pixel art (désactivables dans Options).
 - **Hors ligne** : le jeu et le moteur 3D sont mis en cache à la première visite.
 - **Mise à jour** : Options > « Mettre à jour le jeu » (nécessite une connexion, la sauvegarde est conservée).
 
