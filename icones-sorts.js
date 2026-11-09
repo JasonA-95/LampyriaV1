@@ -43,6 +43,10 @@ const cloud=(x,y,s)=>T(x,y,s,0,`<path d="M-9 5a4.5 4.5 0 0 1 1-8.5A6 6 0 0 1 3-6
 const flm=(x,y,s)=>T(x,y,s,0,`<path d="M0-11c1 5 7 8 7 14a7 7 0 0 1-14 0c0-3 2-4 3-7 1 2 2 3 3 3 0-3-1-6 1-10z" fill="#ffb04a" ${ST}/>`);
 const spi=(x,y,s)=>T(x,y,s,0,`<path d="M0 0a2 2 0 0 1 4 0a4 4 0 0 1-8 0a6.5 6.5 0 0 1 13 0a9 9 0 0 1-18 0" fill="none" stroke="${INK}" stroke-opacity=".75" stroke-width="4.4" stroke-linecap="round"/><path d="M0 0a2 2 0 0 1 4 0a4 4 0 0 1-8 0a6.5 6.5 0 0 1 13 0a9 9 0 0 1-18 0" fill="none" stroke="${CR}" stroke-width="2.2" stroke-linecap="round"/>`);
 const dots=a=>a.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${CR}" ${ST}/>`).join('');
+const shov=(x,y,s,r)=>T(x,y,s,r,`<path d="M0-12v14" stroke="${INK}" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/><path d="M0-12v14" stroke="${CR}" stroke-width="2" stroke-linecap="round"/><path d="M-4-13h8" stroke="${CR}" stroke-width="2.4" stroke-linecap="round"/><path d="M-5 2h10l-1 8Q0 14-4 10z" fill="${CR}" ${ST}/>`);
+const skl=(x,y,s)=>T(x,y,s,0,`<path d="M0-8c-6 0-9 4-9 9 0 3 1 4 3 5v4h12v-4c2-1 3-2 3-5 0-5-3-9-9-9z" fill="${CR}" ${ST}/><circle cx="-3.5" cy="0" r="2.2" fill="${INK}"/><circle cx="3.5" cy="0" r="2.2" fill="${INK}"/><path d="M-2 9v3M0 9v3M2 9v3" stroke="${INK}" stroke-width="1"/>`);
+const gho=(x,y,s)=>T(x,y,s,0,`<path d="M-8 9V-1a8 8 0 0 1 16 0v10l-3-3-2.5 3-2.5-3-2.5 3-2.5-3z" fill="${CR}" ${ST}/><circle cx="-3" cy="-1" r="1.8" fill="${INK}"/><circle cx="3" cy="-1" r="1.8" fill="${INK}"/>`);
+const mound=`<path d="M3 27Q16 10 29 27z" fill="#8a6240" ${ST}/>`;
 const GS={
 coup:()=>`<path d="M5 24Q8 8 22 6" fill="none" stroke="${CR}" stroke-width="1.6" stroke-dasharray="2 2.5" stroke-linecap="round"/>`+lan(19,17,.95,-38),
 balayage:()=>`<path d="M4 22Q16 2 28 22Q16 12 4 22z" fill="${CR}" ${ST}/>`+lines([[6,25,11,22],[16,26,16,21],[26,25,21,22]]),
@@ -90,7 +94,23 @@ orage:()=>cloud(16,10,.95)+bolt(8,22,.58,0)+bolt(16,23,.7,0)+bolt(24,22,.58,0),
 maree:()=>`<path d="M3 17Q8 8 14 15T25 14Q29 13 30 16V29H3z" fill="${CR}" ${ST}/>`+dots([[9,22,1.3],[16,24,1.6],[23,21,1.2],[20,26,1]]),
 cyclone:()=>spi(16,16,1.25)+lines([[3,6,8,8],[29,26,24,24]]),
 lance:()=>`<path d="M4 28L21 11" stroke="#ffe08a" stroke-opacity=".55" stroke-width="7" stroke-linecap="round"/><path d="M5 27L21 11" stroke="${INK}" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/><path d="M5 27L21 11" stroke="${CR}" stroke-width="2" stroke-linecap="round"/><g transform="translate(21 11) rotate(-45)"><path d="M8 0L-1-3.8-1 3.8z" fill="${CR}" ${ST}/></g>`+star(26,22,.9),
-eclipsep:()=>`<circle cx="16" cy="16" r="9.5" fill="none" stroke="#ffe08a" stroke-width="2.2"/><circle cx="16" cy="16" r="7.5" fill="${INK}" ${ST}/>`+lines([[16,2.5,16,5],[16,27,16,29.5],[2.5,16,5,16],[27,16,29.5,16],[6,6,8,8],[24,24,26,26],[26,6,24,8],[6,26,8,24]])};
+eclipsep:()=>`<circle cx="16" cy="16" r="9.5" fill="none" stroke="#ffe08a" stroke-width="2.2"/><circle cx="16" cy="16" r="7.5" fill="${INK}" ${ST}/>`+lines([[16,2.5,16,5],[16,27,16,29.5],[2.5,16,5,16],[27,16,29.5,16],[6,6,8,8],[24,24,26,26],[26,6,24,8],[6,26,8,24]]),
+// lot 4 : Fossoyeur
+pelle:()=>shov(16,16,1.25,38),
+squelette:()=>skl(16,13,1.1)+`<path d="M6 25l20 4M6 29l20-4" stroke="${CR}" stroke-width="2.4" stroke-linecap="round"/>`,
+spectre:()=>gho(16,15,1.3),
+terre:()=>mound+shov(21,13,.8,22),
+pelletee:()=>shov(11,19,1.05,-40)+dots([[19,9,1.7],[23,13,1.3],[25,8,1.2],[21,5,1],[27,12,1]]),
+heure:()=>`<path d="M10 5h12c0 7-4 9-6 11 2 2 6 4 6 11H10c0-7 4-9 6-11-2-2-6-4-6-11z" fill="${CR}" ${ST}/><path d="M12 24h8l-2-3h-4z" fill="#ffd678"/><path d="M8 5h16M8 27h16" stroke="${CR}" stroke-width="2.6" stroke-linecap="round"/>`,
+sacrifice:()=>`<path d="M16 3l2.6 6.8 7.2-.9-4.6 5.7 4.6 5.7-7.2-.9L16 26l-2.6-6.8-7.2.9 4.6-5.7-4.6-5.7 7.2.9z" fill="#ff7a8a" ${ST}/>`+skl(16,15,.85),
+renfort:()=>mound+`<rect x="13" y="9" width="6" height="15" rx="3" fill="#9ac86a" ${ST}/><rect x="11.5" y="5" width="2.6" height="6" rx="1.3" fill="#9ac86a" ${ST}/><rect x="14.7" y="3" width="2.6" height="7" rx="1.3" fill="#9ac86a" ${ST}/><rect x="17.9" y="5" width="2.6" height="6" rx="1.3" fill="#9ac86a" ${ST}/>`,
+malediction:()=>`<rect x="6" y="7" width="20" height="19" rx="2" fill="${CR}" ${ST}/><rect x="6" y="7" width="20" height="5" fill="#d05a5a" ${ST}/><path d="M11 16l5 6m0-6l-5 6" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`+bolt(23,21,.9,0),
+appel:()=>mound+skl(11,15,.7)+skl(21,16,.7),
+benediction:()=>`<ellipse cx="16" cy="6" rx="6" ry="2" fill="none" stroke="#ffe08a" stroke-width="2"/><path d="M13 9h6v7h7v5h-7v7h-6v-7H6v-5h7z" fill="${CR}" ${ST}/>`,
+cercueil:()=>`<path d="M12 4h8l5 8-3 16H10L7 12z" fill="#9a6a3a" ${ST}/><path d="M16 9v13M12 13h8" stroke="${CR}" stroke-width="1.8" stroke-linecap="round"/>`+bolt(24,23,.75,0),
+vent_large:()=>`<path d="M3 22q3-4 6 0t6 0t6 0t6 0M3 27q3-4 6 0t6 0t6 0t6 0" fill="none" stroke="${CR}" stroke-width="2.2" stroke-linecap="round"/><path d="M5 11h13a3.2 3.2 0 1 0-3.2-3.2M5 16h18" fill="none" stroke="${CR}" stroke-width="2.2" stroke-linecap="round"/>`,
+legion:()=>`<rect x="10" y="6" width="12" height="17" rx="3" fill="#cfc6b8" ${ST}/><path d="M12 12l3 1.5M20 12l-3 1.5" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/><circle cx="13.5" cy="15" r="1.6" fill="${INK}"/><circle cx="18.5" cy="15" r="1.6" fill="${INK}"/><path d="M13 20h6" stroke="${INK}" stroke-width="1.6"/>`+skl(6,25,.5)+skl(26,25,.5),
+dernier:()=>`<path d="M5 23a11 11 0 0 1 22 0z" fill="${CR}" ${ST}/><circle cx="16" cy="10" r="2" fill="${CR}" ${ST}/><path d="M3 25h26" stroke="${CR}" stroke-width="2.6" stroke-linecap="round"/>`+lines([[7,10,9,12],[25,10,23,12],[16,3,16,6]])};
 const VAR=['arrow','slash','burst'];
 function kind(s){if(s.invoque)return'ghost';if(s.sacrifice)return'skull';if(s.healA||s.healAll||s.heal)return'heart';if(s.garde)return'shield';if(s.charge)return'chev';if(s.recul)return'chevb';if(s.tp||s.swap)return'swap';if(s.mur)return'wall';if(s.sleep)return'moon';if(s.rage)return'flame';if(s.parAllie)return'ghost';if(s.drain&&!s.aoe)return'drop';if(s.aoe)return'burst';if(s.los)return'arrow';return'slash'}
 function make(id,s,pal){const h=hash(id),k=kind(s),e=s.elem||'n',n=1+h%4,a0=h%360,uid='s'+h.toString(36);
