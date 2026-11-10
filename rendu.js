@@ -146,7 +146,7 @@ function displayFrame(time){displayRAF=0;pruneDisplay(time);if(typeof draw=='fun
 function requestDisplayFrame(){if(!displayRAF&&typeof requestAnimationFrame=='function')displayRAF=requestAnimationFrame(displayFrame)}
 function animateUnitMove(unit,from,to,blocked,kind='move'){if(!unit)return false;const time=displayNow(),active=DISPLAY_MOVES.get(unit),start=active?sampleDisplayMove(active,time):{x:from.x,y:from.y};DISPLAY_TARGETS.set(unit,{x:to.x,y:to.y});
 if(OPT.fx=='off'){DISPLAY_MOVES.delete(unit);pruneDisplay(time);finishDisplayWaiters();return false}
-const points=displayPath(start,to,blocked,active&&time<active.end?active.to:null),stepMs=OPT.fx=='reduit'?70:120,segments=[];let duration=0;
+const points=displayPath(start,to,blocked,active&&time<active.end?active.to:null),stepMs=OPT.fx=='reduit'?70:(typeof R3!='undefined'&&R3&&unit!==C.hero?170:120),segments=[];let duration=0;
 for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],length=Math.abs(b.x-a.x)+Math.abs(b.y-a.y);if(!length)continue;const part=stepMs*length;segments.push({from:a,to:b,duration:part});duration+=part}
 if(!segments.length)return false;DISPLAY_MOVES.set(unit,{from:start,to:{x:to.x,y:to.y},segments,start:time,end:time+duration,kind});requestDisplayFrame();return true}
 function displayPosition(unit,x=unit.x,y=unit.y,blocked){const time=displayNow(),target=DISPLAY_TARGETS.get(unit);if(!target){DISPLAY_TARGETS.set(unit,{x,y});return{x,y}}

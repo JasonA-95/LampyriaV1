@@ -96,17 +96,19 @@ cam.alpha+=(rot-cam.alpha)*Math.min(1,dt*8);
 const list=[C.hero,...C.foes,...C.allies],W=eng.getRenderWidth(),H=eng.getRenderHeight(),tm=sc.getTransformMatrix(),vp=cam.viewport.toGlobal(W,H),rc=cv.getBoundingClientRect(),lr=o.labels.getBoundingClientRect();
 for(const u of list){const alive=u.hp>0;let ob=U.get(u);if(!ob){if(!alive)continue;ob=unit(u,C.allies.includes(u))}
 if(u===C.hero&&!ob.dressed){ob.dressed=1;dress()}ob.t.setEnabled(alive);ob.l.style.display=alive?'':'none';if(!alive)continue;
-if(ob.spr){const s=ob.spr;if(s.ha)s.ha.scaling.x=s.ha.scaling.z=1+.05*Math.sin(performance.now()/260);if(ob.hp!=null&&u.hp<ob.hp)s.fl=1;ob.hp=u.hp;
+if(ob.spr){const s=ob.spr;if(s.ha)s.ha.scaling.x=s.ha.scaling.z=1+.05*Math.sin(performance.now()/260);if(ob.hp!=null&&u.hp<ob.hp)s.pf=1;ob.hp=u.hp;if(s.pf&&!(o.moving&&o.moving())){s.pf=0;s.fl=1};
 if(s.fl>0){s.fl=Math.max(0,s.fl-dt*4);const f=Math.min(1,s.fl*.9);s.sm.emissiveColor.set(f,f,f);s.pl.position.x=Math.sin(s.fl*40)*.07*s.fl}else{s.sm.emissiveColor.set(0,0,0);s.pl.position.x=0}}
-if(ob.spr){const s=ob.spr,dx=u.x-ob.x,dy=u.y-ob.y,mv=Math.hypot(dx,dy)>.05,al=cam.alpha,
+// Monstres/alliés : position d'affichage animée case par case (o.posOf) ; le héros garde son lissage habituel.
+const P=o.posOf&&u!==C.hero?o.posOf(u):null;
+if(ob.spr){const s=ob.spr,dx=(P||u).x-ob.x,dy=(P||u).y-ob.y,mv=P?Math.hypot(P.x-u.x,P.y-u.y)>.02:Math.hypot(dx,dy)>.05,al=cam.alpha,
 face=(vx,vy)=>{const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;s.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'front':'back';if(Math.abs(sx)>.02)s.face=sx>0?1:-1};
 if(u.look){face(u.look[0],u.look[1]);u.look=null}if(mv)face(dx,dy);
 // Attaque : u.atk (posé par affichage.js) joue la planche d'attaque du monstre, puis retour au repos.
-if(u.atk){if(s.ta&&!s.ta._bad)s.at=0;u.atk=null}let atk=false;if(s.at!=null){s.at+=dt;if(s.at>=s.SP.atk.n*.2+.15)s.at=null;else atk=true}
+if(u.atk&&!mv){face(u.atk[0],u.atk[1]);if(s.ta&&!s.ta._bad)s.at=0;u.atk=null}let atk=false;if(s.at!=null){s.at+=dt;if(s.at>=s.SP.atk.n*.2+.15)s.at=null;else atk=true}
 s.t+=dt*(mv?(s.dir=='side'?9:6):(s.SP.rows==1?3:5));const n=s.dir=='side'?5:2,c0=s.dir=='side'?0:s.dir=='front'?5:7;
 const NC=atk?s.SP.atk.n:9,col=atk?Math.min(NC-1,Math.floor(s.at/.2)):c0+Math.floor(s.t)%n,nr=atk?1:s.SP.rows||2,row=nr==1?0:mv?1:0,key=(atk?'a':'i')+col+'/'+row+'/'+s.face;
 if(key!=s.key){s.key=key;const want=atk?s.ta:s.tx;if(s.sm.diffuseTexture!==want){s.sm.diffuseTexture=want;s.sm.emissiveTexture=want}const e=.0003,u0=col/NC+e,u1=(col+1)/NC-e,v0=(nr==1?0:row?0:.5)+e,v1=(nr==1?1:row?.5:1)-e,uv=s.uv0.slice();for(let q=0;q<uv.length;q+=2){let a=s.uv0[q]>.5?1:0;const b=s.uv0[q+1]>.5?1:0;if(s.face<0)a=1-a;uv[q]=a?u1:u0;uv[q+1]=b?v1:v0}s.pl.updateVerticesData(B.VertexBuffer.UVKind,uv)}}
-const k=Math.min(1,dt*9);ob.x+=(u.x-ob.x)*k;ob.y+=(u.y-ob.y)*k;ob.t.position.set(ob.x,0,ob.y);
+if(P){ob.x=P.x;ob.y=P.y}else{const k=Math.min(1,dt*9);ob.x+=(u.x-ob.x)*k;ob.y+=(u.y-ob.y)*k}ob.t.position.set(ob.x,0,ob.y);
 const p=B.Vector3.Project(new B.Vector3(ob.x,1.9,ob.y),B.Matrix.Identity(),tm,vp);ob.l.style.left=(rc.left-lr.left+p.x/W*rc.width)+'px';ob.l.style.top=(rc.top-lr.top+p.y/H*rc.height)+'px';
 ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Math.max(0,u.hp);ob.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}});
 let lf=0;eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;sc.render()});const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
