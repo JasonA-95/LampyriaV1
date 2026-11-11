@@ -248,7 +248,7 @@ function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remo
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
 EX.groups.forEach(q=>{if(!q.dead)L.push(q.hide?{k:q,x:q.x,y:q.y,e:'🌿'}:{k:q,x:q.x,y:q.y,e:DATA.rencontres[q.renc].m[0].e,m:DATA.rencontres[q.renc].m[0].n})});
 EX.nodes.forEach(n=>L.push({k:n,x:n.x,y:n.y,e:n.etin?'✨':n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>Date.now()?.25:1}));
-d.npcs.forEach(n=>L.push({k:n,x:n.x,y:n.y,e:n.e}));
+d.npcs.forEach(n=>{const mi=EX.markInfo?EX.markInfo(n):{};L.push({k:n,x:n.x,y:n.y,e:n.e,nm:n.n,mk:mi.m,mc:mi.main})});
 EX.storyActors.forEach(a=>L.push({k:a,x:a.x,y:a.y,e:a.e}));
 {const eid=EX.escort(),fn=eid&&EX.escortNpc(eid);if(fn&&EX.fol&&(EX.fol.x!=EX.x||EX.fol.y!=EX.y))L.push({k:fn,x:EX.fol.x,y:EX.fol.y,e:fn.e})}
 return L}

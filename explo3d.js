@@ -68,8 +68,12 @@ if(hSP){hero=sprite(hSP,true,t=>{mk().parent=t})}else{const t=new B.TransformNod
 hero.t.position.set(hp.x,0,hp.y);
 // Entités (PNJ, ressources, groupes de monstres...) : synchronisées 4 fois par seconde avec les données d'exploration
 const EN=new Map();let es=0;
-function syncEnts(){const L=o.ents(),seen=new Set();for(const q of L){seen.add(q.k);let r=EN.get(q.k);if(r&&r.sig!=q.e+'|'+q.m){r.o.t.dispose();EN.delete(q.k);r=null}
-if(!r){const MS=q.m&&o.msprites&&o.msprites[q.m];r={sig:q.e+'|'+q.m,o:MS?sprite(MS,false,t=>{const p=pastille(q.e);p.t.parent=t}):pastille(q.e)};EN.set(q.k,r)}
+// Étiquettes des PNJ : nom au-dessus de la tête + marqueur de quête ('!' à prendre, '?' à rendre ; orange = quête principale)
+const TXC={};function txtTex(t,col,fs,w,h){const k=t+'|'+col+'|'+fs;if(TXC[k])return TXC[k];const tx=new B.DynamicTexture('t',{width:w,height:h},sc,true),c=tx.getContext();c.clearRect(0,0,w,h);c.font='bold '+fs+'px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=fs/5;c.strokeStyle='#120d1a';c.strokeText(t,w/2,h/2);c.fillStyle=col;c.fillText(t,w/2,h/2);tx.update();tx.hasAlpha=true;return TXC[k]=tx}
+function tag(r,q){const lab=(t,col,fs,w,h,pw,ph,y)=>{const p=B.MeshBuilder.CreatePlane('lb',{width:pw,height:ph},sc);p.parent=r.o.t;p.position.y=y;p.billboardMode=B.Mesh.BILLBOARDMODE_Y;p.material=spm(txtTex(t,col,fs,w,h));p.isPickable=false;return p};
+if(q.nm)lab(q.nm,'#f3e9d8',34,256,64,1.7,.42,1.25);if(q.mk)r.bob=lab(q.mk,q.mc?'#ff6b4a':'#ffd24a',90,128,128,.7,.7,1.75)}
+function syncEnts(){const L=o.ents(),seen=new Set();for(const q of L){seen.add(q.k);let r=EN.get(q.k);const sg=q.e+'|'+q.m+'|'+(q.mk||'')+(q.mc?1:0)+'|'+(q.nm||'');if(r&&r.sig!=sg){r.o.t.dispose();EN.delete(q.k);r=null}
+if(!r){const MS=q.m&&o.msprites&&o.msprites[q.m];r={sig:sg,o:MS?sprite(MS,false,t=>{const p=pastille(q.e);p.t.parent=t}):pastille(q.e)};tag(r,q);EN.set(q.k,r)}
 r.o.t.position.set(q.x,0,q.y);if(r.o.mat)r.o.mat.alpha=q.a==null?1:q.a}
 for(const [k,r] of EN)if(!seen.has(k)){r.o.t.dispose();EN.delete(k)}}
 // Chemin choisi (aperçu du trajet) : petits disques au sol
@@ -80,7 +84,7 @@ eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;const dt
 if(o.alive&&!o.alive()){if(o.onDead)o.onDead();return}
 if(n-es>250){es=n;try{syncEnts();syncPath()}catch(e){console.error('Exploration 3D',e)}}
 const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);
-for(const [,r] of EN)r.o.frame(dt,false,0,0,n);
+for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=1.75+.08*Math.sin(n/250)}
 const k=Math.min(1,dt*6),vh=((p.x-mx)+(p.y-my))/Math.SQRT2*cc,c=Math.max(-span,Math.min(span,vh))/cc/Math.SQRT2;cam.target.x+=(mx+c-cam.target.x)*k;cam.target.z+=(my+c-cam.target.z)*k;sc.render()});
 // Case sous le doigt : intersection du rayon de la caméra avec le sol (y=0)
 function cellAt(cx,cy){const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:Math.round(ray.origin.x+ray.direction.x*t),y:Math.round(ray.origin.z+ray.direction.z*t)}}
