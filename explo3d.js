@@ -18,8 +18,10 @@ const box=(w,h,dd,m,x,y,z)=>{const b=B.MeshBuilder.CreateBox('b',{width:w,height
 const cyl=(dm,h,m,x,y,z,dt)=>{const c=B.MeshBuilder.CreateCylinder('c',{diameterTop:dt==null?dm:dt,diameterBottom:dm,height:h,tessellation:8},sc);c.material=m;c.position.set(x,y,z);c.isPickable=false;return reg(m,c)};
 const sph=(dm,m,x,y,z,sy)=>{const p=B.MeshBuilder.CreateSphere('s',{diameter:dm,segments:5},sc);p.material=m;p.position.set(x,y,z);if(sy)p.scaling.y=sy;p.isPickable=false;return reg(m,p)};
 // sol : grande dalle sombre (continuité hors carte) + cases en damier
-box(N+24,.2,N+24,M.dark,N/2-.5,-.16,N/2-.5);
-for(let x=0;x<N;x++)for(let y=0;y<N;y++)box(1,.12,1,(x+y)%2?M.a:M.b,x,-.06,y);
+// zone jouable réelle de l'exploration (o.cells = DATA.excells, o.inside = DATA.exin) : un grand losange, pas le carré de l'arène
+let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const [x,y] of o.cells){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}
+box(x1-x0+30,.2,y1-y0+30,M.dark,(x0+x1)/2,-.16,(y0+y1)/2);
+for(const [x,y] of o.cells)box(1,.12,1,((x+y)&1)?M.a:M.b,x,-.06,y);
 function deco(t,x,y){const r=rnd(),l=[M.l1,M.l2,M.l3][Math.floor(rnd()*3)];
 if(t=='tree'){cyl(.22,1,M.bark,x,.5,y);sph(1.1+r*.4,l,x,1.4,y,.9)}
 else if(t=='mush'){cyl(.2,.5,M.stem,x,.25,y);sph(.8+r*.3,M.cap,x,.6,y,.55)}
@@ -30,7 +32,7 @@ else{const b=box(.7+r*.3,.45+r*.4,.7+r*.3,r>.5?M.rock:M.rock2,x,.25,y);b.rotatio
 const rocks=new Set();for(const [x,y] of d.rocks){rocks.add(x+','+y);deco(BI.obs[Math.floor(rnd()*BI.obs.length)],x,y)}
 const exits=new Set(d.exits.map(e=>e.x+','+e.y));
 // anneau de décor autour de la carte (hors cases jouables, hors sorties et rochers déjà posés)
-for(let x=-3;x<N+3;x++)for(let y=-3;y<N+3;y++){if(x>=0&&x<N&&y>=0&&y<N)continue;const k=x+','+y;if(rocks.has(k)||exits.has(k))continue;if(rnd()<.42)deco(BI.bord[Math.floor(rnd()*BI.bord.length)],x+(rnd()-.5)*.4,y+(rnd()-.5)*.4)}
+for(let x=x0-3;x<x1+4;x++)for(let y=y0-3;y<y1+4;y++){if(o.inside(x,y))continue;const k=x+','+y;if(rocks.has(k)||exits.has(k))continue;if(rnd()<.42)deco(BI.bord[Math.floor(rnd()*BI.bord.length)],x+(rnd()-.5)*.4,y+(rnd()-.5)*.4)}
 // sorties : dalle lumineuse
 for(const e of d.exits)box(1,.14,1,M.exit,e.x,-.04,e.y);
 // fusion par matériau : quelques appels de dessin au lieu de centaines (mobile)
@@ -49,7 +51,7 @@ function sprite(SP,isH,fallback){const t=new B.TransformNode('s',sc),H=SP.h||1.9
 const tx=new B.Texture(SP.url,sc,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,null,()=>{console.error('sprite introuvable',SP.url);pl.dispose();if(fallback)fallback(t)});tx.hasAlpha=true;tx.wrapU=tx.wrapV=B.Texture.CLAMP_ADDRESSMODE;pl.material=spm(tx);shadow(t,isH?.46:Math.max(.3,Math.min(.9,H*.25)));
 let ha=null;if(isH){ha=B.MeshBuilder.CreateTorus('ha',{diameter:.98,thickness:.05,tessellation:28},sc);ha.parent=t;ha.position.y=.05;ha.material=fm('#ffd678',.85);ha.isPickable=false}
 const uv0=pl.getVerticesData(B.VertexBuffer.UVKind).slice(),st={t:0,face:isH?1:-1,dir:'side',key:''};
-function face(vx,vy){const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;st.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'front':'back';if(Math.abs(sx)>.02)st.face=sx>0?1:-1}
+function face(vx,vy){const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;st.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'back':'front';if(Math.abs(sx)>.02)st.face=sx>0?1:-1}
 return{t,frame(dt,mv,vx,vy,now){if(mv)face(vx,vy);const nr=SP.rows||2;st.t+=dt*(mv?(st.dir=='side'?9:6):(nr==1?3:5));const n=st.dir=='side'?5:2,c0=st.dir=='side'?0:st.dir=='front'?5:7,col=c0+Math.floor(st.t)%n,row=nr==1?0:mv?1:0,key=col+'/'+row+'/'+st.face;
 if(ha)ha.scaling.x=ha.scaling.z=1+.05*Math.sin(now/260);
 if(key!=st.key){st.key=key;const e=.0003,u0=col/9+e,u1=(col+1)/9-e,v0=(nr==1?0:row?0:.5)+e,v1=(nr==1?1:row?.5:1)-e,uv=uv0.slice();for(let q=0;q<uv.length;q+=2){let a=uv0[q]>.5?1:0;const b=uv0[q+1]>.5?1:0;if(st.face<0)a=1-a;uv[q]=a?u1:u0;uv[q+1]=b?v1:v0}pl.updateVerticesData(B.VertexBuffer.UVKind,uv)}}}}
