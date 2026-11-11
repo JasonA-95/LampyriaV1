@@ -32,7 +32,7 @@ const SD={N:[-1,-1],S:[1,1],E:[1,-1],W:[-1,1]},side=new Set(d.exits.filter(e=>!e
 function arrow(cx,cz,dx,dz){const l=Math.hypot(dx,dz);dx/=l;dz/=l;const px=-dz,pz=dx,L=.3,W=.2,m=new B.Mesh('ar',sc),v=new B.VertexData();v.positions=[cx+dx*L,.02,cz+dz*L,cx-dx*L*.6+px*W,.02,cz-dz*L*.6+pz*W,cx-dx*L*.6-px*W,.02,cz-dz*L*.6-pz*W];v.indices=[0,1,2];v.normals=[0,1,0,0,1,0,0,1,0];v.applyToMesh(m);m.material=M.arr;m.isPickable=false;reg(M.arr,m)}
 for(const [x,y] of o.cells){const k=x+','+y,sd=(DATA.exside?DATA.exside(x,y):[]).filter(q=>side.has(q)),ex=sd.length||dons.has(k),par=(x+y)&1;
 box(1,.12,1,dons.has(k)?M.don:ex?(par?M.ad:M.bd):(par?M.a:M.b),x,-.06,y);
-if(sd.length&&par==0)arrow(x,y,SD[sd[0]][0],SD[sd[0]][1])}
+if(sd.length&&(sd[0]=='N'?x+y==DATA.EXV[0]+1:sd[0]=='S'?x+y==DATA.EXV[1]-1:par==0))arrow(x,y,SD[sd[0]][0],SD[sd[0]][1])}
 function deco(t,x,y){const r=rnd(),l=[M.l1,M.l2,M.l3][Math.floor(rnd()*3)];
 if(t=='tree'){cyl(.22,1,M.bark,x,.5,y);sph(1.1+r*.4,l,x,1.4,y,.9)}
 else if(t=='mush'){cyl(.2,.5,M.stem,x,.25,y);sph(.8+r*.3,M.cap,x,.6,y,.55)}
