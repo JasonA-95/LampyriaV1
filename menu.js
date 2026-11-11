@@ -43,6 +43,8 @@ if(part=='opt'){if(combatLive)B.appendChild(card('Combat en cours','Un combat es
 if(part=='opt'){const o=card('Options');
 const fxNames={eleve:'élevé',reduit:'réduit',off:'désactivé'},fxDescriptions={eleve:'Textures détaillées avec de légères variations.',reduit:'Textures atténuées, avec des détails plus discrets.',off:'Cases en couleurs plates, rendu classique.'};
 o.appendChild(row('<span class="em">🎨</span><span class="tx"><span class="nm">Effets visuels : '+fxNames[OPT.fx]+'</span><span class="mt">'+fxDescriptions[OPT.fx]+' Toucher pour changer.</span></span>',()=>{cycleFx();renderMenu()}));
+const onX=(()=>{try{return localStorage.getItem('lampyria3dx')=='1'}catch(e){return false}})();
+o.appendChild(row('<span class="em">🗺️</span><span class="tx"><span class="nm">Exploration 3D (aperçu) : '+(onX?'activé':'désactivé')+'</span><span class="mt">Étape 1 : terrain en 3D, sans interaction pour l\'instant. Touche l\'écran pour quitter l\'aperçu.</span></span>',()=>{try{localStorage.setItem('lampyria3dx',onX?'0':'1')}catch(e){toast('Réglage impossible sur cet appareil.')}renderMenu()}));
 const on3=(()=>{try{return localStorage.getItem('lampyria3d')!='0'}catch(e){return true}})();
 o.appendChild(row('<span class="em">🧊</span><span class="tx"><span class="nm">Combat 3D : '+(on3?'activé':'désactivé')+'</span><span class="mt">Vue 2.5D des combats, prochain combat. Désactivé = ancienne vue 2D. Toucher pour changer.</span></span>',()=>{try{localStorage.setItem('lampyria3d',on3?'0':'1')}catch(e){toast('Réglage impossible sur cet appareil.')}renderMenu()}));
 const soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal';

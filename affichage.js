@@ -239,7 +239,19 @@ F.appendChild(btn('⚙️ Options','','',()=>openMenu('options'),busy));F.append
 // ---------- dessin ----------
 const col=l=>'rgb('+[38+82*l,32+52*l,51-3*l].map(Math.round)+')';
 function dia(cx,cy,f){g.beginPath();g.moveTo(cx,cy-th/2);g.lineTo(cx+tw/2,cy);g.lineTo(cx,cy+th/2);g.lineTo(cx-tw/2,cy);g.closePath();g.fillStyle=f;g.fill();g.strokeStyle='rgba(0,0,0,.25)';g.stroke()}
-function draw(){if(EX.on)return EX.draw();if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
+// --- Exploration 3D (ÉTAPE 1 : aperçu du terrain, lecture seule, option « Exploration 3D (aperçu) » ou ?3dx=1) ; la 2D reste dessinée dessous ---
+let X3=null,x3c=null,x3n=null,b3x=0;
+const wantX=()=>{try{return /[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')=='1'}catch(e){return false}};
+function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null}
+function syncX3D(){if(!wantX()||typeof Explo3D=='undefined')return;if(!EX.on||(C&&combatLive)){if(X3)stopX3D();return}
+if(X3&&x3n==EX.map)return;stopX3D();const nom=EX.map,tok=++b3x;
+loadBabylon(()=>{if(tok!=b3x||!EX.on||EX.map!=nom||!Rendu3D.available())return;try{
+x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none';
+x3c.onclick=()=>{try{localStorage.setItem('lampyria3dx','0')}catch(e){}stopX3D();toast('Aperçu 3D désactivé. Réactive-le dans Options.')};
+$('stage').insertBefore(x3c,ambCv);cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
+X3=Explo3D.start({canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
+msg('Aperçu 3D du terrain : touche l\'écran pour le quitter.')}catch(err){console.error('Exploration 3D',err);stopX3D()}})}
+function draw(){if(EX.on){EX.draw();syncX3D();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);
 const pp={},zone=new Set();if(pend&&!C.result){if(mode=='move')C.path(pend.x,pend.y).forEach(t=>pp[t.join(',')]=1);
 else{const s=C.S[mode];for(const [x,y] of DATA.cells)if(C.ok(x,y)&&C.dist({x,y},pend)<=(s.aoe??0))zone.add(x+','+y)}}
