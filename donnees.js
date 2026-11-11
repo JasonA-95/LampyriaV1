@@ -1318,7 +1318,7 @@ DATA.EXU=20;DATA.EXV=[-13,36];
 DATA.exin=(x,y)=>{const u=x-y,v=x+y;return u>=-DATA.EXU&&u<=DATA.EXU&&v>=DATA.EXV[0]&&v<=DATA.EXV[1]};
 DATA.excells=[];for(let s=DATA.EXV[0];s<=DATA.EXV[1];s++)for(let x=-30;x<=50;x++){const y=s-x;if(DATA.exin(x,y))DATA.excells.push([x,y])}
 // Bords (2 rangées) : N = haut, S = bas, E = droite, W = gauche de l'écran. Une case d'angle appartient à deux bords.
-DATA.exside=(x,y)=>{const u=x-y,v=x+y,r=[];if(v<=DATA.EXV[0]+1)r.push('N');if(v>=DATA.EXV[1]-1)r.push('S');if(u>=DATA.EXU-1)r.push('E');if(u<=-DATA.EXU+1)r.push('W');return r};
+DATA.exside=(x,y)=>{const u=x-y,v=x+y,r=[];if(v<=DATA.EXV[0]+2)r.push('N');if(v>=DATA.EXV[1]-2)r.push('S');if(u>=DATA.EXU-1)r.push('E');if(u<=-DATA.EXU+1)r.push('W');return r};
 // Rochers épars dans les nouvelles zones (hors grille de combat), sans toucher aux bords qui ont une sortie ni aux entrées de donjon.
 (()=>{const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h},hx=(x,y,k)=>(((x+97)*73856093)^((y+131)*19349663)^(k*83492791))>>>0;
 for(const k in DATA.cartes){const m=DATA.cartes[k],key=hs(k+'ex'),sides=new Set(m.exits.filter(e=>!e.don&&e.d).map(e=>e.d)),pts=m.exits.filter(e=>e.don).map(e=>[e.x,e.y]);
