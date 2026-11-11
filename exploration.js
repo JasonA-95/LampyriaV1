@@ -11,7 +11,7 @@ const exPts=d=>[...d.exits.filter(e=>e.don).map(e=>[e.x,e.y]),...exRing(d).map(c
 function exFree(m,x,y){if(!DATA.exin(x,y)||(m.rocks||[]).some(r=>r[0]==x&&r[1]==y))return false;for(const q of ['npcs','groups','nodes','picks','hides','coffres','etins'])if((m[q]||[]).some(o=>o.x==x&&o.y==y))return false;if(m.exits.some(e=>e.don&&e.x==x&&e.y==y))return false;return!DATA.exside(x,y).some(s=>exSides(m,s).length)}
 // Arrivée dans la carte voisine : bord opposé, même position le long du bord, sur la case libre la plus proche.
 function exArrive(side,x,y,m){const u=x-y,v=x+y,U=DATA.EXU,V=DATA.EXV;let a,b;
-if(side=='E'){a=-U+2;b=v}else if(side=='W'){a=U-2;b=v}else if(side=='N'){b=V[1]-2;a=u}else{b=V[0]+2;a=u}
+if(side=='E'){a=-U+2;b=v}else if(side=='W'){a=U-2;b=v}else if(side=='N'){b=V[1]-3;a=u}else{b=V[0]+3;a=u}
 if((a+b)%2){if(side=='E'||side=='W')a+=side=='E'?1:-1;else a+=a>0?-1:1}
 const cx=(a+b)/2,cy=(b-a)/2,offs=[];for(let dx=-6;dx<=6;dx++)for(let dy=-6;dy<=6;dy++)offs.push([dx,dy]);offs.sort((p,q)=>Math.abs(p[0])+Math.abs(p[1])-Math.abs(q[0])-Math.abs(q[1]));
 for(const [dx,dy] of offs)if(exFree(m,cx+dx,cy+dy))return{tx:cx+dx,ty:cy+dy};return{tx:m.start[0],ty:m.start[1]}}
