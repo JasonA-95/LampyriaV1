@@ -14,7 +14,7 @@ const rot=-3*Math.PI/4,cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt
 let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const [x,y] of o.cells){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}
 const mx=(x0+x1)/2,my=(y0+y1)/2;let eu=0,ew=0;for(const [x,y] of o.cells){eu=Math.max(eu,Math.abs((x-mx)-(y-my))/Math.SQRT2);ew=Math.max(ew,Math.abs((x-mx)+(y-my))/Math.SQRT2/Math.sqrt(3))}
 cam.target.set(mx,0,my);
-function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=Math.max(ew+.9,(eu+.8)/a);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
+function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=Math.max(ew+.6,(eu+.6)/a);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('dl',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 // graine stable par carte : le décor ne change pas d'une visite à l'autre
 let s=0;for(const ch of o.nom)s=(Math.imul(s,31)+ch.charCodeAt(0))>>>0;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296};
@@ -39,9 +39,6 @@ else if(t=='cactus'){cyl(.3,1,M.cactus,x,.5,y);cyl(.16,.5,M.cactus,x+.22,.7,y)}
 else if(t=='pillar'){cyl(.5,1.8,M.pil,x,.9,y,.42)}
 else{const b=box(.7+r*.3,.45+r*.4,.7+r*.3,r>.5?M.rock:M.rock2,x,.25,y);b.rotation.y=r*3}}
 const rocks=new Set();for(const [x,y] of d.rocks){rocks.add(x+','+y);deco(BI.obs[Math.floor(rnd()*BI.obs.length)],x,y)}
-const exits=new Set(d.exits.filter(e=>e.don).map(e=>e.x+','+e.y));
-// anneau de décor autour de la carte (hors cases jouables, hors sorties et rochers déjà posés)
-for(let x=x0-3;x<x1+4;x++)for(let y=y0-3;y<y1+4;y++){if(o.inside(x,y))continue;const k=x+','+y;if(rocks.has(k)||exits.has(k))continue;if(rnd()<.42)deco(BI.bord[Math.floor(rnd()*BI.bord.length)],x+(rnd()-.5)*.4,y+(rnd()-.5)*.4)}
 // fusion par matériau : quelques appels de dessin au lieu de centaines (mobile)
 for(const [m,l] of G){const r=B.Mesh.MergeMeshes(l,true,true);if(r){r.material=m;r.isPickable=false}}
 // --- sprites : même technique que le combat (plan en billboard Y, UV mises à jour par image, retournement gauche/droite) ---
