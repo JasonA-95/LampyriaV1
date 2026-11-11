@@ -14,9 +14,9 @@ const rot=-3*Math.PI/4,cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt
 let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const [x,y] of o.cells){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}
 const mx=(x0+x1)/2,my=(y0+y1)/2;let eu=0,ew=0;for(const [x,y] of o.cells){eu=Math.max(eu,Math.abs((x-mx)-(y-my))/Math.SQRT2);ew=Math.max(ew,Math.abs((x-mx)+(y-my))/Math.SQRT2/Math.sqrt(3))}
 cam.target.set(mx,0,my);
-// comme l'exploration 2D : largeur exacte de l'écran, et l'inclinaison de la caméra s'adapte pour que toute la hauteur tienne aussi
-let span=0,cc=1/Math.sqrt(3);
-function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=(eu+.6)/a,ewu=ew*Math.sqrt(3);cc=Math.max(.3,Math.min(.6,(h-.3)/ewu));cam.beta=Math.acos(cc);span=Math.max(0,ewu*cc+.3-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
+// zoom fixe (ZF) : la carte est plus grande, la caméra suit le héros sans sortir de la carte
+const ZF=1.6,cc=1/Math.sqrt(3);let su=0,sv=0;
+function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=(eu+.6)/a/ZF;cam.beta=Math.acos(cc);su=Math.max(0,eu+.6-h*a);sv=Math.max(0,ew+.3-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('dl',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 // graine stable par carte : le décor ne change pas d'une visite à l'autre
 let s=0;for(const ch of o.nom)s=(Math.imul(s,31)+ch.charCodeAt(0))>>>0;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296};
@@ -71,7 +71,7 @@ const EN=new Map();let es=0;
 // Étiquettes des PNJ : nom au-dessus de la tête + marqueur de quête ('!' à prendre, '?' à rendre ; orange = quête principale)
 const TXC={};function txtTex(t,col,fs,w,h){const k=t+'|'+col+'|'+fs;if(TXC[k])return TXC[k];const tx=new B.DynamicTexture('t',{width:w,height:h},sc,true),c=tx.getContext();c.clearRect(0,0,w,h);c.font='bold '+fs+'px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=fs/5;c.strokeStyle='#120d1a';c.strokeText(t,w/2,h/2);c.fillStyle=col;c.fillText(t,w/2,h/2);tx.update();tx.hasAlpha=true;return TXC[k]=tx}
 function tag(r,q){const lab=(t,col,fs,w,h,pw,ph,y)=>{const p=B.MeshBuilder.CreatePlane('lb',{width:pw,height:ph},sc);p.parent=r.o.t;p.position.y=y;p.billboardMode=B.Mesh.BILLBOARDMODE_Y;p.material=spm(txtTex(t,col,fs,w,h));p.isPickable=false;return p};
-if(q.nm)lab(q.nm,'#f3e9d8',34,256,64,1.7,.42,1.25);if(q.mk)r.bob=lab(q.mk,q.mc?'#ff6b4a':'#ffd24a',90,128,128,.7,.7,1.75)}
+if(q.nm)lab(q.nm,'#f3e9d8',70,512,128,3,.75,1.45);if(q.mk)r.bob=lab(q.mk,q.mc?'#ff6b4a':'#ffd24a',170,256,256,1.2,1.2,2.15)}
 function syncEnts(){const L=o.ents(),seen=new Set();for(const q of L){seen.add(q.k);let r=EN.get(q.k);const sg=q.e+'|'+q.m+'|'+(q.mk||'')+(q.mc?1:0)+'|'+(q.nm||'');if(r&&r.sig!=sg){r.o.t.dispose();EN.delete(q.k);r=null}
 if(!r){const MS=q.m&&o.msprites&&o.msprites[q.m];r={sig:sg,o:MS?sprite(MS,false,t=>{const p=pastille(q.e);p.t.parent=t}):pastille(q.e)};tag(r,q);EN.set(q.k,r)}
 r.o.t.position.set(q.x,0,q.y);if(r.o.mat)r.o.mat.alpha=q.a==null?1:q.a}
@@ -84,8 +84,8 @@ eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;const dt
 if(o.alive&&!o.alive()){if(o.onDead)o.onDead();return}
 if(n-es>250){es=n;try{syncEnts();syncPath()}catch(e){console.error('Exploration 3D',e)}}
 const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);
-for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=1.75+.08*Math.sin(n/250)}
-const k=Math.min(1,dt*6),vh=((p.x-mx)+(p.y-my))/Math.SQRT2*cc,c=Math.max(-span,Math.min(span,vh))/cc/Math.SQRT2;cam.target.x+=(mx+c-cam.target.x)*k;cam.target.z+=(my+c-cam.target.z)*k;sc.render()});
+for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=2.15+.08*Math.sin(n/250)}
+const k=Math.min(1,dt*6),cl=(v,m)=>Math.max(-m,Math.min(m,v)),cu=cl(((p.x-mx)-(p.y-my))/Math.SQRT2,su),cv=cl(((p.x-mx)+(p.y-my))/Math.SQRT2*cc,sv)/cc;cam.target.x+=(mx+(cu+cv)/Math.SQRT2-cam.target.x)*k;cam.target.z+=(my+(cv-cu)/Math.SQRT2-cam.target.z)*k;sc.render()});
 // Case sous le doigt : intersection du rayon de la caméra avec le sol (y=0)
 function cellAt(cx,cy){const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:Math.round(ray.origin.x+ray.direction.x*t),y:Math.round(ray.origin.z+ray.direction.z*t)}}
 const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
