@@ -16,7 +16,7 @@ const mx=(x0+x1)/2,my=(y0+y1)/2;let eu=0,ew=0;for(const [x,y] of o.cells){eu=Mat
 cam.target.set(mx,0,my);
 // comme l'exploration 2D : largeur exacte de l'écran, et l'inclinaison de la caméra s'adapte pour que toute la hauteur tienne aussi
 let span=0,cc=1/Math.sqrt(3);
-function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=(eu+.6)/a,ewu=ew*Math.sqrt(3);cc=Math.max(.38,Math.min(.6,(h-1)/ewu));cam.beta=Math.acos(cc);span=Math.max(0,ewu*cc+1-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
+function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=(eu+.6)/a,ewu=ew*Math.sqrt(3);cc=Math.max(.3,Math.min(.6,(h-.3)/ewu));cam.beta=Math.acos(cc);span=Math.max(0,ewu*cc+.3-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('dl',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 // graine stable par carte : le décor ne change pas d'une visite à l'autre
 let s=0;for(const ch of o.nom)s=(Math.imul(s,31)+ch.charCodeAt(0))>>>0;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296};
