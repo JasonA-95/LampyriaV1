@@ -14,8 +14,9 @@ const rot=-3*Math.PI/4,cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt
 let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const [x,y] of o.cells){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}
 const mx=(x0+x1)/2,my=(y0+y1)/2;let eu=0,ew=0;for(const [x,y] of o.cells){eu=Math.max(eu,Math.abs((x-mx)-(y-my))/Math.SQRT2);ew=Math.max(ew,Math.abs((x-mx)+(y-my))/Math.SQRT2/Math.sqrt(3))}
 cam.target.set(mx,0,my);
-const ZF=1.25;let span=0;
-function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=(eu+.6)/a*ZF;span=Math.max(0,ew+.6-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
+// comme l'exploration 2D : largeur exacte de l'écran, et l'inclinaison de la caméra s'adapte pour que toute la hauteur tienne aussi
+let span=0,cc=1/Math.sqrt(3);
+function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=(eu+.6)/a,ewu=ew*Math.sqrt(3);cc=Math.max(.38,Math.min(.6,(h-1)/ewu));cam.beta=Math.acos(cc);span=Math.max(0,ewu*cc+1-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('dl',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 // graine stable par carte : le décor ne change pas d'une visite à l'autre
 let s=0;for(const ch of o.nom)s=(Math.imul(s,31)+ch.charCodeAt(0))>>>0;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296};
@@ -80,7 +81,7 @@ if(o.alive&&!o.alive()){if(o.onDead)o.onDead();return}
 if(n-es>250){es=n;try{syncEnts();syncPath()}catch(e){console.error('Exploration 3D',e)}}
 const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);
 for(const [,r] of EN)r.o.frame(dt,false,0,0,n);
-const k=Math.min(1,dt*6),vh=((p.x-mx)+(p.y-my))/Math.SQRT2/Math.sqrt(3),c=Math.max(-span,Math.min(span,vh))*Math.sqrt(3)/Math.SQRT2;cam.target.x+=(mx+c-cam.target.x)*k;cam.target.z+=(my+c-cam.target.z)*k;sc.render()});
+const k=Math.min(1,dt*6),vh=((p.x-mx)+(p.y-my))/Math.SQRT2*cc,c=Math.max(-span,Math.min(span,vh))/cc/Math.SQRT2;cam.target.x+=(mx+c-cam.target.x)*k;cam.target.z+=(my+c-cam.target.z)*k;sc.render()});
 // Case sous le doigt : intersection du rayon de la caméra avec le sol (y=0)
 function cellAt(cx,cy){const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:Math.round(ray.origin.x+ray.direction.x*t),y:Math.round(ray.origin.z+ray.direction.z*t)}}
 const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
