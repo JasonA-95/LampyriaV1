@@ -83,10 +83,16 @@ const ptrUp=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(!ptrs.size
 cv.addEventListener('pointerup',ptrUp);cv.addEventListener('pointercancel',ptrUp);
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();setZoom(V.z*(e.deltaY<0?1.15:1/1.15),e.clientX-r.left,e.clientY-r.top);draw()},{passive:false});
 const cellPx=(x,y)=>[(x-y)*tw/2+ox,(x+y)*th/2+oy];
-function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('game').classList.contains('hide'))return;
+// Dialogue de PNJ (barre de choix en mode 'talk') : croix de fermeture dans la bulle, choix affichés sous la bulle, bouton « Fermer » masqué
+{const st=document.createElement('style');st.textContent='#bubble .x{position:absolute;top:1px;right:4px;font-size:20px;line-height:1;padding:2px 7px;cursor:pointer;pointer-events:auto;color:var(--c,#b8620a);font-style:normal}#bubble.talkx .tx{padding-right:14px}#bar.talk~#foot{display:none}#bar[data-fx]{position:fixed;z-index:9;overflow:auto;box-shadow:0 4px 16px #000a;background:#1b1410ee;border-radius:12px;padding:5px}';document.head.appendChild(st);
+$('bubble').addEventListener('click',e=>{if(!e.target.closest('.x'))return;hideBubble();if(EX.on){EX.ui();EX.draw()}})}
+function placeBubble(){const bar=$('bar');if(!bar.classList.contains('talk')&&bar.hasAttribute('data-fx')){bar.removeAttribute('data-fx');bar.style.cssText=''}
+const B=$('bubble');if(B.classList.contains('hide')||$('game').classList.contains('hide'))return;
+const tk=bar.classList.contains('talk');B.classList.toggle('talkx',tk);if(tk&&!B.querySelector('.x'))B.insertAdjacentHTML('beforeend','<b class="x" role="button" aria-label="Fermer">×</b>');
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
-const bw=B.offsetWidth,bh=B.offsetHeight,q=xpx(at.x,at.y,1.9),q0=xpx(at.x,at.y,0);let px,top,below=false;if(q){px=q[0];top=q[1]-bh-6;if(top<4){top=q0[1]+8;below=true}}else{const c=cellPx(at.x,at.y);px=c[0];top=c[1]-th*1.7-bh;if(top<4){top=c[1]+th*.7;below=true}}
-const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
+const bw=B.offsetWidth,bh=B.offsetHeight,q=xpx(at.x,at.y,bub.at=='hero'?2.2:2.8),q0=xpx(at.x,at.y,0);let px,top,below=false;if(q){px=q[0];top=q[1]-bh-6;if(top<4){top=q0[1]+8;below=true}}else{const c=cellPx(at.x,at.y);px=c[0];top=c[1]-th*1.7-bh;if(top<4){top=c[1]+th*.7;below=true}}
+const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px';
+if(tk){const r=B.getBoundingClientRect(),w=Math.max(r.width,240),l=Math.max(6,Math.min(innerWidth-w-6,r.left)),t=r.bottom+10;bar.setAttribute('data-fx','1');bar.style.cssText='left:'+l+'px;top:'+t+'px;width:'+w+'px;max-height:'+Math.max(80,innerHeight-t-8)+'px'}}
 // --- 2.5D (activé par défaut ; désactivation : ?3d=0 ou localStorage lampyria3d=0) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
 let R3=null,c3=null,l3=null,b3=0;
 const want3D=()=>{try{return !/[?&]3d=0/.test(location.search)&&(/[?&]3d=1/.test(location.search)||localStorage.getItem('lampyria3d')!='0')}catch(e){return true}};
@@ -244,7 +250,7 @@ function dia(cx,cy,f){g.beginPath();g.moveTo(cx,cy-th/2);g.lineTo(cx+tw/2,cy);g.
 let X3=null,x3c=null,x3n=null,b3x=0;
 // position écran d'un point du monde dans la vue 3D d'exploration (bulle de dialogue, infobulle de groupe) ; null hors 3D
 const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
-function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,1.9);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
+function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,2.7);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
 const wantX=()=>{try{return /[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')=='1'}catch(e){return false}};
 function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
@@ -259,7 +265,7 @@ function syncX3D(){if(!wantX()||typeof Explo3D=='undefined')return;if(!EX.on||(C
 if(X3&&x3n==EX.map)return;stopX3D();const nom=EX.map,tok=++b3x;
 loadBabylon(()=>{if(tok!=b3x||!EX.on||EX.map!=nom||!Rendu3D.available())return;try{
 x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none';
-x3c.onclick=e=>{const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
+x3c.onclick=e=>{if($('bar').classList.contains('talk'))return;const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
 $('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return+localStorage.getItem('lampyriaz')||1}catch(e){return 1}})();cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 const sprOn=(()=>{try{return localStorage.getItem('lampyriaspr')!='0'&&!/[?&]spr=0/.test(location.search)}catch(e){return true}})();
 X3=Explo3D.start({onFrame:()=>{placeBubble();tipFix()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
