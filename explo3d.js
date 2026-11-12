@@ -15,9 +15,9 @@ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const [x,y] of o.cells){x0=Math.min(x0,x);
 const mx=(x0+x1)/2,my=(y0+y1)/2;let eu=0,ew=0;for(const [x,y] of o.cells){eu=Math.max(eu,Math.abs((x-mx)-(y-my))/Math.SQRT2);ew=Math.max(ew,Math.abs((x-mx)+(y-my))/Math.SQRT2/Math.sqrt(3))}
 cam.target.set(mx,0,my);
 // zoom fixe (ZF) : la carte est plus grande, la caméra suit le héros sans sortir de la carte
-// deux vues : carte entière (inclinaison adaptée à l'écran, comme la 2D) ou zoom ZF qui suit le héros
-const ZF=1.3;let cc=1/Math.sqrt(3),su=0,sv=0,zoomOn=!!o.zoom;
-function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h0=(eu+.6)/a;let h=h0;if(zoomOn){h=h0/ZF;cc=1/Math.sqrt(3)}else cc=Math.max(.3,Math.min(.6,(h0-.3)/(ew*Math.sqrt(3))));cam.beta=Math.acos(cc);su=Math.max(0,eu+.6-h*a);sv=Math.max(0,ew/(1/Math.sqrt(3))*cc+.3-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
+// zoom continu (pincement / molette) : 1 = carte entière (inclinaison adaptée à l'écran, comme la 2D), au-delà la caméra suit le héros
+const ZMAX=3;let z=Math.max(1,Math.min(ZMAX,+o.zoom||1)),cc=1/Math.sqrt(3),su=0,sv=0,lastPinch=0;
+function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h0=(eu+.6)/a,c0=1/Math.sqrt(3),cf=Math.max(.3,Math.min(.6,(h0-.3)/(ew*Math.sqrt(3)))),h=h0/z;cc=cf+(c0-cf)*Math.min(1,(z-1)/.6);cam.beta=Math.acos(cc);su=Math.max(0,eu+.6-h*a);sv=Math.max(0,ew*Math.sqrt(3)*cc+.3-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('dl',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 // graine stable par carte : le décor ne change pas d'une visite à l'autre
 let s=0;for(const ch of o.nom)s=(Math.imul(s,31)+ch.charCodeAt(0))>>>0;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296};
@@ -88,8 +88,13 @@ const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero
 for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=2.15+.08*Math.sin(n/250)}
 const k=Math.min(1,dt*6),cl=(v,m)=>Math.max(-m,Math.min(m,v)),cu=cl(((p.x-mx)-(p.y-my))/Math.SQRT2,su),cv=cl(((p.x-mx)+(p.y-my))/Math.SQRT2*cc,sv)/cc;cam.target.x+=(mx+(cu+cv)/Math.SQRT2-cam.target.x)*k;cam.target.z+=(my+(cv-cu)/Math.SQRT2-cam.target.z)*k;sc.render()});
 // Case sous le doigt : intersection du rayon de la caméra avec le sol (y=0)
-function cellAt(cx,cy){const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:Math.round(ray.origin.x+ray.direction.x*t),y:Math.round(ray.origin.z+ray.direction.z*t)}}
+function cellAt(cx,cy){if(performance.now()-lastPinch<400)return null;const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:Math.round(ray.origin.x+ray.direction.x*t),y:Math.round(ray.origin.z+ray.direction.z*t)}}
 const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
-return{cellAt,zoom(b){zoomOn=!!b;fit()},stop(){removeEventListener('resize',onR);eng.stopRenderLoop();sc.dispose();eng.dispose()}}}
+const setZ=v=>{z=Math.max(1,Math.min(ZMAX,v));fit();if(o.onZoom)o.onZoom(z)};
+const onW=e=>{e.preventDefault();setZ(z*Math.exp(-e.deltaY*.0015))};cv.addEventListener('wheel',onW,{passive:false});
+const PT=new Map(),pd=()=>{const [p,q]=[...PT.values()];return Math.hypot(p.x-q.x,p.y-q.y)};
+const onD=e=>{PT.set(e.pointerId,{x:e.clientX,y:e.clientY})},onM=e=>{if(!PT.has(e.pointerId))return;const d0=PT.size==2?pd():0;PT.set(e.pointerId,{x:e.clientX,y:e.clientY});if(PT.size==2&&d0>0){setZ(z*pd()/d0);lastPinch=performance.now()}},onU=e=>{PT.delete(e.pointerId)};
+cv.addEventListener('pointerdown',onD);cv.addEventListener('pointermove',onM);cv.addEventListener('pointerup',onU);cv.addEventListener('pointercancel',onU);
+return{cellAt,stop(){cv.removeEventListener('wheel',onW);cv.removeEventListener('pointerdown',onD);cv.removeEventListener('pointermove',onM);cv.removeEventListener('pointerup',onU);cv.removeEventListener('pointercancel',onU);removeEventListener('resize',onR);eng.stopRenderLoop();sc.dispose();eng.dispose()}}}
 return{start}
 })();

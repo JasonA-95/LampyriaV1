@@ -243,8 +243,7 @@ function dia(cx,cy,f){g.beginPath();g.moveTo(cx,cy-th/2);g.lineTo(cx+tw/2,cy);g.
 // --- Exploration 3D (ÉTAPE 2 : terrain, héros et monstres en sprites, PNJ/objets en pastilles, toucher pour marcher ; option « Exploration 3D (bêta) » ou ?3dx=1) ; la 2D reste dessinée dessous ---
 let X3=null,x3c=null,x3n=null,b3x=0;
 const wantX=()=>{try{return /[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')=='1'}catch(e){return false}};
-let x3z=null;
-function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}if(x3z){x3z.remove();x3z=null}cv.style.visibility='';x3n=null}
+function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
 EX.groups.forEach(q=>{if(!q.dead)L.push(q.hide?{k:q,x:q.x,y:q.y,e:'🌿'}:{k:q,x:q.x,y:q.y,e:DATA.rencontres[q.renc].m[0].e,m:DATA.rencontres[q.renc].m[0].n})});
@@ -258,9 +257,9 @@ if(X3&&x3n==EX.map)return;stopX3D();const nom=EX.map,tok=++b3x;
 loadBabylon(()=>{if(tok!=b3x||!EX.on||EX.map!=nom||!Rendu3D.available())return;try{
 x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none';
 x3c.onclick=e=>{const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
-$('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return localStorage.getItem('lampyriaz')=='1'}catch(e){return false}})();x3z=document.createElement('button');x3z.textContent=zl?'🔍−':'🔍+';x3z.setAttribute('aria-label','Zoom');x3z.style.cssText='position:absolute;right:10px;bottom:10px;z-index:3;padding:8px 12px;font-size:18px;border-radius:12px;border:1px solid #6b5a3a;background:#2a2218cc;color:#f3e9d8';x3z.onclick=ev=>{ev.stopPropagation();const on=x3z.textContent=='🔍+';x3z.textContent=on?'🔍−':'🔍+';try{localStorage.setItem('lampyriaz',on?'1':'0')}catch(e){}if(X3)X3.zoom(on)};$('stage').appendChild(x3z);cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
+$('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return+localStorage.getItem('lampyriaz')||1}catch(e){return 1}})();cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 const sprOn=(()=>{try{return localStorage.getItem('lampyriaspr')!='0'&&!/[?&]spr=0/.test(location.search)}catch(e){return true}})();
-X3=Explo3D.start({zoom:zl,canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
+X3=Explo3D.start({zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
 }catch(err){console.error('Exploration 3D',err);stopX3D()}})}
 function draw(){if(EX.on){EX.draw();syncX3D();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);
