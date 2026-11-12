@@ -1314,7 +1314,7 @@ DATA.conso={tisane:{n:'Tisane de braise',e:'🍵',pct:30,cout:{braise:2},met:['m
 
 // Exploration style Dofus Touch (phase 5) : cartes rectangulaires de 20 colonnes x 25 rangées (u = x-y de -20 à 20, v = x+y de -13 à 36).
 // Le combat garde sa grille (DATA.in / DATA.cells). Le contenu existant (cases 0..12) reste au centre sans être déplacé.
-DATA.EXU=20;DATA.EXV=[-13,36];
+DATA.EXU=17;DATA.EXV=[-10,33];
 DATA.exin=(x,y)=>{const u=x-y,v=x+y;return u>=-DATA.EXU&&u<=DATA.EXU&&v>=DATA.EXV[0]&&v<=DATA.EXV[1]};
 DATA.excells=[];for(let s=DATA.EXV[0];s<=DATA.EXV[1];s++)for(let x=-30;x<=50;x++){const y=s-x;if(DATA.exin(x,y))DATA.excells.push([x,y])}
 // Bords (2 rangées) : N = haut, S = bas, E = droite, W = gauche de l'écran. Une case d'angle appartient à deux bords.
