@@ -85,7 +85,7 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientR
 const cellPx=(x,y)=>[(x-y)*tw/2+ox,(x+y)*th/2+oy];
 function placeBubble(){const B=$('bubble');if(B.classList.contains('hide')||$('game').classList.contains('hide'))return;
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
-const [px,py]=cellPx(at.x,at.y),bw=B.offsetWidth,bh=B.offsetHeight;let top=py-th*1.7-bh,below=false;if(top<4){top=py+th*.7;below=true}
+const bw=B.offsetWidth,bh=B.offsetHeight,q=xpx(at.x,at.y,1.9),q0=xpx(at.x,at.y,0);let px,top,below=false;if(q){px=q[0];top=q[1]-bh-6;if(top<4){top=q0[1]+8;below=true}}else{const c=cellPx(at.x,at.y);px=c[0];top=c[1]-th*1.7-bh;if(top<4){top=c[1]+th*.7;below=true}}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px'}
 // --- 2.5D (activé par défaut ; désactivation : ?3d=0 ou localStorage lampyria3d=0) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
 let R3=null,c3=null,l3=null,b3=0;
@@ -242,6 +242,9 @@ const col=l=>'rgb('+[38+82*l,32+52*l,51-3*l].map(Math.round)+')';
 function dia(cx,cy,f){g.beginPath();g.moveTo(cx,cy-th/2);g.lineTo(cx+tw/2,cy);g.lineTo(cx,cy+th/2);g.lineTo(cx-tw/2,cy);g.closePath();g.fillStyle=f;g.fill();g.strokeStyle='rgba(0,0,0,.25)';g.stroke()}
 // --- Exploration 3D (ÉTAPE 2 : terrain, héros et monstres en sprites, PNJ/objets en pastilles, toucher pour marcher ; option « Exploration 3D (bêta) » ou ?3dx=1) ; la 2D reste dessinée dessous ---
 let X3=null,x3c=null,x3n=null,b3x=0;
+// position écran d'un point du monde dans la vue 3D d'exploration (bulle de dialogue, infobulle de groupe) ; null hors 3D
+const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
+function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,1.9);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
 const wantX=()=>{try{return /[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')=='1'}catch(e){return false}};
 function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
@@ -259,9 +262,9 @@ x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0
 x3c.onclick=e=>{const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
 $('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return+localStorage.getItem('lampyriaz')||1}catch(e){return 1}})();cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 const sprOn=(()=>{try{return localStorage.getItem('lampyriaspr')!='0'&&!/[?&]spr=0/.test(location.search)}catch(e){return true}})();
-X3=Explo3D.start({zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
+X3=Explo3D.start({onFrame:()=>{placeBubble();tipFix()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
 }catch(err){console.error('Exploration 3D',err);stopX3D()}})}
-function draw(){if(EX.on){EX.draw();syncX3D();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
+function draw(){if(EX.on){EX.draw();syncX3D();placeBubble();tipFix();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);
 const pp={},zone=new Set();if(pend&&!C.result){if(mode=='move')C.path(pend.x,pend.y).forEach(t=>pp[t.join(',')]=1);
 else{const s=C.S[mode];for(const [x,y] of DATA.cells)if(C.ok(x,y)&&C.dist({x,y},pend)<=(s.aoe??0))zone.add(x+','+y)}}
