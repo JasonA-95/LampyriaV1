@@ -86,14 +86,24 @@ if(o.alive&&!o.alive()){if(o.onDead)o.onDead();return}
 if(n-es>250){es=n;try{syncEnts();syncPath()}catch(e){console.error('Exploration 3D',e)}}
 const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);
 for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=2.15+.08*Math.sin(n/250)}
-const k=Math.min(1,dt*6),cl=(v,m)=>Math.max(-m,Math.min(m,v)),cu=cl(((p.x-mx)-(p.y-my))/Math.SQRT2,su),cv=cl(((p.x-mx)+(p.y-my))/Math.SQRT2*cc,sv)/cc;cam.target.x+=(mx+(cu+cv)/Math.SQRT2-cam.target.x)*k;cam.target.z+=(my+(cv-cu)/Math.SQRT2-cam.target.z)*k;sc.render()});
+sc.render()});
 // Case sous le doigt : intersection du rayon de la caméra avec le sol (y=0)
-function cellAt(cx,cy){if(performance.now()-lastPinch<400)return null;const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:Math.round(ray.origin.x+ray.direction.x*t),y:Math.round(ray.origin.z+ray.direction.z*t)}}
+function ground(cx,cy){const r=cv.getBoundingClientRect(),ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:ray.origin.x+ray.direction.x*t,y:ray.origin.z+ray.direction.z*t}}
+function cellAt(cx,cy){if(performance.now()-lastPinch<400)return null;const r=cv.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;const g=ground(cx,cy);return g&&{x:Math.round(g.x),y:Math.round(g.y)}}
 const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
+// caméra libre (comme la 2D) : zoom vers le doigt / le curseur, déplacement en faisant glisser ; la vue reste dans la carte
+const setT=(x,y)=>{const cl=(v,m)=>Math.max(-m,Math.min(m,v)),u=cl(((x-mx)-(y-my))/Math.SQRT2,su),v=cl(((x-mx)+(y-my))/Math.SQRT2*cc,sv)/cc;cam.target.x=mx+(u+v)/Math.SQRT2;cam.target.z=my+(v-u)/Math.SQRT2};
 const setZ=v=>{z=Math.max(1,Math.min(ZMAX,v));fit();if(o.onZoom)o.onZoom(z)};
-const onW=e=>{e.preventDefault();setZ(z*Math.exp(-e.deltaY*.0015))};cv.addEventListener('wheel',onW,{passive:false});
-const PT=new Map(),pd=()=>{const [p,q]=[...PT.values()];return Math.hypot(p.x-q.x,p.y-q.y)};
-const onD=e=>{PT.set(e.pointerId,{x:e.clientX,y:e.clientY})},onM=e=>{if(!PT.has(e.pointerId))return;const d0=PT.size==2?pd():0;PT.set(e.pointerId,{x:e.clientX,y:e.clientY});if(PT.size==2&&d0>0){setZ(z*pd()/d0);lastPinch=performance.now()}},onU=e=>{PT.delete(e.pointerId)};
+const grab=(g0,g1)=>{if(g0&&g1)setT(cam.target.x+g0.x-g1.x,cam.target.z+g0.y-g1.y)};
+{const p0=o.pos();setT(z>1?p0.x:mx,z>1?p0.y:my)}
+const onW=e=>{e.preventDefault();const g0=ground(e.clientX,e.clientY);setZ(z*Math.exp(-e.deltaY*.0015));setT(cam.target.x,cam.target.z);grab(g0,ground(e.clientX,e.clientY))};cv.addEventListener('wheel',onW,{passive:false});
+const PT=new Map();let drag=false;
+const mid=L=>({x:L.reduce((a,p)=>a+p.x,0)/L.length,y:L.reduce((a,p)=>a+p.y,0)/L.length}),dist=L=>Math.hypot(L[0].x-L[1].x,L[0].y-L[1].y);
+const onD=e=>{PT.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY});if(PT.size==1)drag=false},
+onM=e=>{const q=PT.get(e.pointerId);if(!q)return;const L0=[...PT.values()].map(p=>({x:p.x,y:p.y})),m0=mid(L0),d0=L0.length==2?dist(L0):0;q.x=e.clientX;q.y=e.clientY;
+if(!drag){if(PT.size>=2||Math.hypot(q.x-q.sx,q.y-q.sy)>10)drag=true;else return}
+const L1=[...PT.values()],m1=mid(L1),g0=ground(m0.x,m0.y);if(L1.length==2&&d0>0){setZ(z*dist(L1)/d0);setT(cam.target.x,cam.target.z)}grab(g0,ground(m1.x,m1.y));lastPinch=performance.now()},
+onU=e=>{PT.delete(e.pointerId);if(!PT.size)lastPinch=drag?performance.now():lastPinch};
 cv.addEventListener('pointerdown',onD);cv.addEventListener('pointermove',onM);cv.addEventListener('pointerup',onU);cv.addEventListener('pointercancel',onU);
 return{cellAt,stop(){cv.removeEventListener('wheel',onW);cv.removeEventListener('pointerdown',onD);cv.removeEventListener('pointermove',onM);cv.removeEventListener('pointerup',onU);cv.removeEventListener('pointercancel',onU);removeEventListener('resize',onR);eng.stopRenderLoop();sc.dispose();eng.dispose()}}}
 return{start}
