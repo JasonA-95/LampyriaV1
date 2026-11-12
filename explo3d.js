@@ -15,7 +15,7 @@ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const [x,y] of o.cells){x0=Math.min(x0,x);
 const mx=(x0+x1)/2,my=(y0+y1)/2;let eu=0,ew=0;for(const [x,y] of o.cells){eu=Math.max(eu,Math.abs((x-mx)-(y-my))/Math.SQRT2);ew=Math.max(ew,Math.abs((x-mx)+(y-my))/Math.SQRT2/Math.sqrt(3))}
 cam.target.set(mx,0,my);
 // zoom fixe (ZF) : la carte est plus grande, la caméra suit le héros sans sortir de la carte
-const ZF=1.6,cc=1/Math.sqrt(3);let su=0,sv=0;
+const ZF=1.3,cc=1/Math.sqrt(3);let su=0,sv=0;
 function fit(){const a=eng.getRenderWidth()/eng.getRenderHeight(),h=(eu+.6)/a/ZF;cam.beta=Math.acos(cc);su=Math.max(0,eu+.6-h*a);sv=Math.max(0,ew+.3-h);cam.orthoTop=h;cam.orthoBottom=-h;cam.orthoLeft=-h*a;cam.orthoRight=h*a}fit();
 new B.HemisphericLight('h',new B.Vector3(-.3,1,-.2),sc).intensity=.75;const dl=new B.DirectionalLight('dl',new B.Vector3(-.5,-.9,-.35),sc);dl.intensity=.7;
 // graine stable par carte : le décor ne change pas d'une visite à l'autre
