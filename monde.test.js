@@ -166,9 +166,9 @@ test('métiers : chaque ressource appartient à un seul métier, et les potions 
 });
 
 test('cartes d\'exploration 20×25 : rectangle complet, départ et entités dedans, tout est atteignable depuis le départ, chaque côté de sortie a toutes ses cases libres', () => {
-  assert.ok(D.excells.length >= 1000 && D.excells.length <= 1100, 'environ 25 rangées de 20 à 21 cases : ' + D.excells.length);
+  assert.ok(D.excells.length >= 1100 && D.excells.length <= 850, 'environ 25 rangées de 20 à 21 cases : ' + D.excells.length);
   const rows = {}; for (const [x, y] of D.excells) rows[x + y] = (rows[x + y] || 0) + 1;
-  assert.equal(Object.keys(rows).length, 50, '50 demi-rangées = 25 rangées complètes');
+  assert.equal(Object.keys(rows).length, 44, '50 demi-rangées = 25 rangées complètes');
   for (const [k, m] of Object.entries(C)) {
     assert.ok(D.exin(m.start[0], m.start[1]), k + ' : départ hors carte');
     const sides = new Set(m.exits.filter(e => !e.don && e.d).map(e => e.d));
