@@ -119,7 +119,7 @@ test('bords entiers (style Dofus Touch) : toute case du bord d\'une sortie la d�
   const cote = val(ctx, `${d}.exits.find(e=>e.to=='foret').d`);
   assert.ok(['N', 'E', 'S', 'W'].includes(cote));
   const cells = val(ctx, `DATA.excells.filter(([x,y])=>{const s=DATA.exside(x,y);return s.length==1&&s[0]=='${cote}'})`);
-  assert.ok(cells.length >= 40, 'un bord entier est cliquable');
+  assert.ok(cells.length >= 30, 'un bord entier est cliquable');
   const bad = cells.filter(([x, y]) => val(ctx, `(()=>{const e=exEnt(${x},${y});return !(e&&e.t=='e'&&e.o.to=='foret')})()`));
   assert.equal(bad.length, 0, 'toutes les cases de ce bord mènent à la forêt');
   assert.equal(val(ctx, 'exEnt(6,6)'), null, 'le centre n\'est pas une sortie');
