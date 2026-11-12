@@ -84,7 +84,7 @@ cv.addEventListener('pointerup',ptrUp);cv.addEventListener('pointercancel',ptrUp
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();setZoom(V.z*(e.deltaY<0?1.15:1/1.15),e.clientX-r.left,e.clientY-r.top);draw()},{passive:false});
 const cellPx=(x,y)=>[(x-y)*tw/2+ox,(x+y)*th/2+oy];
 // Dialogue de PNJ (barre de choix en mode 'talk') : croix de fermeture dans la bulle, choix affichés sous la bulle, bouton « Fermer » masqué
-{const st=document.createElement('style');st.textContent='#bubble .x{position:absolute;top:1px;right:4px;font-size:20px;line-height:1;padding:2px 7px;cursor:pointer;pointer-events:auto;color:var(--c,#b8620a);font-style:normal}#bubble.talkx .tx{padding-right:14px}#bar.talk~#foot{display:none}#bar[data-fx]{position:fixed;z-index:9;overflow:auto;box-shadow:0 4px 16px #000a;background:#1b1410ee;border-radius:12px;padding:5px}';document.head.appendChild(st);
+{const st=document.createElement('style');st.textContent='#bubble .x{position:absolute;top:1px;right:4px;font-size:20px;line-height:1;padding:2px 7px;cursor:pointer;pointer-events:auto;color:var(--c,#b8620a);font-style:normal}#bubble.talkx .tx{padding-right:14px}#bar.talk~#foot{display:none}#bar[data-fx]{position:fixed;z-index:9;overflow:auto;box-shadow:0 4px 16px #000a;background:#1b1410ee;border-radius:10px;padding:3px;gap:3px}#bar[data-fx] button{min-height:28px;padding:2px 8px;border-radius:8px}#bar[data-fx] button .nm{font-size:12px;line-height:1.1}#bar[data-fx] button .mt{font-size:10px;line-height:1.1}';document.head.appendChild(st);
 $('bubble').addEventListener('click',e=>{if(!e.target.closest('.x'))return;hideBubble();if(EX.on){EX.ui();EX.draw()}})}
 function placeBubble(){const bar=$('bar');if(!bar.classList.contains('talk')&&bar.hasAttribute('data-fx')){bar.removeAttribute('data-fx');bar.style.cssText=''}
 const B=$('bubble');if(B.classList.contains('hide')||$('game').classList.contains('hide'))return;
@@ -92,7 +92,7 @@ const tk=bar.classList.contains('talk');B.classList.toggle('talkx',tk);if(tk&&!B
 const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const bw=B.offsetWidth,bh=B.offsetHeight,q=xpx(at.x,at.y,bub.at=='hero'?2.2:2.8),q0=xpx(at.x,at.y,0);let px,top,below=false;if(q){px=q[0];top=q[1]-bh-6;if(top<4){top=q0[1]+8;below=true}}else{const c=cellPx(at.x,at.y);px=c[0];top=c[1]-th*1.7-bh;if(top<4){top=c[1]+th*.7;below=true}}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px';
-if(tk){const r=B.getBoundingClientRect(),w=Math.max(r.width,240),l=Math.max(6,Math.min(innerWidth-w-6,r.left)),t=r.bottom+10;bar.setAttribute('data-fx','1');bar.style.cssText='left:'+l+'px;top:'+t+'px;width:'+w+'px;max-height:'+Math.max(80,innerHeight-t-8)+'px'}}
+if(tk){const r=B.getBoundingClientRect(),w=Math.max(r.width,200),l=Math.max(6,Math.min(innerWidth-w-6,r.left)),t=r.bottom+10;bar.setAttribute('data-fx','1');bar.style.cssText='left:'+l+'px;top:'+t+'px;width:'+w+'px;max-height:'+Math.max(80,innerHeight-t-8)+'px'}}
 // --- 2.5D (activé par défaut ; désactivation : ?3d=0 ou localStorage lampyria3d=0) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
 let R3=null,c3=null,l3=null,b3=0;
 const want3D=()=>{try{return !/[?&]3d=0/.test(location.search)&&(/[?&]3d=1/.test(location.search)||localStorage.getItem('lampyria3d')!='0')}catch(e){return true}};
