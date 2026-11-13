@@ -251,9 +251,30 @@ function dia(cx,cy,f){g.beginPath();g.moveTo(cx,cy-th/2);g.lineTo(cx+tw/2,cy);g.
 let X3=null,x3c=null,x3n=null,b3x=0;
 // position écran d'un point du monde dans la vue 3D d'exploration (bulle de dialogue, infobulle de groupe) ; null hors 3D
 const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
+// Suivi de quête (exploration 3D) : la dernière quête acceptée est suivie ; la flèche montre le PNJ ou le point à rejoindre sur la carte, sinon la sortie vers la bonne carte. Toucher la flèche change de quête suivie.
+let qarr=null,qaL=null,qseen=null,qsuiv=(()=>{try{return localStorage.getItem('lampyriasuivi')}catch(e){return null}})();
+const qactifs=()=>Object.keys(sv.q||{}).filter(id=>sv.q[id]&&sv.q[id].s==1&&DATA.quetes[id]);
+function qsuivie(){const a=qactifs();if(qseen){const n=a.filter(id=>!qseen.has(id));if(n.length)qsuiv=n[n.length-1]}else if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;qseen=new Set(a);if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;return qsuiv}
+function qsave(){try{if(qsuiv)localStorage.setItem('lampyriasuivi',qsuiv);else localStorage.removeItem('lampyriasuivi')}catch(e){}}
+function questArrow(){const hide=()=>{if(qarr)qarr.style.display='none'};
+if(!X3||!EX.on||$('bar').classList.contains('talk')||typeof SUIVI=='undefined')return hide();
+const before=qsuiv,id=qsuivie();if(id!=before)qsave();if(!id)return hide();
+const q=DATA.quetes[id],L=SUIVI.lieux(id,sv.q[id],sv.res);if(!L)return hide();
+const r=SUIVI.route(EX.map,L.maps);if(r===undefined)return hide();
+let tx,ty,near=2,lab=q.n;
+if(r===null){let best=null,bd=1e9;const P=[];
+for(const n of DATA.cartes[EX.map].npcs||[])if(L.npc.includes(n.n))P.push(n);
+for(const n of EX.nodes||[])if(n.pick&&n.quest==id)P.push(n);
+for(const g of EX.groups||[]){if(g.dead)continue;if(g.hide&&g.quest==id)P.push(g);else if(q.kind=='win'&&!L.pret&&!g.hide&&EX.winOf(q,g))P.push(g)}
+for(const p of P){const dd=Math.hypot(p.x-EX.x,p.y-EX.y);if(dd<bd){bd=dd;best=p}}
+if(!best||bd<3)return hide();tx=best.x;ty=best.y;if(L.npc.length&&best.n)lab+=' → '+best.n}
+else{lab+=' → '+((DATA.cartes[r.to]||{}).n||r.to);if(r.d&&!r.don){const dv=SUIVI.DIR[r.d];tx=EX.x+dv[0]*12;ty=EX.y+dv[1]*12}else{tx=r.x;ty=r.y;if(Math.hypot(tx-EX.x,ty-EX.y)<near)return hide()}}
+const a=xpx(EX.x,EX.y,1),b=xpx(tx,ty,1);if(!a||!b||(a[0]==b[0]&&a[1]==b[1]))return hide();
+if(!qarr){qarr=document.createElement('div');qarr.style.cssText='position:absolute;z-index:2;text-align:center;cursor:pointer;pointer-events:auto;text-shadow:0 0 6px #000,0 0 3px #000;width:140px;margin-left:-70px';qaL=document.createElement('div');qaL.style.cssText='font-size:11px;line-height:1.1;color:#f3e9d8;margin-top:2px';const ar=document.createElement('div');ar.style.cssText='font-size:26px;line-height:1';ar.textContent='▲';qarr.appendChild(ar);qarr.appendChild(qaL);qarr.onclick=e=>{e.stopPropagation();const a=qactifs();if(a.length>1){qsuiv=a[(a.indexOf(qsuiv)+1)%a.length];qsave();toast('Quête suivie : '+DATA.quetes[qsuiv].n)}questArrow()};$('stage').appendChild(qarr)}
+const an=Math.atan2(b[1]-a[1],b[0]-a[0]),ar=qarr.firstChild;qarr.style.display='';ar.style.color=EX.princ(q)?'#ff6b4a':'#ffd24a';ar.style.transform='rotate('+(an+Math.PI/2)+'rad)';qaL.textContent=lab;qarr.style.left=(a[0]+Math.cos(an)*60)+'px';qarr.style.top=(a[1]+Math.sin(an)*60-13)+'px'}
 function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,2.7);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
 const wantX=()=>true;
-function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
+function stopX3D(){b3x++;if(qarr)qarr.style.display='none';if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
 EX.groups.forEach(q=>{if(!q.dead)L.push(q.hide?{k:q,x:q.x,y:q.y,e:'🌿'}:{k:q,x:q.x,y:q.y,e:DATA.rencontres[q.renc].m[0].e,m:DATA.rencontres[q.renc].m[0].n})});
@@ -269,9 +290,9 @@ x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0
 x3c.onclick=e=>{if($('bar').classList.contains('talk'))return;const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
 $('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return+localStorage.getItem('lampyriaz')||1}catch(e){return 1}})();cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 const sprOn=(()=>{try{return localStorage.getItem('lampyriaspr')!='0'&&!/[?&]spr=0/.test(location.search)}catch(e){return true}})();
-x3live=true;syncAmbience();X3=Explo3D.start({lueurs:()=>cfg.lueurs,fx:OPT.fx,onFrame:()=>{placeBubble();tipFix()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
+x3live=true;syncAmbience();X3=Explo3D.start({lueurs:()=>cfg.lueurs,fx:OPT.fx,onFrame:()=>{placeBubble();tipFix();questArrow()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
 }catch(err){console.error('Exploration 3D',err);stopX3D()}})}
-function draw(){if(EX.on){EX.draw();syncX3D();placeBubble();tipFix();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
+function draw(){if(EX.on){EX.draw();syncX3D();placeBubble();tipFix();questArrow();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);
 const pp={},zone=new Set();if(pend&&!C.result){if(mode=='move')C.path(pend.x,pend.y).forEach(t=>pp[t.join(',')]=1);
 else{const s=C.S[mode];for(const [x,y] of DATA.cells)if(C.ok(x,y)&&C.dist({x,y},pend)<=(s.aoe??0))zone.add(x+','+y)}}
