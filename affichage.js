@@ -252,11 +252,11 @@ let X3=null,x3c=null,x3n=null,b3x=0;
 // position écran d'un point du monde dans la vue 3D d'exploration (bulle de dialogue, infobulle de groupe) ; null hors 3D
 const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
 // Suivi de quête (exploration 3D) : la dernière quête acceptée est suivie ; la flèche montre le PNJ ou le point à rejoindre sur la carte, sinon la sortie vers la bonne carte. Toucher la flèche change de quête suivie.
-let qarr=null,qban=null,qseen=null,qsuiv=(()=>{try{return localStorage.getItem('lampyriasuivi')}catch(e){return null}})();
+let qban=null,qseen=null,qsuiv=(()=>{try{return localStorage.getItem('lampyriasuivi')}catch(e){return null}})();
 const qactifs=()=>Object.keys(sv.q||{}).filter(id=>sv.q[id]&&sv.q[id].s==1&&DATA.quetes[id]);
 function qsuivie(){const a=qactifs();if(qseen){const n=a.filter(id=>!qseen.has(id));if(n.length)qsuiv=n[n.length-1]}else if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;qseen=new Set(a);if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;return qsuiv}
 function qsave(){try{if(qsuiv)localStorage.setItem('lampyriasuivi',qsuiv);else localStorage.removeItem('lampyriasuivi')}catch(e){}}
-function questArrow(){const hide=()=>{if(qarr)qarr.style.display='none';if(qban)qban.style.display='none'};
+function questArrow(){const hide=()=>{if(qban)qban.style.display='none'};
 if(!X3||!EX.on||$('bar').classList.contains('talk')||typeof SUIVI=='undefined')return hide();
 const before=qsuiv,id=qsuivie();if(id!=before)qsave();if(!id)return hide();
 const q=DATA.quetes[id],st=sv.q[id],L=SUIVI.lieux(id,st,sv.res);if(!L)return hide();
@@ -269,22 +269,19 @@ for(const g of EX.groups||[]){if(g.dead)continue;if(g.hide&&g.quest==id)P.push(g
 for(const p of P){const dd=Math.hypot(p.x-EX.x,p.y-EX.y);if(dd<bd){bd=dd;best=p}}
 if(best){dest=best.n||'';if(bd>=3){tx=best.x;ty=best.y}}}
 else if(r){dest=(DATA.cartes[r.to]||{}).n||r.to;if(r.d&&!r.don){const dv=SUIVI.DIR[r.d];tx=EX.x+dv[0]*12;ty=EX.y+dv[1]*12}else if(Math.hypot(r.x-EX.x,r.y-EX.y)>=2){tx=r.x;ty=r.y}}
-if(!qban){qban=document.createElement('div');qban.style.cssText='position:absolute;z-index:2;left:50%;top:6px;transform:translateX(-50%);max-width:92%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:1;padding:4px 10px;border-radius:10px;background:rgba(18,13,26,.55);color:#f3e9d8;cursor:pointer;pointer-events:auto;text-shadow:0 1px 2px #000';
+if(!qban){qban=document.createElement('div');qban.style.cssText='position:absolute;z-index:2;left:50%;top:46px;transform:translateX(-50%);max-width:92%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:1;padding:4px 10px;border-radius:10px;background:rgba(18,13,26,.55);color:#f3e9d8;cursor:pointer;pointer-events:auto;text-shadow:0 1px 2px #000';
 qban.onclick=e=>{e.stopPropagation();const a=qactifs();if(a.length>1){qsuiv=a[(a.indexOf(qsuiv)+1)%a.length];qsave()}questArrow()};$('stage').appendChild(qban)}
-qban.style.display='';qban.textContent='🎯 '+q.n+(L.pret?' : à rendre':q.need>1?' : '+(st.n||0)+'/'+q.need:'')+(dest?' → '+dest:'');
-if(!qarr){qarr=document.createElement('div');qarr.style.cssText='position:absolute;z-index:2;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;pointer-events:none;box-shadow:0 0 8px 2px currentColor;background:currentColor;opacity:.75';$('stage').appendChild(qarr)}
-const a=tx==null?null:xpx(tx,ty,1);if(!a||!x3c)return void(qarr.style.display='none');
-const W=x3c.clientWidth,H=x3c.clientHeight,m=14;if(a[0]>m&&a[0]<W-m&&a[1]>m+24&&a[1]<H-m)return void(qarr.style.display='none');
-const cx=W/2,cy=H/2,dx=a[0]-cx,dy=a[1]-cy,k=Math.min((W/2-m)/Math.max(1e-6,Math.abs(dx)),(H/2-m)/Math.max(1e-6,Math.abs(dy)));
-qarr.style.display='';qarr.style.color=EX.princ(q)?'#ff6b4a':'#ffd24a';qarr.style.left=(cx+dx*k)+'px';qarr.style.top=(cy+dy*k)+'px'}
+const h0=tx==null?null:xpx(EX.x,EX.y,1),t0=h0&&xpx(tx,ty,1),ic=t0?'→↘↓↙←↖↑↗'[(Math.round(Math.atan2(t0[1]-h0[1],t0[0]-h0[0])/(Math.PI/4))+8)%8]:'';
+qban.style.display='';qban.textContent='🎯 '+q.n+(L.pret?' : à rendre':q.need>1?' : '+(st.n||0)+'/'+q.need:'')+(dest?' → '+dest:'')+(ic?'  '+ic:'');
+}
 function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,2.7);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
 const wantX=()=>true;
-function stopX3D(){b3x++;if(qarr)qarr.style.display='none';if(qban)qban.style.display='none';if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
+function stopX3D(){b3x++;if(qban)qban.style.display='none';if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
 EX.groups.forEach(q=>{if(!q.dead)L.push(q.hide?{k:q,x:q.x,y:q.y,e:'🌿'}:{k:q,x:q.x,y:q.y,e:DATA.rencontres[q.renc].m[0].e,m:DATA.rencontres[q.renc].m[0].n})});
 EX.nodes.forEach(n=>L.push({k:n,x:n.x,y:n.y,e:n.etin?'✨':n.pick?((DATA.quetes[n.quest]||{}).ico||'🏮'):n.coffre?'🎁':DATA.resE[n.res],a:n.until>Date.now()?.25:1}));
-d.npcs.forEach(n=>{const mi=EX.markInfo?EX.markInfo(n):{};L.push({k:n,x:n.x,y:n.y,e:n.e,nm:n.n,mk:mi.m,mc:mi.main})});
+d.npcs.forEach(n=>{let mi=EX.markInfo?EX.markInfo(n):{};if(!mi.m){const q=Object.keys(sv.q||{}).map(id=>({q:DATA.quetes[id],s:sv.q[id]})).find(o=>o.q&&o.s&&o.s.s==1&&o.q.kind=='livre'&&[].concat(o.q.to||[]).includes(n.n)&&!(o.s.got||[]).includes(n.n)&&(o.s.n||0)<o.q.need);if(q)mi={m:'?',main:EX.princ(q.q)}}L.push({k:n,x:n.x,y:n.y,e:n.e,nm:n.n,mk:mi.m,mc:mi.main})});
 EX.storyActors.forEach(a=>L.push({k:a,x:a.x,y:a.y,e:a.e}));
 {const eid=EX.escort(),fn=eid&&EX.escortNpc(eid);if(fn&&EX.fol&&(EX.fol.x!=EX.x||EX.fol.y!=EX.y))L.push({k:fn,x:EX.fol.x,y:EX.fol.y,e:fn.e})}
 return L}
