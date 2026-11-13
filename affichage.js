@@ -252,29 +252,34 @@ let X3=null,x3c=null,x3n=null,b3x=0;
 // position écran d'un point du monde dans la vue 3D d'exploration (bulle de dialogue, infobulle de groupe) ; null hors 3D
 const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
 // Suivi de quête (exploration 3D) : la dernière quête acceptée est suivie ; la flèche montre le PNJ ou le point à rejoindre sur la carte, sinon la sortie vers la bonne carte. Toucher la flèche change de quête suivie.
-let qarr=null,qaL=null,qseen=null,qsuiv=(()=>{try{return localStorage.getItem('lampyriasuivi')}catch(e){return null}})();
+let qarr=null,qban=null,qseen=null,qsuiv=(()=>{try{return localStorage.getItem('lampyriasuivi')}catch(e){return null}})();
 const qactifs=()=>Object.keys(sv.q||{}).filter(id=>sv.q[id]&&sv.q[id].s==1&&DATA.quetes[id]);
 function qsuivie(){const a=qactifs();if(qseen){const n=a.filter(id=>!qseen.has(id));if(n.length)qsuiv=n[n.length-1]}else if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;qseen=new Set(a);if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;return qsuiv}
 function qsave(){try{if(qsuiv)localStorage.setItem('lampyriasuivi',qsuiv);else localStorage.removeItem('lampyriasuivi')}catch(e){}}
-function questArrow(){const hide=()=>{if(qarr)qarr.style.display='none'};
+function questArrow(){const hide=()=>{if(qarr)qarr.style.display='none';if(qban)qban.style.display='none'};
 if(!X3||!EX.on||$('bar').classList.contains('talk')||typeof SUIVI=='undefined')return hide();
 const before=qsuiv,id=qsuivie();if(id!=before)qsave();if(!id)return hide();
-const q=DATA.quetes[id],L=SUIVI.lieux(id,sv.q[id],sv.res);if(!L)return hide();
-const r=SUIVI.route(EX.map,L.maps);if(r===undefined)return hide();
-let tx,ty,near=2,lab=q.n;
+const q=DATA.quetes[id],st=sv.q[id],L=SUIVI.lieux(id,st,sv.res);if(!L)return hide();
+const r=SUIVI.route(EX.map,L.maps);
+let tx=null,ty,dest='';
 if(r===null){let best=null,bd=1e9;const P=[];
 for(const n of DATA.cartes[EX.map].npcs||[])if(L.npc.includes(n.n))P.push(n);
 for(const n of EX.nodes||[])if(n.pick&&n.quest==id)P.push(n);
 for(const g of EX.groups||[]){if(g.dead)continue;if(g.hide&&g.quest==id)P.push(g);else if(q.kind=='win'&&!L.pret&&!g.hide&&EX.winOf(q,g))P.push(g)}
 for(const p of P){const dd=Math.hypot(p.x-EX.x,p.y-EX.y);if(dd<bd){bd=dd;best=p}}
-if(!best||bd<3)return hide();tx=best.x;ty=best.y;if(L.npc.length&&best.n)lab+=' → '+best.n}
-else{lab+=' → '+((DATA.cartes[r.to]||{}).n||r.to);if(r.d&&!r.don){const dv=SUIVI.DIR[r.d];tx=EX.x+dv[0]*12;ty=EX.y+dv[1]*12}else{tx=r.x;ty=r.y;if(Math.hypot(tx-EX.x,ty-EX.y)<near)return hide()}}
-const a=xpx(EX.x,EX.y,1),b=xpx(tx,ty,1);if(!a||!b||(a[0]==b[0]&&a[1]==b[1]))return hide();
-if(!qarr){qarr=document.createElement('div');qarr.style.cssText='position:absolute;z-index:2;text-align:center;cursor:pointer;pointer-events:auto;text-shadow:0 0 6px #000,0 0 3px #000;width:30px;margin-left:-15px;opacity:.6;padding:6px 0';qaL=document.createElement('div');qaL.style.cssText='display:none';const ar=document.createElement('div');ar.style.cssText='font-size:15px;line-height:1';ar.textContent='▲';qarr.appendChild(ar);qarr.appendChild(qaL);qarr.onclick=e=>{e.stopPropagation();const a=qactifs();if(a.length>1){qsuiv=a[(a.indexOf(qsuiv)+1)%a.length];qsave()}questArrow();toast('Quête suivie : '+qaL.textContent)};$('stage').appendChild(qarr)}
-const an=Math.atan2(b[1]-a[1],b[0]-a[0]),ar=qarr.firstChild;qarr.style.display='';ar.style.color=EX.princ(q)?'#ff6b4a':'#ffd24a';ar.style.transform='rotate('+(an+Math.PI/2)+'rad)';qaL.textContent=lab;qarr.style.left=(a[0]+Math.cos(an)*42)+'px';qarr.style.top=(a[1]+Math.sin(an)*42-13)+'px'}
+if(best){dest=best.n||'';if(bd>=3){tx=best.x;ty=best.y}}}
+else if(r){dest=(DATA.cartes[r.to]||{}).n||r.to;if(r.d&&!r.don){const dv=SUIVI.DIR[r.d];tx=EX.x+dv[0]*12;ty=EX.y+dv[1]*12}else if(Math.hypot(r.x-EX.x,r.y-EX.y)>=2){tx=r.x;ty=r.y}}
+if(!qban){qban=document.createElement('div');qban.style.cssText='position:absolute;z-index:2;left:50%;top:6px;transform:translateX(-50%);max-width:92%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:1;padding:4px 10px;border-radius:10px;background:rgba(18,13,26,.55);color:#f3e9d8;cursor:pointer;pointer-events:auto;text-shadow:0 1px 2px #000';
+qban.onclick=e=>{e.stopPropagation();const a=qactifs();if(a.length>1){qsuiv=a[(a.indexOf(qsuiv)+1)%a.length];qsave()}questArrow()};$('stage').appendChild(qban)}
+qban.style.display='';qban.textContent='🎯 '+q.n+(L.pret?' : à rendre':q.need>1?' : '+(st.n||0)+'/'+q.need:'')+(dest?' → '+dest:'');
+if(!qarr){qarr=document.createElement('div');qarr.style.cssText='position:absolute;z-index:2;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;pointer-events:none;box-shadow:0 0 8px 2px currentColor;background:currentColor;opacity:.75';$('stage').appendChild(qarr)}
+const a=tx==null?null:xpx(tx,ty,1);if(!a||!x3c)return void(qarr.style.display='none');
+const W=x3c.clientWidth,H=x3c.clientHeight,m=14;if(a[0]>m&&a[0]<W-m&&a[1]>m+24&&a[1]<H-m)return void(qarr.style.display='none');
+const cx=W/2,cy=H/2,dx=a[0]-cx,dy=a[1]-cy,k=Math.min((W/2-m)/Math.max(1e-6,Math.abs(dx)),(H/2-m)/Math.max(1e-6,Math.abs(dy)));
+qarr.style.display='';qarr.style.color=EX.princ(q)?'#ff6b4a':'#ffd24a';qarr.style.left=(cx+dx*k)+'px';qarr.style.top=(cy+dy*k)+'px'}
 function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,2.7);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
 const wantX=()=>true;
-function stopX3D(){b3x++;if(qarr)qarr.style.display='none';if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
+function stopX3D(){b3x++;if(qarr)qarr.style.display='none';if(qban)qban.style.display='none';if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
 EX.groups.forEach(q=>{if(!q.dead)L.push(q.hide?{k:q,x:q.x,y:q.y,e:'🌿'}:{k:q,x:q.x,y:q.y,e:DATA.rencontres[q.renc].m[0].e,m:DATA.rencontres[q.renc].m[0].n})});
