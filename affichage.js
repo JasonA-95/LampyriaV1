@@ -94,9 +94,9 @@ const at=bub.at=='hero'?(EX.on?{x:EX.x,y:EX.y}:C&&C.hero):bub.at;if(!at)return;
 const bw=B.offsetWidth,bh=B.offsetHeight,q=xpx(at.x,at.y,bub.at=='hero'?2.2:2.8),q0=xpx(at.x,at.y,0);let px,top,below=false;if(q){px=q[0];top=q[1]-bh-6;if(top<4){top=q0[1]+8;below=true}}else{const c=cellPx(at.x,at.y);px=c[0];top=c[1]-th*1.7-bh;if(top<4){top=c[1]+th*.7;below=true}}
 const left=Math.max(6,Math.min(W-bw-6,px-bw/2));B.style.left=left+'px';B.style.top=top+'px';B.classList.toggle('below',below);B.querySelector('.tail').style.left=Math.max(10,Math.min(bw-24,px-left-7))+'px';
 if(tk){const r=B.getBoundingClientRect(),w=Math.max(r.width,200),l=Math.max(6,Math.min(innerWidth-w-6,r.left)),t=r.bottom+10;bar.setAttribute('data-fx','1');bar.style.cssText='left:'+l+'px;top:'+t+'px;width:'+w+'px;max-height:'+Math.max(80,innerHeight-t-8)+'px'}}
-// --- 2.5D (activé par défaut ; désactivation : ?3d=0 ou localStorage lampyria3d=0) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
+// --- 2.5D (obligatoire) ; la 2D reste dessinée dessous (animations, effets, tour de jeu) ---
 let R3=null,c3=null,l3=null,b3=0;
-const want3D=()=>{try{return !/[?&]3d=0/.test(location.search)&&(/[?&]3d=1/.test(location.search)||localStorage.getItem('lampyria3d')!='0')}catch(e){return true}};
+const want3D=()=>true; // 3D obligatoire (la 2D reste dessinée dessous, cachée, comme logique et repli si Babylon ne charge pas)
 function loadBabylon(cb,fail){if(typeof BABYLON!='undefined')return cb();const U=['babylon.js','https://cdnjs.cloudflare.com/ajax/libs/babylonjs/6.49.0/babylon.js','https://cdn.babylonjs.com/v6.49.0/babylon.js','https://cdn.jsdelivr.net/npm/babylonjs@6.49.0/babylon.js'];(function t(i){if(i>=U.length){if(fail)fail();return}const s=document.createElement('script');s.src=U[i];s.onload=cb;s.onerror=()=>t(i+1);document.head.appendChild(s)})(0)}
 const LKY={rage:'colerique',fuite:'peureuse',soin:'gourmande',sommeil:'reveuse',mur:'tetue',farce:'farceuse',ombre:'melancolique'};
 const FOOT3='<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#2a4a5a" stroke="#1a1218" stroke-opacity=".75" stroke-width="1.2"/><ellipse cx="13" cy="13" rx="3" ry="4.5" fill="#fff6e0"/><ellipse cx="13" cy="20" rx="2.2" ry="2.4" fill="#fff6e0"/><ellipse cx="20" cy="17" rx="3" ry="4.5" fill="#fff6e0"/><ellipse cx="20" cy="24" rx="2.2" ry="2.4" fill="#fff6e0"/></svg>';
@@ -252,7 +252,7 @@ let X3=null,x3c=null,x3n=null,b3x=0;
 // position écran d'un point du monde dans la vue 3D d'exploration (bulle de dialogue, infobulle de groupe) ; null hors 3D
 const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
 function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,2.7);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
-const wantX=()=>{try{return !/[?&]3dx=0/.test(location.search)&&(/[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')!='0')}catch(e){return true}};
+const wantX=()=>true;
 function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
@@ -264,7 +264,7 @@ EX.storyActors.forEach(a=>L.push({k:a,x:a.x,y:a.y,e:a.e}));
 return L}
 function syncX3D(){if(!wantX()||typeof Explo3D=='undefined')return;if(!EX.on||(C&&combatLive)){if(X3)stopX3D();return}
 if(X3&&x3n==EX.map)return;stopX3D();const nom=EX.map,tok=++b3x;
-loadBabylon(()=>{if(tok!=b3x||!EX.on||EX.map!=nom||!Rendu3D.available())return;try{
+loadBabylon(()=>{if(tok!=b3x||!EX.on||EX.map!=nom)return;if(!Rendu3D.available()){toast('3D indisponible : Babylon.js non chargé.');return}try{
 x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none';
 x3c.onclick=e=>{if($('bar').classList.contains('talk'))return;const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
 $('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return+localStorage.getItem('lampyriaz')||1}catch(e){return 1}})();cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
