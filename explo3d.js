@@ -80,12 +80,17 @@ for(const [k,r] of EN)if(!seen.has(k)){r.o.t.dispose();EN.delete(k)}}
 // Chemin choisi (aperçu du trajet) : petits disques au sol
 const PM=fm('#6fe0e0',.55),PD=[];let psig='';
 function syncPath(){const p=o.path()||[],g=p.map(c=>c.join(',')).join(';');if(g==psig)return;psig=g;while(PD.length)PD.pop().dispose();for(const [x,y] of p){const d=B.MeshBuilder.CreateDisc('pd',{radius:.2,tessellation:14},sc);d.rotation.x=Math.PI/2;d.position.set(x,.02,y);d.material=PM;d.isPickable=false;PD.push(d)}}
+// Ambiance : lucioles (couleur selon le biome, absentes si effets coupés) + lueur chaude autour du héros
+const FFC={foret:'#ffd678',marais:'#9be8a0',desert:'#ffe6b0'},FF=[];
+if(o.fx!='off'){const fm0=fm(FFC[d.biome]||'#ffd678',.9);for(let i=0;i<(o.fx=='reduit'?12:o.fx=='eleve'?40:24);i++){const c=o.cells[Math.floor(rnd()*o.cells.length)],p=B.MeshBuilder.CreatePlane('ff',{size:.17},sc);p.billboardMode=B.Mesh.BILLBOARDMODE_ALL;p.material=fm0;p.isPickable=false;FF.push({p,x:c[0],y:c[1],ph:rnd()*6.28,sp:.35+rnd()*.5})}}
+const hl=new B.PointLight('hl',new B.Vector3(0,1.6,0),sc);hl.diffuse=hx('#ffb454');hl.intensity=.5;hl.range=7;
 let csg='',last=performance.now(),lf=0,px=hp.x,py=hp.y;
 eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;const dt=Math.min(.1,(n-last)/1000);last=n;
 if(o.alive&&!o.alive()){if(o.onDead)o.onDead();return}
 if(n-es>250){es=n;try{syncEnts();syncPath()}catch(e){console.error('Exploration 3D',e)}}
 const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);
 for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=2.15+.08*Math.sin(n/250)}
+{const tt=n/1000;for(const f of FF){f.p.position.set(f.x+Math.sin(tt*f.sp+f.ph)*.6,.55+.35*Math.sin(tt*.9+f.ph*2),f.y+Math.cos(tt*f.sp*1.3+f.ph)*.6);const k=.7+.3*Math.sin(tt*2.2+f.ph);f.p.scaling.set(k,k,k)}hl.position.set(p.x,1.6,p.y)}
 sc.render();if(o.onFrame){const sg=cam.target.x+','+cam.target.z+','+z+','+p.x+','+p.y;if(sg!=csg){csg=sg;try{o.onFrame()}catch(e){console.error('Exploration 3D',e)}}}});
 // Case sous le doigt : intersection du rayon de la caméra avec le sol (y=0)
 function ground(cx,cy){const r=cv.getBoundingClientRect(),ray=sc.createPickingRay(cx-r.left,cy-r.top,B.Matrix.Identity(),cam);if(Math.abs(ray.direction.y)<1e-4)return null;const t=-ray.origin.y/ray.direction.y;return{x:ray.origin.x+ray.direction.x*t,y:ray.origin.z+ray.direction.z*t}}

@@ -61,7 +61,8 @@ function clampPan(){const gd=gdim();if(V.z<=1.01){V.px=V.py=0;return}const mx=gd
 function fillOuter(biome,N,inside){const R=40,ins=inside||((x,y)=>x>=0&&x<N&&y>=0&&y<N);for(let s=-2*R;s<=2*N+2*R;s++)for(let x=-R;x<N+R;x++){const y=s-x;if(y<-R||y>=N+R||ins(x,y))continue;const cx=(x-y)*tw/2+ox,cy=(x+y)*th/2+oy;if(cx<-tw||cx>W+tw||cy<-th||cy>H+th)continue;const l=.3*((x+y)%2?.9:1);if(OPT.fx=='off')dia(cx,cy,col(l));else tuile(g,cx,cy,tw,th,biome,Math.abs(x),Math.abs(y),l);dia(cx,cy,'rgba(0,0,0,.18)')}}
 function cam(){clampPan();ox=W/2+V.px;oy=H/2-gdim().vc/2*th+V.py}
 let ambRAF=0,ambTimer=0,ambLast=0;const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
-function ambienceActive(){return !$('game').classList.contains('r3')&&ambienceShouldRun(OPT.fx,document.hidden,$('game').classList.contains('hide'),motionQuery.matches)}
+var x3live=false; // exploration 3D active : l'ambiance 2D (calée sur la caméra 2D cachée) est coupée, l'ambiance 3D est gérée par Explo3D
+function ambienceActive(){return !x3live&&!$('game').classList.contains('r3')&&ambienceShouldRun(OPT.fx,document.hidden,$('game').classList.contains('hide'),motionQuery.matches)}
 function stopAmbience(){if(ambRAF)cancelAnimationFrame(ambRAF);if(ambTimer)clearTimeout(ambTimer);ambRAF=ambTimer=ambLast=0;ambCv.style.visibility='hidden';if(ambCv.width&&ambCv.height)ag.clearRect(0,0,W,H)}
 function scheduleAmbience(delay){if(ambTimer||ambRAF)return;if(delay)ambTimer=setTimeout(()=>{ambTimer=0;if(ambienceActive())ambRAF=requestAnimationFrame(ambienceFrame)},delay);else ambRAF=requestAnimationFrame(ambienceFrame)}
 function ambienceFrame(time){ambRAF=0;if(!ambienceActive()){stopAmbience();return}const fps=ambienceFps(OPT.fx);
@@ -252,7 +253,7 @@ let X3=null,x3c=null,x3n=null,b3x=0;
 const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
 function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,2.7);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
 const wantX=()=>{try{return /[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')=='1'}catch(e){return false}};
-function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null}
+function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
 EX.groups.forEach(q=>{if(!q.dead)L.push(q.hide?{k:q,x:q.x,y:q.y,e:'🌿'}:{k:q,x:q.x,y:q.y,e:DATA.rencontres[q.renc].m[0].e,m:DATA.rencontres[q.renc].m[0].n})});
@@ -268,7 +269,7 @@ x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0
 x3c.onclick=e=>{if($('bar').classList.contains('talk'))return;const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
 $('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return+localStorage.getItem('lampyriaz')||1}catch(e){return 1}})();cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 const sprOn=(()=>{try{return localStorage.getItem('lampyriaspr')!='0'&&!/[?&]spr=0/.test(location.search)}catch(e){return true}})();
-X3=Explo3D.start({onFrame:()=>{placeBubble();tipFix()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
+x3live=true;syncAmbience();X3=Explo3D.start({fx:OPT.fx,onFrame:()=>{placeBubble();tipFix()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
 }catch(err){console.error('Exploration 3D',err);stopX3D()}})}
 function draw(){if(EX.on){EX.draw();syncX3D();placeBubble();tipFix();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);
