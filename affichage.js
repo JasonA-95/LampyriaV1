@@ -252,7 +252,7 @@ let X3=null,x3c=null,x3n=null,b3x=0;
 // position écran d'un point du monde dans la vue 3D d'exploration (bulle de dialogue, infobulle de groupe) ; null hors 3D
 const xpx=(x,y,h)=>X3&&X3.project?X3.project(x,y,h):null;
 function tipFix(){const t=$('grpTip');if(!t||t.style.display=='none'||!EX.pend||!EX.on)return;const q=xpx(EX.pend.x,EX.pend.y,2.7);if(!q)return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(4,Math.min(W-w-4,q[0]-w/2))+'px';t.style.top=Math.max(4,q[1]-h-6)+'px'}
-const wantX=()=>{try{return /[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')=='1'}catch(e){return false}};
+const wantX=()=>{try{return !/[?&]3dx=0/.test(location.search)&&(/[?&]3dx=1/.test(location.search)||localStorage.getItem('lampyria3dx')!='0')}catch(e){return true}};
 function stopX3D(){b3x++;if(X3){try{X3.stop()}catch(e){}X3=null}if(x3c){x3c.remove();x3c=null}cv.style.visibility='';x3n=null;x3live=false;syncAmbience()}
 // Éléments à afficher en 3D : mêmes sources que EX.draw (groupes, ressources, PNJ, acteurs d'histoire, compagnon d'escorte)
 function ents3x(){const d=DATA.cartes[EX.map],L=[];
