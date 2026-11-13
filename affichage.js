@@ -256,11 +256,12 @@ let qban=null,qseen=null,qsuiv=(()=>{try{return localStorage.getItem('lampyriasu
 const qactifs=()=>Object.keys(sv.q||{}).filter(id=>sv.q[id]&&sv.q[id].s==1&&DATA.quetes[id]);
 function qsuivie(){const a=qactifs();if(qseen){const n=a.filter(id=>!qseen.has(id));if(n.length)qsuiv=n[n.length-1]}else if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;qseen=new Set(a);if(!a.includes(qsuiv))qsuiv=a.find(id=>EX.princ(DATA.quetes[id]))||a[0]||null;return qsuiv}
 function qsave(){try{if(qsuiv)localStorage.setItem('lampyriasuivi',qsuiv);else localStorage.removeItem('lampyriasuivi')}catch(e){}}
-function questArrow(){const hide=()=>{if(qban)qban.style.display='none'};
+let qexit=null;
+function questArrow(){qexit=null;const hide=()=>{if(qban)qban.style.display='none'};
 if(!X3||!EX.on||$('bar').classList.contains('talk')||typeof SUIVI=='undefined')return hide();
 const before=qsuiv,id=qsuivie();if(id!=before)qsave();if(!id)return hide();
 const q=DATA.quetes[id],st=sv.q[id],L=SUIVI.lieux(id,st,sv.res);if(!L)return hide();
-const r=SUIVI.route(EX.map,L.maps);
+const r=SUIVI.route(EX.map,L.maps);if(r&&r.to)qexit=r;
 let tx=null,ty,dest='';
 if(r===null){let best=null,bd=1e9;const P=[];
 for(const n of DATA.cartes[EX.map].npcs||[])if(L.npc.includes(n.n))P.push(n);
@@ -292,7 +293,7 @@ x3c=document.createElement('canvas');x3c.style.cssText='position:absolute;left:0
 x3c.onclick=e=>{if($('bar').classList.contains('talk'))return;const c=X3&&X3.cellAt(e.clientX,e.clientY);if(!c)return;const r=cv.getBoundingClientRect();EX.click({clientX:r.left+ox+(c.x-c.y)*tw/2,clientY:r.top+oy+(c.x+c.y)*th/2})};
 $('stage').insertBefore(x3c,ambCv);const zl=(()=>{try{return+localStorage.getItem('lampyriaz')||1}catch(e){return 1}})();cv.style.visibility='hidden';x3n=nom;const d=DATA.cartes[nom],rk=new Set(d.rocks.map(r=>exK(r[0],r[1])));
 const sprOn=(()=>{try{return localStorage.getItem('lampyriaspr')!='0'&&!/[?&]spr=0/.test(location.search)}catch(e){return true}})();
-x3live=true;syncAmbience();X3=Explo3D.start({lueurs:()=>cfg.lueurs,fx:OPT.fx,onFrame:()=>{placeBubble();tipFix();questArrow()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
+x3live=true;syncAmbience();X3=Explo3D.start({cible:()=>qexit?(qexit.don?{don:1,x:qexit.x,y:qexit.y}:qexit.d?{d:qexit.d}:null):null,lueurs:()=>cfg.lueurs,fx:OPT.fx,onFrame:()=>{placeBubble();tipFix();questArrow()},zoom:zl,onZoom:z=>{try{localStorage.setItem('lampyriaz',z.toFixed(2))}catch(e){}},canvas:x3c,carte:d,nom,taille:DATA.taille,pos:()=>displayPosition(EX.avatar,EX.x,EX.y,rk),classe:cfg.classe,cells:DATA.excells,inside:DATA.exin,sprites:sprOn?Object.fromEntries(['porte','archer','mage','fossoyeur'].map(k=>[k,{url:'spr-'+k+'.png',cw:200,ch:230}])):null,msprites:sprOn?MSPR:null,ents:ents3x,path:()=>EX.pend&&EX.pend.path||[],alive:()=>EX.on&&EX.map==nom&&!(C&&combatLive),onDead:stopX3D});
 }catch(err){console.error('Exploration 3D',err);stopX3D()}})}
 function draw(){if(EX.on){EX.draw();syncX3D();placeBubble();tipFix();questArrow();return}if(!C)return;const N=DATA.taille,h=C.hero,units=[h,...C.foes,...C.allies],positions=new Map(units.map(u=>[u,displayPosition(u,u.x,u.y,C.rocks)])),hp=positions.get(h),fo=C.foes.filter(f=>f.hp>0&&!f.form);cam((2*hp.x+fo.reduce((s,f)=>s+positions.get(f).x,0))/(2+fo.length),(2*hp.y+fo.reduce((s,f)=>s+positions.get(f).y,0))/(2+fo.length));g.clearRect(0,0,W,H);
 const rc=mode=='move'&&!busy&&!C.result?C.reach():{},rs=new Set(mode!='move'&&!C.result?C.ranged(mode).map(t=>t.join(',')):[]),rz=new Set(mode!='move'&&!C.result?C.zone(mode).map(t=>t.join(',')):[]);

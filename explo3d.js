@@ -73,6 +73,11 @@ const EN=new Map();let es=0;
 const TXC={};function txtTex(t,col,fs,w,h){const k=t+'|'+col+'|'+fs;if(TXC[k])return TXC[k];const tx=new B.DynamicTexture('t',{width:w,height:h},sc,true),c=tx.getContext();c.clearRect(0,0,w,h);c.font='bold '+fs+'px Georgia,serif';{const m=c.measureText(t).width;if(m>w-24){fs=Math.floor(fs*(w-24)/m);c.font='bold '+fs+'px Georgia,serif'}}c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=fs/5;c.strokeStyle='#120d1a';c.strokeText(t,w/2,h/2);c.fillStyle=col;c.fillText(t,w/2,h/2);tx.update();tx.hasAlpha=true;return TXC[k]=tx}
 function tag(r,q){const lab=(t,col,fs,w,h,pw,ph,y)=>{const p=B.MeshBuilder.CreatePlane('lb',{width:pw,height:ph},sc);p.parent=r.o.t;p.position.y=y;p.billboardMode=B.Mesh.BILLBOARDMODE_Y;p.material=spm(txtTex(t,col,fs,w,h));p.isPickable=false;return p};
 if(q.nm)lab(q.nm,'#f3e9d8',70,512,128,3,.75,1.45);if(q.mk)r.bob=lab(q.mk,q.mc?'#ff6b4a':'#ffd24a',170,256,256,1.2,1.2,2.15)}
+// Sortie à prendre pour la quête suivie : cases de sortie en surbrillance pulsante (o.cible() -> {d} bord entier, ou {don,x,y} entrée de donjon)
+const HM=new B.StandardMaterial('hix',sc);HM.diffuseColor=HM.emissiveColor=B.Color3.FromHexString('#ffd24a');HM.disableLighting=true;HM.alpha=.3;let hiKey='',hi=null;
+function syncHi(){const c=o.cible?o.cible():null,k=c?(c.don?c.x+','+c.y:c.d):'';if(k===hiKey)return;hiKey=k;if(hi){hi.dispose();hi=null}if(!c)return;const L=[];
+for(const [x,y] of o.cells){if(c.don?(x==c.x&&y==c.y):(DATA.exside?DATA.exside(x,y):[]).includes(c.d)){const b=B.MeshBuilder.CreateBox('hi',{width:1,height:.02,depth:1},sc);b.position.set(x,.015,y);b.isPickable=false;L.push(b)}}
+if(L.length){hi=B.Mesh.MergeMeshes(L,true,true);hi.material=HM;hi.isPickable=false}}
 function syncEnts(){const L=o.ents(),seen=new Set();for(const q of L){seen.add(q.k);let r=EN.get(q.k);const sg=q.e+'|'+q.m+'|'+(q.mk||'')+(q.mc?1:0)+'|'+(q.nm||'');if(r&&r.sig!=sg){r.o.t.dispose();EN.delete(q.k);r=null}
 if(!r){const MS=q.m&&o.msprites&&o.msprites[q.m];r={sig:sg,o:MS?sprite(MS,false,t=>{const p=pastille(q.e);p.t.parent=t}):pastille(q.e)};tag(r,q);EN.set(q.k,r)}
 r.o.t.position.set(q.x,0,q.y);if(r.o.mat)r.o.mat.alpha=q.a==null?1:q.a}
@@ -87,7 +92,7 @@ const hl=new B.PointLight('hl',new B.Vector3(0,1.6,0),sc);hl.diffuse=hx('#ffb454
 let csg='',last=performance.now(),lf=0,px=hp.x,py=hp.y;
 eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;const dt=Math.min(.1,(n-last)/1000);last=n;
 if(o.alive&&!o.alive()){if(o.onDead)o.onDead();return}
-if(n-es>250){es=n;try{syncEnts();syncPath()}catch(e){console.error('Exploration 3D',e)}}
+if(n-es>250){es=n;try{syncEnts();syncPath();syncHi()}catch(e){console.error('Exploration 3D',e)}}HM.alpha=.22+.16*Math.sin(n/350);
 const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);OR.frame(o.lueurs?o.lueurs():[],p.x,p.y,n);
 for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=2.15+.08*Math.sin(n/250)}
 {const tt=n/1000;for(const f of FF){f.p.position.set(f.x+Math.sin(tt*f.sp+f.ph)*.6,.55+.35*Math.sin(tt*.9+f.ph*2),f.y+Math.cos(tt*f.sp*1.3+f.ph)*.6);const k=.7+.3*Math.sin(tt*2.2+f.ph);f.p.scaling.set(k,k,k)}hl.position.set(p.x,1.6,p.y)}
