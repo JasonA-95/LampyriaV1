@@ -66,7 +66,7 @@ if(key!=st.key){st.key=key;const e=.0003,u0=col/9+e,u1=(col+1)/9-e,v0=(nr==1?0:r
 const hSP=o.sprites&&o.sprites[o.classe];let hero,hp=o.pos();
 {const mk=()=>{const b=B.MeshBuilder.CreateSphere('hb',{diameter:.55,segments:6},sc);b.position.y=.45;b.material=M.hero;b.isPickable=false;return b};
 if(hSP){hero=sprite(hSP,true,t=>{mk().parent=t})}else{const t=new B.TransformNode('hn',sc);mk().parent=t;shadow(t,.4);hero={t,frame(){}}}}
-hero.t.position.set(hp.x,0,hp.y);
+hero.t.position.set(hp.x,0,hp.y);const OR=Rendu3D.orbes(B,sc);
 // Entités (PNJ, ressources, groupes de monstres...) : synchronisées 4 fois par seconde avec les données d'exploration
 const EN=new Map();let es=0;
 // Étiquettes des PNJ : nom au-dessus de la tête + marqueur de quête ('!' à prendre, '?' à rendre ; orange = quête principale)
@@ -88,7 +88,7 @@ let csg='',last=performance.now(),lf=0,px=hp.x,py=hp.y;
 eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;const dt=Math.min(.1,(n-last)/1000);last=n;
 if(o.alive&&!o.alive()){if(o.onDead)o.onDead();return}
 if(n-es>250){es=n;try{syncEnts();syncPath()}catch(e){console.error('Exploration 3D',e)}}
-const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);
+const p=o.pos(),vx=p.x-px,vy=p.y-py,mv=Math.hypot(vx,vy)>.004;px=p.x;py=p.y;hero.t.position.set(p.x,0,p.y);hero.frame(dt,mv,vx,vy,n);OR.frame(o.lueurs?o.lueurs():[],p.x,p.y,n);
 for(const [,r] of EN){r.o.frame(dt,false,0,0,n);if(r.bob)r.bob.position.y=2.15+.08*Math.sin(n/250)}
 {const tt=n/1000;for(const f of FF){f.p.position.set(f.x+Math.sin(tt*f.sp+f.ph)*.6,.55+.35*Math.sin(tt*.9+f.ph*2),f.y+Math.cos(tt*f.sp*1.3+f.ph)*.6);const k=.7+.3*Math.sin(tt*2.2+f.ph);f.p.scaling.set(k,k,k)}hl.position.set(p.x,1.6,p.y)}
 sc.render();if(o.onFrame){const sg=cam.target.x+','+cam.target.z+','+z+','+p.x+','+p.y;if(sg!=csg){csg=sg;try{o.onFrame()}catch(e){console.error('Exploration 3D',e)}}}});

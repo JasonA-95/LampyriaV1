@@ -19,7 +19,7 @@ C.rocks=rocks;return rocks}
 function start(o){
 if(!document.getElementById('r3css')){const st=document.createElement('style');st.id='r3css';st.textContent='.lab{position:absolute;transform:translate(-50%,-100%);text-align:center;font-size:9px;opacity:.8;white-space:nowrap;color:#f3e7cf;text-shadow:0 1px 2px #000;pointer-events:none}.lab .bar{width:34px;height:3px;background:#3a1f1f;border:1px solid #120a0e;margin:2px auto 0}.lab .bar i{display:block;height:100%;background:#e5564a}.lab.h .bar i{background:#6fcf7a}';document.head.appendChild(st)}
 const B=BABYLON,C=o.C,cv=o.canvas,DIRS=DIRS3,biome=o.biome||'foret',BI=BIO[biome]||BIO.foret;
-const eng=new B.Engine(cv,true,{stencil:true}),sc=new B.Scene(eng);let rot=-3*Math.PI/4,Z=1;
+const eng=new B.Engine(cv,true,{stencil:true}),sc=new B.Scene(eng),OR=orbes(B,sc);let rot=-3*Math.PI/4,Z=1;
 const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial('m',sc);m.diffuseColor=hx(h);m.specularColor=B.Color3.Black();if(e)m.emissiveColor=hx(e);return m};
 const M={a:mat('#54402f'),b:mat('#4a3527'),reach:mat('#6a6a58','#2a3a38'),reach2:mat('#5e6252','#243230'),range:mat('#e08a2c','#7a4010'),range2:mat('#7a5230','#2e1a0a'),hover:mat('#8a7a50','#3a3220'),bark:mat('#5a3e2a'),leaf1:mat('#2f5a46'),leaf2:mat('#3d6f55'),leaf3:mat('#4a8062'),rock:mat('#6b6258'),rock2:mat('#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),hero:mat('#b8742c'),cream:mat('#e8d9b0'),skin:mat('#e0b894'),foe:mat('#8a5ac0'),ring:mat('#e5564a','#7a1c1c'),path:mat('#6fe0e0','#2a7a7a'),aoe:mat('#d04040','#6a1818')};
 M.a.diffuseColor=hx(BI.a);M.b.diffuseColor=hx(BI.b);M.leaf1.diffuseColor=hx(BI.L[0]);M.leaf2.diffuseColor=hx(BI.L[1]);M.leaf3.diffuseColor=hx(BI.L[2]);sc.clearColor=B.Color4.FromHexString(BI.sky+'ff');
@@ -108,7 +108,7 @@ if(u.atk&&!mv){face(u.atk[0],u.atk[1]);if(s.ta&&!s.ta._bad)s.at=0;u.atk=null}let
 s.t+=dt*(mv?(s.dir=='side'?9:6):(s.SP.rows==1?3:5));const n=s.dir=='side'?5:2,c0=s.dir=='side'?0:s.dir=='front'?5:7;
 const NC=atk?s.SP.atk.n:9,col=atk?Math.min(NC-1,Math.floor(s.at/.2)):c0+Math.floor(s.t)%n,nr=atk?1:s.SP.rows||2,row=nr==1?0:mv?1:0,key=(atk?'a':'i')+col+'/'+row+'/'+s.face;
 if(key!=s.key){s.key=key;const want=atk?s.ta:s.tx;if(s.sm.diffuseTexture!==want){s.sm.diffuseTexture=want;s.sm.emissiveTexture=want}const e=.0003,u0=col/NC+e,u1=(col+1)/NC-e,v0=(nr==1?0:row?0:.5)+e,v1=(nr==1?1:row?.5:1)-e,uv=s.uv0.slice();for(let q=0;q<uv.length;q+=2){let a=s.uv0[q]>.5?1:0;const b=s.uv0[q+1]>.5?1:0;if(s.face<0)a=1-a;uv[q]=a?u1:u0;uv[q+1]=b?v1:v0}s.pl.updateVerticesData(B.VertexBuffer.UVKind,uv)}}
-if(P){ob.x=P.x;ob.y=P.y}else{const k=Math.min(1,dt*9);ob.x+=(u.x-ob.x)*k;ob.y+=(u.y-ob.y)*k}ob.t.position.set(ob.x,0,ob.y);
+if(P){ob.x=P.x;ob.y=P.y}else{const k=Math.min(1,dt*9);ob.x+=(u.x-ob.x)*k;ob.y+=(u.y-ob.y)*k}ob.t.position.set(ob.x,0,ob.y);if(u===C.hero)OR.frame(o.lueurs?o.lueurs():[],ob.x,ob.y,performance.now());
 const p=B.Vector3.Project(new B.Vector3(ob.x,1.9,ob.y),B.Matrix.Identity(),tm,vp);ob.l.style.left=(rc.left-lr.left+p.x/W*rc.width)+'px';ob.l.style.top=(rc.top-lr.top+p.y/H*rc.height)+'px';
 ob.l.firstChild.textContent=(u===C.hero?(o.heroName||'Livreur'):u.n||'')+' '+Math.max(0,u.hp);ob.l.querySelector('i').style.width=Math.max(0,u.hp/(u.max||1)*100)+'%'}});
 let lf=0;eng.runRenderLoop(()=>{const n=performance.now();if(n-lf<28)return;lf=n;sc.render()});const onR=()=>{eng.resize();fit()};addEventListener('resize',onR);
@@ -119,5 +119,10 @@ project(x,y,h){const W=eng.getRenderWidth(),H=eng.getRenderHeight(),r=cv.getBoun
 zoom(f){Z=Math.max(.2,Math.min(1.6,Z*f));fit()},rotate(d){rot+=d*Math.PI/2},
 setEquip(list){EQ=(list||[]).filter(x=>OBJ[x]);dress()},
 stop(){removeEventListener('resize',onR);eng.stopRenderLoop();for(const [,ob] of U)ob.l.remove();sc.dispose();eng.dispose()}}}
-return{available:()=>typeof BABYLON!='undefined',start,obstacles,BIO}
+// Orbes de Lueurs équipées : petites sphères lumineuses qui tournent autour du héros (partagé avec l'exploration 3D).
+function orbes(B,sc){const COL={colerique:'#ff5a3c',peureuse:'#7fd0ff',gourmande:'#ffb347',reveuse:'#c79bff',tetue:'#8fbf6a',farceuse:'#ff7ad9',melancolique:'#5a6bd6'},mats={},L=[];let key='';
+function mk(k){let m=mats[k];if(!m){m=new B.StandardMaterial('lo'+k,sc);m.diffuseColor=m.emissiveColor=B.Color3.FromHexString(COL[k]||'#ffe9a0');m.disableLighting=true;mats[k]=m}const s=B.MeshBuilder.CreateSphere('lo',{diameter:.2,segments:6},sc);s.material=m;s.isPickable=false;return s}
+return{frame(keys,x,y,now){const kk=keys.join();if(kk!==key){key=kk;L.forEach(s=>s.dispose());L.length=0;keys.forEach(k=>L.push(mk(k)))}
+L.forEach((s,i)=>{const a=now/900+i*6.2832/L.length;s.position.set(x+.7*Math.cos(a),1.1+.12*Math.sin(now/400+i*2),y+.7*Math.sin(a))})}}}
+return{available:()=>typeof BABYLON!='undefined',start,obstacles,BIO,orbes}
 })();
