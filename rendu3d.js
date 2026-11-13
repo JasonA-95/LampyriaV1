@@ -101,7 +101,7 @@ if(s.fl>0){s.fl=Math.max(0,s.fl-dt*4);const f=Math.min(1,s.fl*.9);s.sm.emissiveC
 // Monstres/alliés : position d'affichage animée case par case (o.posOf) ; le héros garde son lissage habituel.
 const P=o.posOf&&u!==C.hero?o.posOf(u):null;
 if(ob.spr){const s=ob.spr,dx=(P||u).x-ob.x,dy=(P||u).y-ob.y,mv=P?Math.hypot(P.x-u.x,P.y-u.y)>.02:Math.hypot(dx,dy)>.05,al=cam.alpha,
-face=(vx,vy)=>{const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;s.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'front':'back';if(Math.abs(sx)>.02)s.face=sx>0?1:-1};
+face=(vx,vy)=>{const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;s.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'back':'front';if(Math.abs(sx)>.02)s.face=sx>0?1:-1};
 if(u.look){face(u.look[0],u.look[1]);u.look=null}if(mv)face(dx,dy);
 // Attaque : u.atk (posé par affichage.js) joue la planche d'attaque du monstre, puis retour au repos.
 if(u.atk&&!mv){face(u.atk[0],u.atk[1]);if(s.ta&&!s.ta._bad)s.at=0;u.atk=null}let atk=false;if(s.at!=null){s.at+=dt;if(s.at>=s.SP.atk.n*.2+.15)s.at=null;else atk=true}
