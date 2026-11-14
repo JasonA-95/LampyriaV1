@@ -44,7 +44,7 @@ EX.x=x??d.start[0];EX.y=y??d.start[1];EX.groups=ALEA.groups(name,d.groups);EX.ga
 EX.start=options=>{options=options||{};DJ.guard();const entering=EX.map!==(sv.map||'village');hideBubble();EX.on=true;EX.tok++;EX.walking=false;EX.group=null;hideMenu();closeModal();$('game').classList.remove('hide');size();
 if(entering)EX.enter(sv.map||'village',undefined,undefined,!!(options.storyId&&cfg.test));resetView();
 $('tip').textContent='Touche une case, puis touche-la encore pour y aller.';
-msg('Tu es : '+DATA.cartes[EX.map].n+'.');EX.ui();EX.draw();if(options.storyId)EX.storyPlay(options.storyId);else if(!EX.storyResume()&&entering)EX.storyTrigger({quand:'entree',carte:EX.map})};
+EX.ui();EX.draw();if(options.storyId)EX.storyPlay(options.storyId);else if(!EX.storyResume()&&entering)EX.storyTrigger({quand:'entree',carte:EX.map})};
 EX.hud=()=>{$('hud').innerHTML='<span class="chip">'+DATA.cartes[EX.map].n+'</span>'+DJ.chips()+'<span class="chip">PV '+pvNow()+'/'+pvMax()+'</span><span class="chip">Niv '+sv.niv+(sv.niv<XP.max?' · '+Math.round(100*XP.part(sv))+'%':' max')+'</span>'};
 EX.ui=()=>{exPrune();const foes=$('foes');if(foes){foes.replaceChildren();foes.classList.add('hide')}EX.hud();$('bar').innerHTML='';$('bar').className='';const F=$('foot');F.innerHTML='';EX.dock(F)};
 EX.gain=r=>{let t='';const xp=r.xpq?XP.quete(r.xpq[0],XP.k[r.xpq[1]]||XP.k.normale):r.xp;if(xp){const lv=XP.add(sv,xp);t+=' +'+xp+' XP';if(lv){t+=' Niveau '+sv.niv+' !';if(typeof playSound=='function')playSound('level')}}
@@ -184,7 +184,7 @@ cv2=el('canvas'),g2=cv2.getContext('2d'),info=el('p'),view={x:0,y:0,z:1},ptr=new
 cv2.style.cssText='position:static;inset:auto;width:100%;height:100%;display:block;touch-action:none;cursor:grab';
 const wr=el('div');wr.style.cssText='position:relative;height:min(48vh,340px);overflow:hidden;border-radius:12px;border:1px solid #6b5236;background:#1a120f;margin:8px 0';
 const P=k=>[(L[k][0]-x0)*S*1.6+S/2,(L[k][1]-y0)*S*1.6+S/2],
-say=k=>{const m=C[k],mk=marks(k);info.innerHTML='<b>'+(vu(k)?m.n:'Zone inconnue')+'</b>'+(vu(k)&&niv(k)?' · '+niv(k):'')+(k==EX.map?' · 📍 tu es ici':'')+(vu(k)&&mk.length?'<br>'+mk.join(' '):'')+(vu(k)&&m.exits.some(e=>e.don)?'<br>Entrée : '+m.exits.find(e=>e.don).lbl+' ('+m.exits.find(e=>e.don).nv+')':'')},
+say=k=>{const m=C[k],mk=marks(k);info.innerHTML='<b>'+(vu(k)?m.n:'Zone inconnue')+'</b>'+(vu(k)&&niv(k)?' · '+niv(k):'')+(k==EX.map?' · tu es ici':'')+(vu(k)&&mk.length?'<br>'+mk.map(x=>({'🏠':'Village','🕳️':'Donjon','💀':'Boss','❗':'Quête à prendre','🎯':'Objectif de quête'}[x]||x)).join(' · '):'')+(vu(k)&&m.exits.some(e=>e.don)?'<br>Entrée : '+m.exits.find(e=>e.don).lbl+' ('+m.exits.find(e=>e.don).nv+')':'')},
 hash=n=>{const x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)},
 mix=(a,b)=>{const h=s=>[1,3,5].map(i=>parseInt(s.slice(i,i+2),16)||0);return'rgb('+h(a).map((v,i)=>Math.round((v+h(b)[i])/2)).join(',')+')'},
 colOf=k=>vu(k)?BC[C[k].biome]||'#6a5a8a':'#3a3358',
