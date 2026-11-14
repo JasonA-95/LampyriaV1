@@ -184,7 +184,7 @@ cv2=el('canvas'),g2=cv2.getContext('2d'),info=el('p'),view={x:0,y:0,z:1},ptr=new
 cv2.style.cssText='position:static;inset:auto;width:100%;height:100%;display:block;touch-action:none;cursor:grab';
 const wr=el('div');wr.style.cssText='position:relative;height:min(48vh,340px);overflow:hidden;border-radius:12px;border:1px solid #6b5236;background:#1a120f;margin:8px 0';
 const P=k=>[(L[k][0]-x0)*S*1.6+S/2,(L[k][1]-y0)*S*1.6+S/2],
-say=k=>{const m=C[k],mk=marks(k);info.innerHTML='<b>'+(vu(k)?m.n:'Zone inconnue')+'</b>'+(vu(k)&&niv(k)?' · '+niv(k):'')+(k==EX.map?' · tu es ici':'')+(vu(k)&&mk.length?'<br>'+mk.map(x=>({'🏠':'Village','🕳️':'Donjon','💀':'Boss','❗':'Quête à prendre','🎯':'Objectif de quête'}[x]||x)).join(' · '):'')+(vu(k)&&m.exits.some(e=>e.don)?'<br>Entrée : '+m.exits.find(e=>e.don).lbl+' ('+m.exits.find(e=>e.don).nv+')':'')},
+say=k=>{const m=C[k],mk=marks(k);info.innerHTML='<b>'+(vu(k)?m.n:'Zone inconnue')+'</b>'+(vu(k)&&niv(k)?' · '+niv(k):'')+(k==EX.map?' · 📍 tu es ici':'')+(vu(k)&&mk.length?'<br>'+mk.join(' '):'')+(vu(k)&&m.exits.some(e=>e.don)?'<br>Entrée : '+m.exits.find(e=>e.don).lbl+' ('+m.exits.find(e=>e.don).nv+')':'')},
 hash=n=>{const x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)},
 mix=(a,b)=>{const h=s=>[1,3,5].map(i=>parseInt(s.slice(i,i+2),16)||0);return'rgb('+h(a).map((v,i)=>Math.round((v+h(b)[i])/2)).join(',')+')'},
 colOf=k=>vu(k)?BC[C[k].biome]||'#6a5a8a':'#3a3358',
