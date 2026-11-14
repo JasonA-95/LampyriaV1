@@ -138,9 +138,10 @@ const c=card('Lanterne','<div class="seg">'+seg+'</div><span class="sp"><b>'+use
 if(!cfg.test)c.appendChild(el('p','',DATA.lampiste.some(u=>u.cap>sv.cap)?'Pour agrandir la lanterne, va voir le Maître Lampiste au Village.':'Capacité maximale atteinte.'));
 B.appendChild(c);
 const SP=card('Étincelles','Petites Lueurs de taille 1 : un bonus fixe. 2 équipées au plus, elles prennent de la place dans la lanterne. <b>'+sv.etin.got.length+'/'+Object.keys(DATA.etin).length+'</b> trouvées.');
-Object.keys(DATA.etin).forEach(id=>{const e=DATA.etin[id],has=sv.etin.got.includes(id),on=sv.etin.eq.includes(id);if(!has){SP.appendChild(row('<span class="em">🔒</span><span class="tx"><span class="nm">???</span><span class="mt">'+(e.boss!=null?'Offerte par un boss':e.quete?'Récompense de quête':'Cachée dans une zone')+'</span></span>',null,'lock'));return}
+const miss={};Object.keys(DATA.etin).forEach(id=>{const e=DATA.etin[id],has=sv.etin.got.includes(id),on=sv.etin.eq.includes(id);if(!has){const w=e.boss!=null?'Offertes par un boss':e.quete?'Récompenses de quête':'Cachées dans une zone';miss[w]=(miss[w]||0)+1;return}
 const why=!on&&(sv.etin.eq.length>=2?'2 étincelles maximum':used+1>cap?'Pas assez de place dans la lanterne':'');
 SP.appendChild(row('<span class="em">'+(ICO.spark(e)||(on?'✨':'💡'))+'</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+fmtSt(e.st)+(why?' · <span style="color:var(--bad)">'+why+'</span>':'')+'</span></span>',()=>{if(why){toast(why);return}sv.etin.eq=on?sv.etin.eq.filter(z=>z!=id):[...sv.etin.eq,id];normL();saveCfg();renderMenu()},why?'lock':''))});
+for(const w in miss)SP.appendChild(row('<span class="em">🔒</span><span class="tx"><span class="nm">'+miss[w]+' à trouver</span><span class="mt">'+w+'</span></span>',null,'lock'));
 B.appendChild(SP);
 const L=card('Lueurs','Chaque Lueur ajoute un sort. Les grandes Lueurs prennent plus de place dans la lanterne.');
 const av=avail();
