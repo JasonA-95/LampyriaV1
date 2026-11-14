@@ -9,6 +9,7 @@ const heroMax=pvMax;
 function itemRow(id,extra){const o=DATA.objets[id];
 return '<span class="em">'+ICO.obj(o)+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
 function card(title,...kids){const c=el('div','card',title?'<h3>'+title+'</h3>':'');kids.forEach(k=>{if(k)c.appendChild(typeof k=='string'?el('p','',k):k)});return c}
+let optAdv=false;
 function row(html,fn,cls){const r=el(fn?'button':'div','row '+(cls||''),html);if(fn)r.onclick=fn;return r}
 function bonusLabel(s,rank){const b=s.rg[rank-2]||{},parts=[];if(b.dmg)parts.push((b.dmg>0?'+':'')+b.dmg+' dégâts');if(b.pa)parts.push((b.pa>0?'+':'')+b.pa+' PA');if(b.cd)parts.push((b.cd>0?'+':'')+b.cd+' recharge');if(b.rmax)parts.push('+'+b.rmax+' portée max');if(b.push)parts.push('+'+b.push+' poussée');if(b.garde)parts.push('+'+b.garde+' tour de garde');return parts.join(' · ')||'aucun bonus'}
 function saveCode(){const bytes=new TextEncoder().encode(JSON.stringify(sv));let binary='';for(const b of bytes)binary+=String.fromCharCode(b);return 'LAMPYRIA1:'+btoa(binary)}
@@ -42,17 +43,25 @@ questReady()?el('div','chips','<span class="chip ok">Une quête est prête à ê
 if(part=='opt'){if(combatLive)B.appendChild(card('Combat en cours','Un combat est en pause. Tu peux le reprendre avec le bouton en bas, ou y renoncer.',btn('Abandonner le combat','','danger',leaveFight)));}
 if(part=='opt'){const o=card('Options');
 const fxNames={eleve:'élevé',reduit:'réduit',off:'désactivé'},fxDescriptions={eleve:'Textures détaillées avec de légères variations.',reduit:'Textures atténuées, avec des détails plus discrets.',off:'Cases en couleurs plates, rendu classique.'};
+const hd=t=>{const h=el('div','',t);h.style.cssText='font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:12px 2px 2px';o.appendChild(h)};
+hd('Affichage et son');
 o.appendChild(row('<span class="em">🎨</span><span class="tx"><span class="nm">Effets visuels : '+fxNames[OPT.fx]+'</span><span class="mt">'+fxDescriptions[OPT.fx]+' Toucher pour changer.</span></span>',()=>{cycleFx();renderMenu()}));
 const soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal';
 o.appendChild(row('<span class="em">🔊</span><span class="tx"><span class="nm">Son : '+soundLabel+'</span><span class="mt">Effets sonores générés, sans musique. Toucher pour changer.</span></span>',()=>{cycleSon();renderMenu()}));
+hd('Aide');
 o.appendChild(row('<span class="em">💡</span><span class="tx"><span class="nm">Conseils des Lueurs : '+(tutoOn()?'activés':'désactivés')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{tutoToggle();renderMenu()}));
 o.appendChild(row('<span class="em">🔁</span><span class="tx"><span class="nm">Revoir les conseils</span><span class="mt">Ils réapparaîtront au bon moment.</span></span>',()=>{tutoReset();toast('Conseils réinitialisés.');renderMenu()}));
-o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
-if(cfg.test)o.appendChild(row('<span class="em">🎭</span><span class="tx"><span class="nm">Voir les scènes</span><span class="mt">Lancer une scène en exploration, sans sauvegarder ses effets.</span></span>',()=>{const list=el('div','pick','<h2>Scènes</h2>');Object.entries(DATA.scenes).forEach(([id,scene])=>list.appendChild(row('<span class="tx"><span class="nm">'+id+'</span><span class="mt">'+scene.declencheur.quand+'</span></span>',()=>{if(combatLive){toast('Quitte le combat en cours avant de lancer une scène.');return}EX.start({storyId:id})})));modal(list,[['Fermer']])}));
+hd('Sauvegarde et jeu');
 o.appendChild(row('<span class="em">🏠</span><span class="tx"><span class="nm">Changer de personnage</span><span class="mt">Retour à l\'écran titre : créer, choisir ou supprimer un personnage.</span></span>',()=>{store();location.reload()}));
 o.appendChild(row('<span class="em">🔄</span><span class="tx"><span class="nm">Mettre à jour le jeu</span><span class="mt">Vide le cache du jeu et recharge la dernière version. Ta sauvegarde n\'est pas touchée.</span></span>',async()=>{try{store()}catch(e){}try{if(!navigator.onLine)throw 0;await fetch('sw.js',{cache:'no-store'})}catch(e){toast('Pas de connexion : mise à jour impossible. Le jeu reste disponible hors ligne.');return}try{if('serviceWorker' in navigator)for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister();if(window.caches)for(const k of await caches.keys())if(k.startsWith('lampyria-')&&k!='lampyria-sons')await caches.delete(k)}catch(e){console.error(e)}toast('Mise à jour du jeu…');setTimeout(()=>location.reload(),400)}));
 o.appendChild(row('<span class="em">📤</span><span class="tx"><span class="nm">Exporter ma sauvegarde</span><span class="mt">Créer un code de secours à conserver.</span></span>',exportSave));
 o.appendChild(row('<span class="em">📥</span><span class="tx"><span class="nm">Importer une sauvegarde</span><span class="mt">Restaurer une progression depuis un code.</span></span>',importSave));
+hd('Avancé');
+o.appendChild(row('<span class="em">⚙️</span><span class="tx"><span class="nm">Outils de test '+(optAdv||cfg.test?'(ouvert)':'(masqué)')+'</span><span class="mt">Réservé aux essais : mode test, scènes.</span></span>',()=>{optAdv=!optAdv;renderMenu()}));
+if(optAdv||cfg.test){
+o.appendChild(row('<span class="em">🧪</span><span class="tx"><span class="nm">Mode test : '+(cfg.test?'activé':'désactivé')+'</span><span class="mt">Toutes les Lueurs, capacité 12, aucun gain.</span></span>',()=>{cfg.test=!cfg.test;normL();renderMenu()}));
+if(cfg.test)o.appendChild(row('<span class="em">🎭</span><span class="tx"><span class="nm">Voir les scènes</span><span class="mt">Lancer une scène en exploration, sans sauvegarder ses effets.</span></span>',()=>{const list=el('div','pick','<h2>Scènes</h2>');Object.entries(DATA.scenes).forEach(([id,scene])=>list.appendChild(row('<span class="tx"><span class="nm">'+id+'</span><span class="mt">'+scene.declencheur.quand+'</span></span>',()=>{if(combatLive){toast('Quitte le combat en cours avant de lancer une scène.');return}EX.start({storyId:id})})));modal(list,[['Fermer']])}));
+}
 B.appendChild(o);o.appendChild(el('p','sp','Version '+VERSION))}}
 
 // ---------- onglet Héros ----------
