@@ -23,15 +23,16 @@ const q=EX.groups.find(q=>!q.dead&&q.x==x&&q.y==y);if(q)return{t:'g',o:q};
 const n=EX.nodes.find(n=>n.x==x&&n.y==y);if(n)return{t:'n',o:n};
 const p=d.npcs.find(n=>n.x==x&&n.y==y);if(p)return{t:'p',o:p};
 const e=d.exits.find(e=>e.don&&e.x==x&&e.y==y)||exExitAt(d,x,y);if(e)return{t:'e',o:e};return null}
-function exPath(tx,ty,ent){const N=DATA.taille,B=exBlock(),near=ent&&ent.t!='e',
-goal=(x,y)=>near?Math.abs(x-tx)+Math.abs(y-ty)==1:(x==tx&&y==ty);
-if(goal(EX.x,EX.y))return[];
-const p={},d={[exK(EX.x,EX.y)]:1},q=[[EX.x,EX.y]];let end=null;
-while(q.length&&!end){const [x,y]=q.shift();for(const [a,b] of DIRS){const nx=x+a,ny=y+b,k=exK(nx,ny);
-if(!DATA.exin(nx,ny)||d[k])continue;
-if(B.has(k)&&!(ent&&ent.t=='e'&&nx==tx&&ny==ty))continue;
-d[k]=1;p[k]=[x,y];if(goal(nx,ny)){end=[nx,ny];break}q.push([nx,ny])}}
-if(!end)return null;const r=[];let c=end;while(c&&!(c[0]==EX.x&&c[1]==EX.y)){r.unshift(c);c=p[exK(c[0],c[1])]}return r}
+function exPath(tx,ty,ent){const B=exBlock(),isE=ent&&ent.t=='e',near=ent&&ent.t!='e',sx=EX.x,sy=EX.y,
+free=(x,y)=>DATA.exin(x,y)&&(!B.has(exK(x,y))||(isE&&x==tx&&y==ty)||(x==sx&&y==sy));
+if(near?Math.abs(sx-tx)+Math.abs(sy-ty)==1:(sx==tx&&sy==ty))return[];
+// Distances depuis le but (parcours en largeur inversé), puis descente du chemin le plus court qui reste au plus près de la ligne droite départ-arrivée (évite les trajets en L qui font « le tour »).
+const D={},q=[];for(const c of near?DIRS.map(([a,b])=>[tx+a,ty+b]):[[tx,ty]])if(free(c[0],c[1])&&D[exK(c[0],c[1])]==null){D[exK(c[0],c[1])]=0;q.push(c)}
+for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const [a,b] of DIRS){const nx=x+a,ny=y+b,k=exK(nx,ny);if(D[k]!=null||!free(nx,ny))continue;D[k]=D[exK(x,y)]+1;q.push([nx,ny])}}
+if(D[exK(sx,sy)]==null)return null;
+const r=[],ln=(x,y)=>Math.abs((x-sx)*(ty-sy)-(y-sy)*(tx-sx));let c=[sx,sy];
+while(D[exK(c[0],c[1])]>0){let best=null,bv=1e9;for(const [a,b] of DIRS){const nx=c[0]+a,ny=c[1]+b;if(D[exK(nx,ny)]!==D[exK(c[0],c[1])]-1)continue;const v=ln(nx,ny);if(v<bv){bv=v;best=[nx,ny]}}r.push(best);c=best}
+return r}
 // Masque les PNJ dont une condition de 'cache' est vraie (ex. le Général après sa défaite).
 function exPrune(){for(const m of Object.values(DATA.cartes)){if(!m._npcs)m._npcs=m.npcs.slice();m.npcs=m._npcs.filter(n=>!(n.cache||[]).some(c=>storyCondition(c,sv,sv.hist.flags)))}}
 // Repères de quête de la carte (objets à ramasser, cachettes) : recalculés depuis l'état des quêtes, sans toucher aux monstres vaincus ni aux récoltes en cours.
