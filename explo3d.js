@@ -57,7 +57,7 @@ function pastille(e){const t=new B.TransformNode('p',sc),pl=B.MeshBuilder.Create
 function sprite(SP,isH,fallback){const t=new B.TransformNode('s',sc),H=SP.h||1.9,pl=B.MeshBuilder.CreatePlane('spr',{width:H*SP.cw/SP.ch,height:H,updatable:true},sc);pl.parent=t;pl.position.y=H/2-.02+(SP.lift||0);pl.billboardMode=B.Mesh.BILLBOARDMODE_Y;pl.isPickable=false;pl.alwaysSelectAsActiveMesh=true;
 const tx=new B.Texture(SP.url,sc,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,null,()=>{console.error('sprite introuvable',SP.url);pl.dispose();if(fallback)fallback(t)});tx.hasAlpha=true;tx.wrapU=tx.wrapV=B.Texture.CLAMP_ADDRESSMODE;pl.material=spm(tx);shadow(t,isH?.46:Math.max(.3,Math.min(.9,H*.25)));
 let ha=null;if(isH){ha=B.MeshBuilder.CreateTorus('ha',{diameter:.98,thickness:.05,tessellation:28},sc);ha.parent=t;ha.position.y=.05;ha.material=fm('#ffd678',.85);ha.isPickable=false}
-const uv0=pl.getVerticesData(B.VertexBuffer.UVKind).slice(),st={t:0,face:isH?1:-1,dir:'side',key:''};
+const uv0=pl.getVerticesData(B.VertexBuffer.UVKind).slice(),st={t:0,face:isH?1:-1,dir:SP.front?'front':'side',key:''};
 function face(vx,vy){const sx=vx*(-Math.sin(al))+vy*Math.cos(al),sy=vx*(-Math.cos(al))+vy*(-Math.sin(al));if(Math.hypot(sx,sy)<.02)return;st.dir=Math.abs(sy)<.4*Math.abs(sx)?'side':sy>0?'back':'front';if(Math.abs(sx)>.02)st.face=sx>0?1:-1}
 return{t,frame(dt,mv,vx,vy,now){if(mv)face(vx,vy);const nr=SP.rows||2;st.t+=dt*(mv?(st.dir=='side'?9:6):(nr==1?3:5));const n=st.dir=='side'?5:2,c0=st.dir=='side'?0:st.dir=='front'?5:7,col=c0+Math.floor(st.t)%n,row=nr==1?0:mv?1:0,key=col+'/'+row+'/'+st.face;
 if(ha)ha.scaling.x=ha.scaling.z=1+.05*Math.sin(now/260);
