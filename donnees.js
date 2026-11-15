@@ -1062,7 +1062,7 @@ mirage:[-3,1],puits:[-4,1],pyr1:[-5,1],pyr2:[-6,1],pyr3:[-7,1],
 cloitre:[-1,-3],jardin:[-1,-4],crypte1:[-1,-5],crypte2:[-1,-6],crypte3:[-1,-7],
 plage:[-3,2],port:[-3,3],epave:[-3,4]};Object.assign(L,DATA.extraMonde||{});
 DATA.monde=L;
-const dir=(a,b)=>{const o=DATA.liens||{};if(o[a+'>'+b])return o[a+'>'+b];if(o[b+'>'+a])return {E:'W',W:'E',N:'S',S:'N'}[o[b+'>'+a]];const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'S':'N'},
+const dir=(a,b)=>{const o=DATA.liens||{};if(o[a+'>'+b])return o[a+'>'+b];if(o[b+'>'+a])return {E:'W',W:'E',N:'S',S:'N'}[o[b+'>'+a]];const dx=L[b][0]-L[a][0],dy=L[b][1]-L[a][1];return dx==1?'E':dx==-1?'W':dy==1?'N':'S'},
 side=e=>e.x==0?'W':e.x>=12?'E':e.y==0?'N':'S',def={E:[14,-1],W:[-1,14],N:[0,0],S:[12,12]},inn={E:[-1,0],W:[1,0],N:[0,1],S:[0,-1]},opp={E:'W',W:'E',N:'S',S:'N'},P={};
 for(const k in C)P[k]={};
 for(const k in C)for(const e of C[k].exits){const d=dir(k,e.to);P[k][e.to]=def[d]}
