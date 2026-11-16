@@ -7,6 +7,10 @@ const cv=o.canvas,eng=new B.Engine(cv,true,{stencil:true}),sc=new B.Scene(eng);
 const dk=h=>'#'+[1,3,5].map(i=>Math.round(parseInt(h.substr(i,2),16)*.5).toString(16).padStart(2,'0')).join('');
 const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial('m',sc);m.diffuseColor=hx(h);m.specularColor=B.Color3.Black();if(e)m.emissiveColor=hx(e);return m};
 const M={a:mat(BI.a),b:mat(BI.b),dark:mat('#1a1418'),bark:mat('#5a3e2a'),l1:mat(BI.L[0]),l2:mat(BI.L[1]),l3:mat(BI.L[2]),rock:mat(d.biome=='desert'?'#8a7a62':d.biome=='marais'?'#4a463e':'#6b6258'),rock2:mat(d.biome=='desert'?'#9a8a70':'#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),cactus:mat('#4a7a4a'),pil:mat('#8a8096'),dead:mat(d.biome=='marais'?'#3a2e28':'#5a3e2a'),ad:mat(dk(BI.a)),bd:mat(dk(BI.b)),arr:mat('#f0e6c8','#f0e6c8'),don:mat('#b8862e','#5a3a08'),hero:mat('#ffd678','#b8742c'),halo:mat('#ffd678','#ffd678')};
+// sols peints (un par biome, raccordables) : UV calculées sur la position dans le monde pour que la texture se prolonge d'une case à l'autre ; repli sur les couleurs si l'image manque
+const SOLS=['village','foret','collines','manoir','marais','roseliere','serre','desert','temple','citadelle','trone','mer'],GT=SOLS.includes(d.biome),GP=10;
+if(GT){const tx=new B.Texture('sol-'+d.biome+'.jpg',sc,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,null,()=>{console.error('sol introuvable',d.biome);for(const k of ['ga','gb','gad','gbd']){M[k].diffuseTexture=null}M.ga.diffuseColor=hx(BI.a);M.gb.diffuseColor=hx(BI.b);M.gad.diffuseColor=hx(dk(BI.a));M.gbd.diffuseColor=hx(dk(BI.b))});tx.wrapU=tx.wrapV=B.Texture.WRAP_ADDRESSMODE;
+const gm=c=>{const m=new B.StandardMaterial('g',sc);m.diffuseTexture=tx;m.specularColor=B.Color3.Black();m.diffuseColor=new B.Color3(c,c,c);return m};M.ga=gm(.72);M.gb=gm(.65);M.gad=gm(.4);M.gbd=gm(.36)}
 M.arr.alpha=.55;M.arr.disableLighting=true;M.arr.backFaceCulling=false;M.halo.alpha=.85;M.halo.disableLighting=true;
 sc.clearColor=B.Color4.FromHexString(BI.sky+'ff');
 const rot=-3*Math.PI/4,cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt(3)),60,new B.Vector3(N/2-.5,0,N/2-.5),sc);cam.mode=B.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=.1;cam.maxZ=300;
@@ -32,7 +36,8 @@ box(x1-x0+30,.2,y1-y0+30,M.dark,(x0+x1)/2,-.16,(y0+y1)/2);
 const SD={N:[-1,-1],S:[1,1],E:[1,-1],W:[-1,1]},side=new Set(d.exits.filter(e=>!e.don&&e.d).map(e=>e.d)),dons=new Set(d.exits.filter(e=>e.don).map(e=>e.x+','+e.y));
 function arrow(cx,cz,dx,dz){const l=Math.hypot(dx,dz);dx/=l;dz/=l;const px=-dz,pz=dx,L=.3,W=.2,m=new B.Mesh('ar',sc),v=new B.VertexData();v.positions=[cx+dx*L,.02,cz+dz*L,cx-dx*L*.6+px*W,.02,cz-dz*L*.6+pz*W,cx-dx*L*.6-px*W,.02,cz-dz*L*.6-pz*W];v.indices=[0,1,2];v.normals=[0,1,0,0,1,0,0,1,0];v.applyToMesh(m);m.material=M.arr;m.isPickable=false;reg(M.arr,m)}
 for(const [x,y] of o.cells){const k=x+','+y,sd=(DATA.exside?DATA.exside(x,y):[]).filter(q=>side.has(q)),ex=sd.length||dons.has(k),par=(x+y)&1;
-box(1,.12,1,dons.has(k)?M.don:ex?(par?M.ad:M.bd):(par?M.a:M.b),x,-.06,y);
+const gb=box(1,.12,1,dons.has(k)?M.don:GT?(ex?(par?M.gad:M.gbd):(par?M.ga:M.gb)):ex?(par?M.ad:M.bd):(par?M.a:M.b),x,-.06,y);
+if(GT&&!dons.has(k)){const ps=gb.getVerticesData(B.VertexBuffer.PositionKind),uv=[];for(let i=0;i<ps.length;i+=3)uv.push((ps[i]+x)/GP,(ps[i+2]+y)/GP);gb.setVerticesData(B.VertexBuffer.UVKind,uv)}
 if(sd.length&&(sd[0]=='N'?x+y==DATA.EXV[0]+1:sd[0]=='S'?x+y==DATA.EXV[1]-1:par==0))arrow(x,y,SD[sd[0]][0],SD[sd[0]][1])}
 function deco(t,x,y){const r=rnd(),l=[M.l1,M.l2,M.l3][Math.floor(rnd()*3)];
 if(t=='tree'){cyl(.22,1,M.bark,x,.5,y);sph(1.1+r*.4,l,x,1.4,y,.9)}
