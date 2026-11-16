@@ -9,8 +9,10 @@ const hx=h=>B.Color3.FromHexString(h),mat=(h,e)=>{const m=new B.StandardMaterial
 const M={a:mat(BI.a),b:mat(BI.b),dark:mat('#1a1418'),bark:mat('#5a3e2a'),l1:mat(BI.L[0]),l2:mat(BI.L[1]),l3:mat(BI.L[2]),rock:mat(d.biome=='desert'?'#8a7a62':d.biome=='marais'?'#4a463e':'#6b6258'),rock2:mat(d.biome=='desert'?'#9a8a70':'#7a7066'),stem:mat('#e8d8b8'),cap:mat('#c8503a'),cactus:mat('#4a7a4a'),pil:mat('#8a8096'),dead:mat(d.biome=='marais'?'#3a2e28':'#5a3e2a'),ad:mat(dk(BI.a)),bd:mat(dk(BI.b)),arr:mat('#f0e6c8','#f0e6c8'),don:mat('#b8862e','#5a3a08'),hero:mat('#ffd678','#b8742c'),halo:mat('#ffd678','#ffd678')};
 // sols peints (un par biome, raccordables) : UV calculées sur la position dans le monde pour que la texture se prolonge d'une case à l'autre ; repli sur les couleurs si l'image manque
 const SOLS=['village','foret','collines','manoir','marais','roseliere','serre','desert','temple','citadelle','trone','mer'],GT=SOLS.includes(d.biome),GP=10;
-if(GT){const tx=new B.Texture('sol-'+d.biome+'.jpg',sc,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,null,()=>{console.error('sol introuvable',d.biome);for(const k of ['ga','gb','gad','gbd']){M[k].diffuseTexture=null}M.ga.diffuseColor=hx(BI.a);M.gb.diffuseColor=hx(BI.b);M.gad.diffuseColor=hx(dk(BI.a));M.gbd.diffuseColor=hx(dk(BI.b))});tx.wrapU=tx.wrapV=B.Texture.WRAP_ADDRESSMODE;
-const gm=c=>{const m=new B.StandardMaterial('g',sc);m.diffuseTexture=tx;m.specularColor=B.Color3.Black();m.diffuseColor=new B.Color3(c,c,c);return m};M.ga=gm(.72);M.gb=gm(.65);M.gad=gm(.4);M.gbd=gm(.36)}
+if(GT){const tx=new B.Texture('sol-'+(d.biome=='mer'?'mer-sable':d.biome)+'.jpg',sc,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,null,()=>{console.error('sol introuvable',d.biome);for(const k of ['ga','gb','gad','gbd']){M[k].diffuseTexture=null}M.ga.diffuseColor=hx(BI.a);M.gb.diffuseColor=hx(BI.b);M.gad.diffuseColor=hx(dk(BI.a));M.gbd.diffuseColor=hx(dk(BI.b))});tx.wrapU=tx.wrapV=B.Texture.WRAP_ADDRESSMODE;
+const gm=c=>{const m=new B.StandardMaterial('g',sc);m.diffuseTexture=tx;m.specularColor=B.Color3.Black();m.diffuseColor=new B.Color3(c,c,c);return m};M.ga=gm(.72);M.gb=gm(.65);M.gad=gm(.4);M.gbd=gm(.36);
+// mer : plage sous les pieds, l'eau tout autour de la zone jouable (à la place de la dalle sombre)
+if(d.biome=='mer'){const wt=new B.Texture('sol-mer.jpg',sc,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,null,()=>{console.error('sol introuvable','mer eau');M.dark.diffuseTexture=null});wt.wrapU=wt.wrapV=B.Texture.WRAP_ADDRESSMODE;M.dark.diffuseTexture=wt;M.dark.diffuseColor=new B.Color3(.7,.7,.7);M.dark.specularColor=B.Color3.Black();M.wat=1}}
 M.arr.alpha=.55;M.arr.disableLighting=true;M.arr.backFaceCulling=false;M.halo.alpha=.85;M.halo.disableLighting=true;
 sc.clearColor=B.Color4.FromHexString(BI.sky+'ff');
 const rot=-3*Math.PI/4,cam=new B.ArcRotateCamera('cam',rot,Math.acos(1/Math.sqrt(3)),60,new B.Vector3(N/2-.5,0,N/2-.5),sc);cam.mode=B.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=.1;cam.maxZ=300;
@@ -31,7 +33,8 @@ const cyl=(dm,h,m,x,y,z,dt)=>{const c=B.MeshBuilder.CreateCylinder('c',{diameter
 const sph=(dm,m,x,y,z,sy)=>{const p=B.MeshBuilder.CreateSphere('s',{diameter:dm,segments:5},sc);p.material=m;p.position.set(x,y,z);if(sy)p.scaling.y=sy;p.isPickable=false;return reg(m,p)};
 // sol : grande dalle sombre (continuité hors carte) + cases en damier
 // zone jouable réelle de l'exploration (o.cells = DATA.excells, o.inside = DATA.exin) : un grand losange, pas le carré de l'arène
-box(x1-x0+30,.2,y1-y0+30,M.dark,(x0+x1)/2,-.16,(y0+y1)/2);
+const slab=box(x1-x0+30,.2,y1-y0+30,M.dark,(x0+x1)/2,-.16,(y0+y1)/2);
+if(M.wat){const ps=slab.getVerticesData(B.VertexBuffer.PositionKind),uv=[];for(let i=0;i<ps.length;i+=3)uv.push((ps[i]+(x0+x1)/2)/GP,(ps[i+2]+(y0+y1)/2)/GP);slab.setVerticesData(B.VertexBuffer.UVKind,uv)}
 // sorties par bords entiers (comme l'exploration 2D) : toute case du bord d'un côté qui a une sortie ; entrées de donjon = case unique
 const SD={N:[-1,-1],S:[1,1],E:[1,-1],W:[-1,1]},side=new Set(d.exits.filter(e=>!e.don&&e.d).map(e=>e.d)),dons=new Set(d.exits.filter(e=>e.don).map(e=>e.x+','+e.y));
 function arrow(cx,cz,dx,dz){const l=Math.hypot(dx,dz);dx/=l;dz/=l;const px=-dz,pz=dx,L=.3,W=.2,m=new B.Mesh('ar',sc),v=new B.VertexData();v.positions=[cx+dx*L,.02,cz+dz*L,cx-dx*L*.6+px*W,.02,cz-dz*L*.6+pz*W,cx-dx*L*.6-px*W,.02,cz-dz*L*.6-pz*W];v.indices=[0,1,2];v.normals=[0,1,0,0,1,0,0,1,0];v.applyToMesh(m);m.material=M.arr;m.isPickable=false;reg(M.arr,m)}
