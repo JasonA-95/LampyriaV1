@@ -4,7 +4,7 @@ const TABS=[['heros','Héros','🛡️'],['equip','Inventaire','🎒'],['sorts',
 const craftables=()=>{const A=EX.atelier();return A?Object.keys(DATA.objets).filter(id=>DATA.objets[id].cout&&!sv.inv.includes(id)&&A.slots.includes(DATA.objets[id].slot)):[]};
 const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout)&&metOk(DATA.objets[id]));
 const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];return s&&s.s==1&&(s.n||0)>=DATA.quetes[id].need});
-const heroMax=pvMax;
+const heroMax=pvMax,CAD=()=>window.ICOP?ICOP.cad():'🔒',FAC=(k,on)=>window.ICOP?ICOP.lueur(k,on):(on?'✨':'💡');
 
 function itemRow(id,extra){const o=DATA.objets[id];
 return '<span class="em">'+ICO.obj(o)+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
@@ -70,10 +70,10 @@ if(part=='heros'){for(const k in DATA.classes){if(!cfg.test&&cfg.classe!=k)conti
 B.appendChild(card('Classe',cl,cfg.test?'Mode test : tu peux changer de classe.':'Ta classe est définitive. Seul le mode test permet d\'en changer.'));}
 if(part=='sorts'){const spellCard=card('Sorts','Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b>'),current=DATA.classes[cfg.classe].sorts,first=current[0].id;
 for(const base of current){const unlocked=sortOuvert(base),rank=cfg.test?5:(sv.sp.rg[base.id]||1),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),entry=el('div','pick');
-const name=s.n+(rank>1?' ★'+rank:'')+(base.id==first?' 🔒':'');
+const name=s.n+(rank>1?' ★'+rank:'')+(base.id==first?' '+CAD():'');
 const status=!unlocked?'Niveau '+base.niv:base.id==first?'Toujours équipé':equipped?'Équipé · touche pour retirer':'Libre · touche pour équiper';
 const E0=DATA.elements[base.elem||'neutre'],chips='<span class="chips"><span class="chip el">'+E0.e+' '+E0.n+'</span><span class="chip">'+s.pa+' PA</span><span class="chip">Recharge '+(s.cd||0)+'</span></span>';
-const html='<span class="em">'+(unlocked?(equipped?'✨':'⚔️'):'🔒')+'</span><span class="tx"><span class="nm">'+name+'</span><span class="mt">'+(unlocked?descrBody(s):'Niveau '+base.niv)+'</span>'+(unlocked?'<span class="mt">'+status+'</span>':'')+chips+'</span>';
+const html='<span class="em">'+(unlocked?(equipped?'✨':'⚔️'):CAD())+'</span><span class="tx"><span class="nm">'+name+'</span><span class="mt">'+(unlocked?descrBody(s):'Niveau '+base.niv)+'</span>'+(unlocked?'<span class="mt">'+status+'</span>':'')+chips+'</span>';
 const toggle=()=>{if(base.id==first){toast('Le premier sort est toujours équipé');return}if(equipped)sv.sp.eq=sv.sp.eq.filter(id=>id!=base.id);else if(sv.sp.eq.length+cfg.lueurs.length>=6){toast('Barre de sorts pleine');return}else sv.sp.eq.push(base.id);syncSorts();store();renderMenu()};
 entry.appendChild(row(html,unlocked?toggle:null,(unlocked?(equipped?'on':''):'lock')+' esp e-'+(base.elem||'neutre')));
 if(unlocked){const upgrades=el('div','grid2');for(const next of [2,3,4,5]){const cost=next-1,can=rank==next-1&&spLeft()>=cost&&!cfg.test;upgrades.appendChild(btn('Rang '+next+' : '+cost+' point'+(cost>1?'s':''),bonusLabel(base,next),'ghost',()=>{if(!can)return;sv.sp.rg[base.id]=next;store();renderMenu()},!can))}entry.appendChild(upgrades)}
@@ -141,14 +141,14 @@ const SP=card('Étincelles','Petites Lueurs de taille 1 : un bonus fixe. 2 équi
 const miss={};Object.keys(DATA.etin).forEach(id=>{const e=DATA.etin[id],has=sv.etin.got.includes(id),on=sv.etin.eq.includes(id);if(!has){const w=e.boss!=null?'Offertes par un boss':e.quete?'Récompenses de quête':'Cachées dans une zone';miss[w]=(miss[w]||0)+1;return}
 const why=!on&&(sv.etin.eq.length>=2?'2 étincelles maximum':used+1>cap?'Pas assez de place dans la lanterne':'');
 SP.appendChild(row('<span class="em">'+(ICO.spark(e)||(on?'✨':'💡'))+'</span><span class="tx"><span class="nm">'+e.n+'</span><span class="mt">'+fmtSt(e.st)+(why?' · <span style="color:var(--bad)">'+why+'</span>':'')+'</span></span>',()=>{if(why){toast(why);return}sv.etin.eq=on?sv.etin.eq.filter(z=>z!=id):[...sv.etin.eq,id];normL();saveCfg();renderMenu()},why?'lock':''))});
-for(const w in miss)SP.appendChild(row('<span class="em">🔒</span><span class="tx"><span class="nm">'+miss[w]+' à trouver</span><span class="mt">'+w+'</span></span>',null,'lock'));
+for(const w in miss)SP.appendChild(row('<span class="em">'+CAD()+'</span><span class="tx"><span class="nm">'+miss[w]+' à trouver</span><span class="mt">'+w+'</span></span>',null,'lock'));
 B.appendChild(SP);
 const L=card('Lueurs','Chaque Lueur ajoute un sort. Les grandes Lueurs prennent plus de place dans la lanterne.');
 const av=avail();
 Object.keys(DATA.lueurs).forEach(k=>{const l=DATA.lueurs[k];
-if(!av.includes(k)){L.appendChild(row('<span class="em">🔒</span><span class="tx"><span class="nm">'+l.n+'</span><span class="mt">'+whereLueur(k)+'</span></span>',null,'lock'));return}
+if(!av.includes(k)){L.appendChild(row('<span class="em">'+CAD()+'</span><span class="tx"><span class="nm">'+l.n+'</span><span class="mt">'+whereLueur(k)+'</span></span>',null,'lock'));return}
 const on=cfg.lueurs.includes(k),why=!on&&(used+l.t>cap?'Pas assez de place dans la lanterne':cfg.lueurs.length>=4?'4 Lueurs maximum':'');
-const b=el('button','lu'+(on?' on':''),'<span class="em" style="font-size:22px">'+(on?'✨':'💡')+'</span><span class="tx"><span class="nm">'+l.n+'</span><span class="mt">'+l.sort.n+' : '+descrBody(l.sort)+'</span>'+(why?'<span class="mt" style="color:var(--bad)">'+why+'</span>':'')+'</span><span class="sz">taille '+l.t+'</span>');
+const b=el('button','lu'+(on?' on':''),'<span class="em" style="font-size:22px">'+FAC(k,on)+'</span><span class="tx"><span class="nm">'+l.n+'</span><span class="mt">'+l.sort.n+' : '+descrBody(l.sort)+'</span>'+(why?'<span class="mt" style="color:var(--bad)">'+why+'</span>':'')+'</span><span class="sz">taille '+l.t+'</span>');
 if(why)b.classList.add('dim');
 b.onclick=()=>{if(!on&&sv.sp.eq.length+cfg.lueurs.length>=6){toast('Barre de sorts pleine : retire un sort de classe');return}if(why){toast(why);return}cfg.lueurs=on?cfg.lueurs.filter(z=>z!=k):[...cfg.lueurs,k];normL();saveCfg();renderMenu()};L.appendChild(b)});
 B.appendChild(L)}
@@ -220,7 +220,7 @@ bestiaryPart(B);succPart(B)}
 function succPart(B){const n=SUCCES.filter(s=>sv.succ[s.id]).length;
 B.appendChild(row('<span class="em">🏆</span><span class="tx"><span class="nm">Succès ('+n+'/'+SUCCES.length+')</span><span class="mt">'+(showSucc?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showSucc=!showSucc;renderMenu()}));
 if(!showSucc)return;for(const s of SUCCES){const ok=!!sv.succ[s.id],c=Math.min(s.need,s.v());
-B.appendChild(row('<span class="em">'+(ok?'🏆':'🔒')+'</span><span class="tx"><span class="nm">'+escHtml(s.n)+'</span><span class="mt">'+escHtml(s.d)+(ok?'':' · '+c+'/'+s.need)+(s.rew?'<br>Récompense : '+escHtml(succRew(s.rew)):'')+'</span></span>'))}}
+B.appendChild(row('<span class="em">'+(ok?'🏆':CAD())+'</span><span class="tx"><span class="nm">'+escHtml(s.n)+'</span><span class="mt">'+escHtml(s.d)+(ok?'':' · '+c+'/'+s.need)+(s.rew?'<br>Récompense : '+escHtml(succRew(s.rew)):'')+'</span></span>'))}}
 // Bestiaire : un monstre vaincu au moins une fois est révélé ; ses résistances le sont à 5 victoires.
 function bestiaryPart(B){const I=besIndex(),L=Object.values(I).sort((a,b)=>a.niv-b.niv||a.n.localeCompare(b.n)),vu=L.filter(f=>sv.bes[f.n]>0).length;
 B.appendChild(row('<span class="em">📖</span><span class="tx"><span class="nm">Bestiaire ('+vu+'/'+L.length+')</span><span class="mt">'+(showBes?'Toucher pour masquer.':'Toucher pour afficher.')+'</span></span>',()=>{showBes=!showBes;renderMenu()}));
