@@ -48,6 +48,7 @@ hd('Affichage et son');
 o.appendChild(row('<span class="em">🎨</span><span class="tx"><span class="nm">Effets visuels : '+fxNames[OPT.fx]+'</span><span class="mt">'+fxDescriptions[OPT.fx]+' Toucher pour changer.</span></span>',()=>{cycleFx();renderMenu()}));
 const soundLabel=OPT.son===0?'coupé':OPT.son<=45?'bas':'normal';
 o.appendChild(row('<span class="em">🔊</span><span class="tx"><span class="nm">Son : '+soundLabel+'</span><span class="mt">Effets sonores générés, sans musique. Toucher pour changer.</span></span>',()=>{cycleSon();renderMenu()}));
+o.appendChild(row('<span class="em">📐</span><span class="tx"><span class="nm">Grille de combat : '+(OPT.grille?'affichée':'masquée')+'</span><span class="mt">Quadrillage des cases pendant les combats. Toucher pour changer.</span></span>',()=>{toggleGrille();renderMenu()}));
 hd('Aide');
 o.appendChild(row('<span class="em">💡</span><span class="tx"><span class="nm">Conseils des Lueurs : '+(tutoOn()?'activés':'désactivés')+'</span><span class="mt">Toucher pour changer.</span></span>',()=>{tutoToggle();renderMenu()}));
 o.appendChild(row('<span class="em">🔁</span><span class="tx"><span class="nm">Revoir les conseils</span><span class="mt">Ils réapparaîtront au bon moment.</span></span>',()=>{tutoReset();toast('Conseils réinitialisés.');renderMenu()}));
@@ -107,7 +108,7 @@ if(s&&e.type=='pointerup'&&slotType(s.dataset.slot)==o.slot){equip(s.dataset.slo
 else if(bag&&from&&e.type=='pointerup'){equip(from,null);invSel={id,slot:null};ch=true}
 clean();if(ch)renderMenu();return}clean()};
 node.addEventListener('pointerup',end);node.addEventListener('pointercancel',end);node.addEventListener('contextmenu',e=>{if(e.pointerType!='mouse')e.preventDefault()})}
-function invPart(B){const sel=invSel&&invSel.id&&sv.inv.includes(invSel.id)?invSel:null,eqIds=Object.values(sv.eq),wrap=el('div','inv'),left=el('div','card'),right=el('div','card invbag');
+function invPart(B){const sel=invSel&&invSel.id&&sv.inv.includes(invSel.id)?invSel:null,eqIds=Object.values(sv.eq),wrap=el('div','inv'+(invCat=='equip'?' inv3':'')),left=el('div','card'),right=el('div','card invbag'),det=el('div','card idetc');
 left.appendChild(el('h3','','Équipement'));const sl=el('div','invslots');
 SLOTS.forEach(([s,n,ic])=>{const id=sv.eq[s]&&sv.inv.includes(sv.eq[s])?sv.eq[s]:null,b=el('button','islot'+(id?' full':'')+(sel&&sel.slot==s?' sel':''),id?'<span class="ie">'+ICO.obj(DATA.objets[id])+'</span>':'<span class="ie ghostic">'+ic+'</span>');b.dataset.slot=s;b.style.gridArea=INV_AREA[s];b.title=n;b.setAttribute('aria-label',n);
 if(id){b.style.setProperty('--rc',RC[DATA.objets[id].r]);invDrag(b,id,s)}
@@ -119,14 +120,14 @@ if(invCat=='equip'){const ft=el('div','icats ifilt');INV_FILT.forEach(([k,n,ic])
 const own=sv.inv.filter(i=>DATA.objets[i]&&!eqIds.includes(i)&&(invFilt=='tout'||DATA.objets[i].slot==invFilt)).sort((a,b)=>SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[a].slot)-SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[b].slot)||DATA.objets[b].r-DATA.objets[a].r),g=el('div','igrid');
 own.forEach(id=>{const o=DATA.objets[id],b=el('button','icell'+(sel&&sel.id==id&&!sel.slot?' sel':''),ICO.obj(o));b.style.setProperty('--rc',RC[o.r]);b.title=o.n;b.setAttribute('aria-label',o.n);invDrag(b,id,null);b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel={id,slot:null};renderMenu()};g.appendChild(b)});
 {const em=el('div','',invFilt=='tout'?'<b style="display:block;font-size:16px;color:var(--ink);margin-bottom:4px">Ton sac est vide</b>L\'atelier et les combats te donneront des objets.':'<b style="display:block;font-size:16px;color:var(--ink);margin-bottom:4px">Rien ici</b>Aucun objet de ce type dans ton sac.');em.style.cssText='text-align:center;padding:28px 12px;color:var(--dim);line-height:1.5';right.appendChild(own.length?g:em)}
-const d=el('div','idet');if(sel){d.innerHTML='<div class="row" style="pointer-events:none">'+itemRow(sel.id,sel.slot?'<span class="mt" style="color:var(--ok)">Équipé</span>':'')+'</div>';const o=DATA.objets[sel.id];
+const d=el('div','idet');if(sel){const o=DATA.objets[sel.id];d.innerHTML='<div class="bigic" style="--rc:'+RC[o.r]+'">'+ICO.obj(o)+'</div><div class="nm" style="color:'+RC[o.r]+'">'+o.n+'</div><div class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+(sel.slot?' · <span style="color:var(--ok)">Équipé</span>':'')+'</div><div class="mt">'+fmtSt(o.st)+(o.set?'<br>'+DATA.sets[o.set].n:'')+'</div>';
 if(sel.slot)d.appendChild(btn('Retirer','','',()=>{equip(sel.slot,null);invSel={id:sel.id,slot:null};renderMenu()}));
 else{const f=SLOTS.filter(s=>slotType(s[0])==o.slot).map(s=>s[0]),to=f.find(s=>!sv.eq[s])||f[0];d.appendChild(btn('Équiper','Ou glisse l\'objet sur un emplacement.','pri',()=>{equip(to,sel.id);invSel={id:sel.id,slot:to};renderMenu()}))}}
-else d.appendChild(el('p','','Glisse un objet du sac sur un emplacement, ou touche-le pour le détail. Glisse un objet équipé dans le sac pour le retirer.'));right.appendChild(d)}
+else d.appendChild(el('p','','Glisse un objet du sac sur un emplacement, ou touche-le pour le détail. Glisse un objet équipé dans le sac pour le retirer.'));det.appendChild(d)}
 else if(invCat=='conso'){right.appendChild(el('p','mt','PV : <b>'+pvNow()+' / '+pvMax()+'</b>. Les potions se boivent hors combat ; la montée de niveau et les auberges soignent aussi.'));const ks=Object.keys(DATA.conso).filter(k=>sv.conso[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune potion. Fabrique-les à La Fiole Tiède (Cour des Ouvrages).'));ks.forEach(k=>{const o=DATA.conso[k];right.appendChild(row('<span class="em">'+ICO.conso(k)+'</span><span class="tx"><span class="nm">'+o.n+'</span><span class="mt">'+o.d+'</span></span><span class="chip">×'+sv.conso[k]+'</span>',()=>usePotion(k)))})}
 else if(invCat=='res'){const ks=Object.keys(DATA.res).filter(k=>sv.res[k]>0);if(!ks.length)right.appendChild(el('p','','Aucune ressource. Elles se récoltent en explorant et en combattant.'));ks.forEach(k=>{const[e,...n]=DATA.res[k].split(' ');right.appendChild(row('<span class="em">'+(ICO.res(k)||e)+'</span><span class="tx"><span class="nm">'+n.join(' ')+'</span></span><span class="chip">×'+sv.res[k]+'</span>'))})}
 else{const q=questItems();if(!q.length)right.appendChild(el('p','','Aucun objet de quête pour l\'instant.'));q.forEach(x=>right.appendChild(row('<span class="em">'+x.e+'</span><span class="tx"><span class="nm">'+escHtml(x.n)+'</span><span class="mt">'+x.m+'</span></span>')))}
-wrap.append(left,right);B.appendChild(wrap)}
+wrap.append(left,right);if(invCat=='equip'){det.prepend(el('h3','','Détail'));wrap.appendChild(det)}B.appendChild(wrap)}
 
 // ---------- onglet Lanterne ----------
 function whereLueur(k){const r=DATA.rencontres.find(e=>e.unlock===k);if(r)return 'Récompense : '+r.n;

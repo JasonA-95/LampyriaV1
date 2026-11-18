@@ -48,6 +48,10 @@ function cactus(x,z,s){const t=root('c');t.position.set(x,0,z);const k=B.MeshBui
 function pillar(x,z,s){const t=root('p');t.position.set(x,0,z);const k=B.MeshBuilder.CreateCylinder('k',{height:1.3*s,diameterTop:.4*s,diameterBottom:.5*s,tessellation:6},sc);k.position.y=.65*s;k.parent=t;fin(k,M.pil);return t}
 const BUILD={rock:(x,y,h)=>rock(x,y,.9+(h%3)*.15,h),tree:(x,y,h)=>tree(x,y,.9+(h%3)*.15,false),mush:(x,y,h)=>mush(x,y,1.1,h&1?M.cap:M.foe),dead:(x,y,h)=>dead(x,y,.9+(h%3)*.15),cactus:(x,y,h)=>cactus(x,y,.9+(h%3)*.15),pillar:(x,y,h)=>pillar(x,y,.9+(h%3)*.1)};
 const tiles={},tl=[];for(const [x,y] of C.cells){const b=B.MeshBuilder.CreateBox('c',{width:1,height:.5,depth:1},sc);b.position.set(x,-.25,y);if(GT){const ps=b.getVerticesData(B.VertexBuffer.PositionKind),uv=[];for(let i=0;i<ps.length;i+=3)uv.push((ps[i]+x)/GP,(ps[i+2]+y)/GP);b.setVerticesData(B.VertexBuffer.UVKind,uv)}b.material=(x+y)&1?M.b:M.a;b.metadata={x,y,base:b.material};tiles[x+','+y]=b;tl.push(b)}
+// Grille : quadrillage des cases, réglé par l'option « Grille de combat » (OPT.grille, options.js).
+const GL=(()=>{const seen=new Set(),L=[],e=(a,b,c,d)=>{const k=a<c||(a==c&&b<d)?a+','+b+'|'+c+','+d:c+','+d+'|'+a+','+b;if(seen.has(k))return;seen.add(k);L.push([new B.Vector3(a,.02,b),new B.Vector3(c,.02,d)])};
+for(const [x,y] of C.cells){e(x-.5,y-.5,x+.5,y-.5);e(x+.5,y-.5,x+.5,y+.5);e(x+.5,y+.5,x-.5,y+.5);e(x-.5,y+.5,x-.5,y-.5)}
+const m=B.MeshBuilder.CreateLineSystem('grid',{lines:L},sc);m.color=new B.Color3(.96,.86,.6);m.alpha=.5;m.isPickable=false;return m})();
 // décor : rochers réels + arbres/champignons en bordure
 const DB=DEC[biome],SPL=[];let dtx=null,dmt=null;
 function put(kind,x,y,h){if(!DB)return BUILD[kind](x,y,h);const i=h%8,[hp,wp,hw]=DB.o[i];let k=hw/hp;if(wp*k>1.6)k=1.6/wp;const w=DB.cw*k,ht=DB.ch*k,a=i/8+.0005,b=(i+1)/8-.0005;
@@ -100,7 +104,7 @@ else if(pi.type==B.PointerEventTypes.POINTERUP)drag=null;
 else if(pi.type==B.PointerEventTypes.POINTERMOVE&&drag&&pt.size<2){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};moved+=Math.abs(dx)+Math.abs(dy);const k=2*cam.orthoTop/cv.clientHeight;cam.target.x+=-dx*k*(-Math.sin(rot))+dy*k/.816*(-Math.cos(rot));cam.target.z+=-dx*k*Math.cos(rot)+dy*k/.816*(-Math.sin(rot))}
 else if(pi.type==B.PointerEventTypes.POINTERTAP&&moved<12){const p=sc.pick(sc.pointerX,sc.pointerY,m=>tl.includes(m));if(p.hit&&o.onTap)o.onTap(p.pickedMesh.metadata.x,p.pickedMesh.metadata.y)}});
 let t0=performance.now();
-sc.onBeforeRenderObservable.add(()=>{const dt=Math.min(.05,(performance.now()-t0)/1000);t0=performance.now();
+sc.onBeforeRenderObservable.add(()=>{const dt=Math.min(.05,(performance.now()-t0)/1000);t0=performance.now();GL.setEnabled(typeof OPT=='undefined'||OPT.grille!==false);
 cam.alpha+=(rot-cam.alpha)*Math.min(1,dt*8);
 const list=[C.hero,...C.foes,...C.allies],W=eng.getRenderWidth(),H=eng.getRenderHeight(),tm=sc.getTransformMatrix(),vp=cam.viewport.toGlobal(W,H),rc=cv.getBoundingClientRect(),lr=o.labels.getBoundingClientRect();
 for(const u of list){const alive=u.hp>0;let ob=U.get(u);if(!ob){if(!alive)continue;ob=unit(u,C.allies.includes(u))}
