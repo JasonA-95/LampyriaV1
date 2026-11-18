@@ -9,7 +9,7 @@ const heroMax=pvMax,CAD=()=>window.ICOP?ICOP.cad():'🔒',FAC=(k,on)=>window.ICO
 function itemRow(id,extra){const o=DATA.objets[id];
 return '<span class="em">'+ICO.obj(o)+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
 function card(title,...kids){const c=el('div','card',title?'<h3>'+title+'</h3>':'');kids.forEach(k=>{if(k)c.appendChild(typeof k=='string'?el('p','',k):k)});return c}
-let optAdv=false;
+let optAdv=false,spSel=null;
 function row(html,fn,cls){const r=el(fn?'button':'div','row '+(cls||''),html);if(fn)r.onclick=fn;return r}
 function bonusLabel(s,rank){const b=s.rg[rank-2]||{},parts=[];if(b.dmg)parts.push((b.dmg>0?'+':'')+b.dmg+' dégâts');if(b.pa)parts.push((b.pa>0?'+':'')+b.pa+' PA');if(b.cd)parts.push((b.cd>0?'+':'')+b.cd+' recharge');if(b.rmax)parts.push('+'+b.rmax+' portée max');if(b.push)parts.push('+'+b.push+' poussée');if(b.garde)parts.push('+'+b.garde+' tour de garde');return parts.join(' · ')||'aucun bonus'}
 function saveCode(){const bytes=new TextEncoder().encode(JSON.stringify(sv));let binary='';for(const b of bytes)binary+=String.fromCharCode(b);return 'LAMPYRIA1:'+btoa(binary)}
@@ -70,15 +70,21 @@ function heroPart(B,part){const cl=el('div','grid');
 if(part=='heros'){for(const k in DATA.classes){if(!cfg.test&&cfg.classe!=k)continue;const c=DATA.classes[k];cl.appendChild(btn(c.e+' '+c.n,c.info,cfg.classe==k?'on':'',()=>{if(!cfg.test)return;cfg.classe=k;normL();saveCfg();renderMenu()}))}
 B.appendChild(card('Classe',cl,cfg.test?'Mode test : tu peux changer de classe.':'Ta classe est définitive. Seul le mode test permet d\'en changer.'));}
 if(part=='sorts'){const spellCard=card('Sorts','Emplacements : <b>'+(sv.sp.eq.length+cfg.lueurs.length)+'/6</b> · Points de sort : <b>'+spLeft()+'</b>'),current=DATA.classes[cfg.classe].sorts,first=current[0].id;
-for(const base of current){const unlocked=sortOuvert(base),rank=cfg.test?5:(sv.sp.rg[base.id]||1),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),entry=el('div','pick');
-const name=s.n+(rank>1?' ★'+rank:'')+(base.id==first?' '+CAD():'');
-const status=!unlocked?'Niveau '+base.niv:base.id==first?'Toujours équipé':equipped?'Équipé · touche pour retirer':'Libre · touche pour équiper';
-const E0=DATA.elements[base.elem||'neutre'],chips='<span class="chips"><span class="chip el">'+E0.e+' '+E0.n+'</span><span class="chip">'+s.pa+' PA</span><span class="chip">Recharge '+(s.cd||0)+'</span></span>';
-const html='<span class="em">'+(unlocked?(equipped?'✨':'⚔️'):CAD())+'</span><span class="tx"><span class="nm">'+name+'</span><span class="mt">'+(unlocked?descrBody(s):'Niveau '+base.niv)+'</span>'+(unlocked?'<span class="mt">'+status+'</span>':'')+chips+'</span>';
+if(!current.some(b=>b.id==spSel))spSel=first;
+const rk=b=>cfg.test?5:(sv.sp.rg[b.id]||1),ic=(b,s)=>typeof ICOS!='undefined'&&ICOS.sort?ICOS.sort(s||b):'✨',sg=el('div','sgrid'),lst=el('div','slist'),fc=card('Fiche',''),rc=card('Rangs','');
+for(const base of current){const unlocked=sortOuvert(base),rank=rk(base),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),E0=DATA.elements[base.elem||'neutre'];
+const html='<span class="em">'+(unlocked?ic(base,s):CAD())+'</span><span class="tx"><span class="nm">'+s.n+(rank>1?' ★'+rank:'')+'</span><span class="mt">'+(unlocked?E0.e+' '+s.pa+' PA'+(equipped?' · Équipé':''):'Niveau '+base.niv)+'</span></span>';
+lst.appendChild(row(html,()=>{spSel=base.id;renderMenu()},(base.id==spSel?'sel ':'')+(unlocked?'':'lock ')+'esp e-'+(base.elem||'neutre')))}
+const base=current.find(b=>b.id==spSel),unlocked=sortOuvert(base),rank=rk(base),s=applyRang(base,rank),equipped=sv.sp.eq.includes(base.id),E0=DATA.elements[base.elem||'neutre'];
+fc.appendChild(el('div','bigic',unlocked?ic(base,s):CAD()));fc.appendChild(el('div','',' <b>'+s.n+(rank>1?' ★'+rank:'')+'</b>'));
+fc.appendChild(el('span','chips','<span class="chip el">'+E0.e+' '+E0.n+'</span><span class="chip">'+s.pa+' PA</span><span class="chip">Recharge '+(s.cd||0)+'</span>'));
+fc.appendChild(el('div','mt',unlocked?descrBody(s):'Niveau '+base.niv+' requis'));
 const toggle=()=>{if(base.id==first){toast('Le premier sort est toujours équipé');return}if(equipped)sv.sp.eq=sv.sp.eq.filter(id=>id!=base.id);else if(sv.sp.eq.length+cfg.lueurs.length>=6){toast('Barre de sorts pleine');return}else sv.sp.eq.push(base.id);syncSorts();store();renderMenu()};
-entry.appendChild(row(html,unlocked?toggle:null,(unlocked?(equipped?'on':''):'lock')+' esp e-'+(base.elem||'neutre')));
-if(unlocked){const upgrades=el('div','grid2');for(const next of [2,3,4,5]){const cost=next-1,can=rank==next-1&&spLeft()>=cost&&!cfg.test;upgrades.appendChild(btn('Rang '+next+' : '+cost+' point'+(cost>1?'s':''),bonusLabel(base,next),'ghost',()=>{if(!can)return;sv.sp.rg[base.id]=next;store();renderMenu()},!can))}entry.appendChild(upgrades)}
-spellCard.appendChild(entry)}
+if(unlocked){if(base.id==first)fc.appendChild(el('div','mt','Toujours équipé'));else fc.appendChild(btn(equipped?'Retirer':'Équiper','','pri',toggle))}
+for(let r=1;r<=5;r++){const cost=r-1,owned=r<=rank,can=unlocked&&rank==r-1&&spLeft()>=cost&&!cfg.test;
+const lab=owned?(r==rank?'◆':'✔'):CAD();
+rc.appendChild(row('<span class="em">'+lab+'</span><span class="tx"><span class="nm">Rang '+r+'</span><span class="mt">'+(r==rank?'Actuel · ':'')+(r==1?'Base':bonusLabel(base,r)+(owned?'':' · '+cost+' point'+(cost>1?'s':'')))+'</span></span>',can?()=>{sv.sp.rg[base.id]=r;store();renderMenu()}:null,(r==rank?'sel ':'')+(owned||can?'':'lock')))}
+sg.appendChild(lst);sg.appendChild(fc);sg.appendChild(rc);spellCard.appendChild(sg);
 const hasRanks=Object.values(sv.sp.rg).some(rank=>rank>1);
 spellCard.appendChild(btn('Réinitialiser les sorts','Rend les points de rang dépensés.','ghost',()=>{sv.sp.rg={};store();renderMenu()},!hasRanks));B.appendChild(spellCard);}
 if(part=='heros'){const G=gear().t,st=el('div','grid2');
