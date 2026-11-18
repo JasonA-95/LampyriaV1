@@ -62,3 +62,7 @@ url(f-panneau-et.png) 0 0/45px 17px repeat-x,url(f-panneau-eb.png) 0 100%/45px 1
 #mwin .sgrid{display:grid;grid-template-columns:minmax(170px,1fr) minmax(180px,210px) minmax(190px,1.2fr);gap:12px;align-items:start}
 @media(max-width:640px){#mwin .sgrid{grid-template-columns:1fr}}
 #mwin .row.sel{border-color:var(--gold);box-shadow:0 0 12px #e2bd7255,inset 0 0 14px #e2bd7222}
+.nlv{color:var(--bad,#ff7b6b);font-weight:700}
+#mwin .icell.nolv{filter:grayscale(.65) brightness(.72)}
+#otip{position:fixed;z-index:99999;max-width:260px;padding:10px 12px;background:#1b120df2;border:1px solid var(--gold,#e2bd72);border-radius:10px;box-shadow:0 6px 22px #000c,0 0 14px #e2bd7233;color:var(--ink,#f3e9d8);font:13px/1.4 system-ui,sans-serif;pointer-events:none}
+#otip b{font-size:14px}#otip .tmt{color:var(--dim,#b3a58e);margin-top:2px}#otip .tset{margin-top:6px;font-size:12px}#otip .tdesc{margin-top:7px;padding-top:6px;border-top:1px solid #5a422688;font-style:italic;color:var(--ember,#f0cf86)}

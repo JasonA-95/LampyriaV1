@@ -6,8 +6,25 @@ const canCraftAny=()=>craftables().some(id=>canPay(DATA.objets[id].cout)&&metOk(
 const questReady=()=>Object.keys(DATA.quetes).some(id=>{const s=(sv.q||{})[id];return s&&s.s==1&&(s.n||0)>=DATA.quetes[id].need});
 const heroMax=pvMax,CAD=()=>window.ICOP?ICOP.cad():'🔒',FAC=(k,on)=>window.ICOP?ICOP.lueur(k,on):(on?'✨':'💡');
 
+const nivBad=o=>(o.niv||1)>sv.niv&&!cfg.test,nivTxt=o=>o.niv>1?' · <span'+(nivBad(o)?' class="nlv"':'')+'>niv '+o.niv+'</span>':'';
+// ---------- info-bulle d'objet : survol (souris) ou appui long (tactile) ----------
+let otipEl=null;
+function tipHide(){if(otipEl){otipEl.remove();otipEl=null}}
+function tipShow(o,node){tipHide();const gc=gear().cnt,d=(window.OBJD&&OBJD[o.n])||'';
+let h='<b style="color:'+RC[o.r]+'">'+o.n+'</b><div class="tmt">'+RAR[o.r]+' · <span'+(nivBad(o)?' class="nlv"':'')+'>Niveau '+(o.niv||1)+' requis</span>'+(nivBad(o)?' (tu es niv '+sv.niv+')':'')+'</div><div class="tmt">'+fmtSt(o.st)+'</div>';
+if(o.set&&DATA.sets[o.set]){const S=DATA.sets[o.set],n=gc[o.set]||0;h+='<div class="tset"><b>'+S.n+' ('+n+' équipée'+(n>1?'s':'')+')</b>'+Object.keys(S.bonus).map(p=>'<br><span style="color:'+(n>=+p?'var(--ok)':'var(--dim)')+'">'+p+' pièces : '+fmtSt(S.bonus[p])+'</span>').join('')+'</div>'}
+if(d)h+='<div class="tdesc">'+d+'</div>';
+const t=el('div','',h);t.id='otip';document.body.appendChild(t);otipEl=t;
+const r=node.getBoundingClientRect(),w=t.offsetWidth,hh=t.offsetHeight;let y=r.top-hh-8;if(y<8)y=Math.min(r.bottom+8,innerHeight-hh-8);
+t.style.left=Math.min(Math.max(8,r.left+r.width/2-w/2),innerWidth-w-8)+'px';t.style.top=Math.max(8,y)+'px'}
+function tipBind(node,o){node.addEventListener('pointerenter',e=>{if(e.pointerType=='mouse')tipShow(o,node)});node.addEventListener('pointerleave',tipHide);
+let tm=null,sx=0,sy=0;node.addEventListener('pointerdown',e=>{if(e.pointerType=='mouse')return;sx=e.clientX;sy=e.clientY;clearTimeout(tm);tm=setTimeout(()=>{tm=null;node._tip=true;tipShow(o,node)},420)});
+const stop=()=>{clearTimeout(tm);tm=null;tipHide()};node.addEventListener('pointerup',stop);node.addEventListener('pointercancel',stop);node.addEventListener('pointermove',e=>{if(tm&&Math.hypot(e.clientX-sx,e.clientY-sy)>10)stop()});
+node.addEventListener('contextmenu',e=>{if(e.pointerType!='mouse')e.preventDefault()});
+node.addEventListener('click',e=>{if(node._tip){node._tip=false;e.stopImmediatePropagation();e.preventDefault()}},true)}
+
 function itemRow(id,extra){const o=DATA.objets[id];
-return '<span class="em">'+ICO.obj(o)+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
+return '<span class="em">'+ICO.obj(o)+'</span><span class="tx"><span class="nm" style="color:'+RC[o.r]+'">'+o.n+'</span><span class="mt">'+RAR[o.r]+nivTxt(o)+' · '+fmtSt(o.st)+(o.set?' · '+DATA.sets[o.set].n:'')+'</span>'+(extra||'')+'</span>'}
 function card(title,...kids){const c=el('div','card',title?'<h3>'+title+'</h3>':'');kids.forEach(k=>{if(k)c.appendChild(typeof k=='string'?el('p','',k):k)});return c}
 let optAdv=false,spSel=null;
 function row(html,fn,cls){const r=el(fn?'button':'div','row '+(cls||''),html);if(fn)r.onclick=fn;return r}
@@ -27,7 +44,7 @@ function openMenu(t,a){if(EX.on)resume='ex';else if(combatLive&&!$('game').class
 EX.on=false;EX.tok++;EX.walking=false;if(t)tab=t=='jouer'?'quetes':t;normL();closeModal();hideBubble();stopAmbience();$('menu').classList.remove('hide');renderMenu();$('mbody').scrollTop=0;if(a){const h=[...$('mbody').querySelectorAll('h3')].find(x=>x.textContent.startsWith(a));if(h)h.scrollIntoView()}}
 function hideMenu(){$('menu').classList.add('hide')}
 function showGame(){hideMenu();$('game').classList.remove('hide');size();if(EX.on)EX.draw();else if(C)draw()}
-function renderMenu(){const sc=$('mbody').scrollTop,need=XP.next(sv.niv);
+function renderMenu(){tipHide();const sc=$('mbody').scrollTop,need=XP.next(sv.niv);
 const cur=TABS.find(x=>x[0]==tab)||TABS[0],closeP=()=>{if(resume=='combat'&&combatLive)showGame();else EX.start()};
 $('mhead').innerHTML='<div class="top"><h1>'+cur[2]+' '+cur[1].replace('.','')+'</h1><span class="lv">'+(sv.hero&&sv.hero.nom?escHtml(sv.hero.nom)+' · ':'')+'Niveau <b>'+sv.niv+'</b> · '+(sv.niv>=XP.max?'niveau max':sv.xp+'/'+need+' XP')+'</span></div><div class="bar"><i style="width:'+Math.round(100*XP.part(sv))+'%"></i></div><div class="chips">'+(cfg.test?'<span class="chip no">Mode test</span>':'')+'</div>';
 $('menu').onclick=e=>{if(e.target===$('menu'))closeP()};{const x=el('button','xbtn','✕');x.setAttribute('aria-label','Retour au jeu');x.onclick=closeP;$('mhead').querySelector('.top').appendChild(x)}
@@ -102,10 +119,11 @@ const INV_FILT=[['tout','Tout',''],['arme','Armes','⚔️'],['tete','Têtes','�
 const INV_CATS=[['equip','Équipements'],['conso','Consommables'],['res','Ressources'],['quete','Quête']],INV_AREA={acc1:'a',tete:'b',acc2:'c',arme:'d',corps:'e',bottes:'h'};
 function questItems(){const Q=sv.q||{},o=[];for(const id in Q){const q=DATA.quetes[id],s=Q[id];if(!q||s.s!=1||(q.kind!='pick'&&q.kind!='hide'))continue;o.push({e:q.kind=='hide'?'🌿':'🎒',n:q.n,m:(q.kind=='hide'?'Cachettes trouvées ':'Objets ramassés ')+Math.min(s.n||0,q.need)+'/'+q.need})}return o}
 function invDrag(node,id,from){const o=DATA.objets[id];let st=null,timer=null,D=null;
-const clean=()=>{clearTimeout(timer);timer=null;if(D){D.ghost.remove();$('mbody').querySelectorAll('.islot').forEach(s=>s.classList.remove('ok','over'));$('mbody').querySelector('.invbag')?.classList.remove('drop')}D=null;st=null},
-begin=e=>{try{node.setPointerCapture(st.pid)}catch(_){}const ghost=el('div','idrag',ICO.obj(o));document.body.appendChild(ghost);D={ghost};node._dragged=true;
+const clean=()=>{tipHide();clearTimeout(timer);timer=null;if(D){D.ghost.remove();$('mbody').querySelectorAll('.islot').forEach(s=>s.classList.remove('ok','over'));$('mbody').querySelector('.invbag')?.classList.remove('drop')}D=null;st=null},
+begin=e=>{try{node.setPointerCapture(st.pid)}catch(_){}if(st.touch)tipShow(o,node);else tipHide();const ghost=el('div','idrag',ICO.obj(o));document.body.appendChild(ghost);D={ghost};node._dragged=true;
 $('mbody').querySelectorAll('.islot').forEach(s=>s.classList.toggle('ok',slotType(s.dataset.slot)==o.slot));if(from)$('mbody').querySelector('.invbag')?.classList.add('drop');pos(e)},
-pos=e=>{D.ghost.style.left=e.clientX+'px';D.ghost.style.top=e.clientY+'px';const t=document.elementFromPoint(e.clientX,e.clientY),s=t&&t.closest('.islot');$('mbody').querySelectorAll('.islot').forEach(x=>x.classList.toggle('over',x===s&&x.classList.contains('ok')))};
+pos=e=>{if(st&&Math.hypot(e.clientX-st.x,e.clientY-st.y)>12)tipHide();D.ghost.style.left=e.clientX+'px';D.ghost.style.top=e.clientY+'px';const t=document.elementFromPoint(e.clientX,e.clientY),s=t&&t.closest('.islot');$('mbody').querySelectorAll('.islot').forEach(x=>x.classList.toggle('over',x===s&&x.classList.contains('ok')))};
+node.addEventListener('pointerenter',e=>{if(e.pointerType=='mouse'&&!D)tipShow(o,node)});node.addEventListener('pointerleave',tipHide);
 node.addEventListener('pointerdown',e=>{if(e.button>0)return;node._dragged=false;st={x:e.clientX,y:e.clientY,pid:e.pointerId,touch:e.pointerType!='mouse'};if(!st.touch){try{node.setPointerCapture(st.pid)}catch(_){}}if(st.touch)timer=setTimeout(()=>{if(st&&!D)begin({clientX:st.x,clientY:st.y})},220)});
 node.addEventListener('pointermove',e=>{if(!st)return;const d=Math.hypot(e.clientX-st.x,e.clientY-st.y);if(!D){if(st.touch){if(d>10){clearTimeout(timer);st=null}}else if(d>5)begin(e);return}pos(e)});
 node.addEventListener('touchmove',e=>{if(D&&e.cancelable)e.preventDefault()},{passive:false});
@@ -124,9 +142,9 @@ const gc=gear().cnt;for(const k in DATA.sets){const S=DATA.sets[k],n=gc[k]||0;if
 const cats=el('div','icats');INV_CATS.forEach(([k,n])=>cats.appendChild(btn(n,'',invCat==k?'on':'',()=>{invCat=k;renderMenu()})));right.appendChild(cats);
 if(invCat=='equip'){const ft=el('div','icats ifilt');INV_FILT.forEach(([k,n,ic])=>{const b=btn((ic?ic+' ':'')+n,'',invFilt==k?'on':'',()=>{invFilt=k;renderMenu()});b.setAttribute('aria-label',n);ft.appendChild(b)});right.appendChild(ft);
 const own=sv.inv.filter(i=>DATA.objets[i]&&!eqIds.includes(i)&&(invFilt=='tout'||DATA.objets[i].slot==invFilt)).sort((a,b)=>SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[a].slot)-SLOTS.findIndex(s=>slotType(s[0])==DATA.objets[b].slot)||DATA.objets[b].r-DATA.objets[a].r),g=el('div','igrid');
-own.forEach(id=>{const o=DATA.objets[id],b=el('button','icell'+(sel&&sel.id==id&&!sel.slot?' sel':''),ICO.obj(o));b.style.setProperty('--rc',RC[o.r]);b.title=o.n;b.setAttribute('aria-label',o.n);invDrag(b,id,null);b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel={id,slot:null};renderMenu()};g.appendChild(b)});
+own.forEach(id=>{const o=DATA.objets[id],b=el('button','icell'+(sel&&sel.id==id&&!sel.slot?' sel':'')+(nivBad(o)?' nolv':''),ICO.obj(o));b.style.setProperty('--rc',RC[o.r]);b.title=o.n;b.setAttribute('aria-label',o.n);invDrag(b,id,null);b.onclick=()=>{if(b._dragged){b._dragged=false;return}invSel={id,slot:null};renderMenu()};g.appendChild(b)});
 {const em=el('div','',invFilt=='tout'?'<b style="display:block;font-size:16px;color:var(--ink);margin-bottom:4px">Ton sac est vide</b>L\'atelier et les combats te donneront des objets.':'<b style="display:block;font-size:16px;color:var(--ink);margin-bottom:4px">Rien ici</b>Aucun objet de ce type dans ton sac.');em.style.cssText='text-align:center;padding:28px 12px;color:var(--dim);line-height:1.5';right.appendChild(own.length?g:em)}
-const d=el('div','idet');if(sel){const o=DATA.objets[sel.id];d.innerHTML='<div class="bigic" style="--rc:'+RC[o.r]+'">'+ICO.obj(o)+'</div><div class="nm" style="color:'+RC[o.r]+'">'+o.n+'</div><div class="mt">'+RAR[o.r]+(o.niv>1?' · niv '+o.niv:'')+(sel.slot?' · <span style="color:var(--ok)">Équipé</span>':'')+'</div><div class="mt">'+fmtSt(o.st)+(o.set?'<br>'+DATA.sets[o.set].n:'')+'</div>';
+const d=el('div','idet');if(sel){const o=DATA.objets[sel.id];d.innerHTML='<div class="bigic" style="--rc:'+RC[o.r]+'">'+ICO.obj(o)+'</div><div class="nm" style="color:'+RC[o.r]+'">'+o.n+'</div><div class="mt">'+RAR[o.r]+nivTxt(o)+(sel.slot?' · <span style="color:var(--ok)">Équipé</span>':'')+'</div><div class="mt">'+fmtSt(o.st)+(o.set?'<br>'+DATA.sets[o.set].n:'')+'</div>';
 if(sel.slot)d.appendChild(btn('Retirer','','',()=>{equip(sel.slot,null);invSel={id:sel.id,slot:null};renderMenu()}));
 else{const f=SLOTS.filter(s=>slotType(s[0])==o.slot).map(s=>s[0]),to=f.find(s=>!sv.eq[s])||f[0];d.appendChild(btn('Équiper','Ou glisse l\'objet sur un emplacement.','pri',()=>{equip(to,sel.id);invSel={id:sel.id,slot:to};renderMenu()}))}}
 else d.appendChild(el('p','','Glisse un objet du sac sur un emplacement, ou touche-le pour le détail. Glisse un objet équipé dans le sac pour le retirer.'));det.appendChild(d)}
@@ -175,12 +193,12 @@ const groups={};list.forEach(id=>{const k=DATA.objets[id].set||'_';(groups[k]=gr
 const order=Object.keys(groups).sort((x,y)=>(x=='_')-(y=='_')||Object.keys(DATA.objets).indexOf(groups[x][0])-Object.keys(DATA.objets).indexOf(groups[y][0]));
 order.forEach(k=>{let title='Équipement simple',sub='';if(k!='_'){const S=DATA.sets[k],tot=Object.keys(DATA.objets).filter(i=>DATA.objets[i].set==k),own=tot.filter(i=>sv.inv.includes(i)).length;title=S.n+' ('+own+'/'+tot.length+')';sub=Object.keys(S.bonus).map(n=>'('+n+') '+fmtSt(S.bonus[n])).join(' · ')}
 c.appendChild(el('h3','',title));if(sub)c.appendChild(el('p','mt',sub));
-groups[k].sort((x,y)=>(canPay(DATA.objets[y].cout)&&metOk(DATA.objets[y]))-(canPay(DATA.objets[x].cout)&&metOk(DATA.objets[x]))).forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout)&&metOk(o),rq=metTxt(o);c.appendChild(row(itemRow(id,'<span class="mt">'+costChips(o.cout)+(rq?' <span class="chip '+(metOk(o)?'ok':'no')+'">'+rq+'</span>':'')+'</span>'),()=>craft(id),ok?'':'lock'))})});
+groups[k].sort((x,y)=>(canPay(DATA.objets[y].cout)&&metOk(DATA.objets[y]))-(canPay(DATA.objets[x].cout)&&metOk(DATA.objets[x]))).forEach(id=>{const o=DATA.objets[id],ok=canPay(o.cout)&&metOk(o),rq=metTxt(o);{const r=row(itemRow(id,'<span class="mt">'+costChips(o.cout)+(rq?' <span class="chip '+(metOk(o)?'ok':'no')+'">'+rq+'</span>':'')+'</span>'),()=>craft(id),ok?'':'lock');tipBind(r,o);c.appendChild(r)}})});
 B.appendChild(c);
 const d=card('À trouver en combat','Ces objets tombent sur les monstres (une garantie évite la malchance trop longue) et peuvent aussi se fabriquer. Les boss lâchent une relique garantie pour leurs objets.');
 DATA.rencontres.forEach((e,i)=>{if(i>sv.renc+1)return;const L=(e.drops||[]).filter(x=>DATA.objets[x.id]&&DATA.objets[x.id].drop);if(!L.length)return;
 const got=L.filter(x=>sv.inv.includes(x.id)).length;d.appendChild(el('h3','',e.n+' ('+got+'/'+L.length+')'));
-L.forEach(x=>{const own=sv.inv.includes(x.id);d.appendChild(row(itemRow(x.id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Chance : '+x.p+' %')+'</span>'),null,own?'':'lock'))})});
+L.forEach(x=>{const own=sv.inv.includes(x.id),r=row(itemRow(x.id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Chance : '+x.p+' %')+'</span>'),null,own?'':'lock');tipBind(r,DATA.objets[x.id]);d.appendChild(r)})});
 const sp=Object.keys(DATA.objets).filter(id=>!DATA.objets[id].drop&&!DATA.objets[id].cout&&!DATA.rencontres.some(e=>(e.drops||[]).some(x=>x.id==id)));
 if(sp.length){d.appendChild(el('h3','','Récompenses spéciales'));sp.forEach(id=>{const own=sv.inv.includes(id);d.appendChild(row(itemRow(id,'<span class="mt">'+(own?'<span style="color:var(--ok)">Obtenu</span>':'Récompense de quête ou d’événement')+'</span>'),null,own?'':'lock'))})}
 B.appendChild(d)}
