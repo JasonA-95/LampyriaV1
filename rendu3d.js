@@ -51,7 +51,7 @@ const tiles={},tl=[];for(const [x,y] of C.cells){const b=B.MeshBuilder.CreateBox
 // Grille : quadrillage des cases, réglé par l'option « Grille de combat » (OPT.grille, options.js).
 const GL=(()=>{const seen=new Set(),L=[],e=(a,b,c,d)=>{const k=a<c||(a==c&&b<d)?a+','+b+'|'+c+','+d:c+','+d+'|'+a+','+b;if(seen.has(k))return;seen.add(k);L.push([new B.Vector3(a,.02,b),new B.Vector3(c,.02,d)])};
 for(const [x,y] of C.cells){e(x-.5,y-.5,x+.5,y-.5);e(x+.5,y-.5,x+.5,y+.5);e(x+.5,y+.5,x-.5,y+.5);e(x-.5,y+.5,x-.5,y-.5)}
-const m=B.MeshBuilder.CreateLineSystem('grid',{lines:L},sc);m.color=new B.Color3(.96,.86,.6);m.alpha=.5;m.isPickable=false;return m})();
+const m=B.MeshBuilder.CreateLineSystem('grid',{lines:L},sc);m.color=new B.Color3(.96,.86,.6);m.alpha=.5;m.alphaIndex=0;m.isPickable=false;return m})();
 // décor : rochers réels + arbres/champignons en bordure
 const DB=DEC[biome],SPL=[];let dtx=null,dmt=null;
 function put(kind,x,y,h){if(!DB)return BUILD[kind](x,y,h);const i=h%8,[hp,wp,hw]=DB.o[i];let k=hw/hp;if(wp*k>1.6)k=1.6/wp;const w=DB.cw*k,ht=DB.ch*k,a=i/8+.0005,b=(i+1)/8-.0005;
