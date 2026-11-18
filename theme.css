@@ -1,0 +1,38 @@
+/* THÈME « dark fantasy peint » : habillage seulement (aucune logique). Charger après le <style> de index.html. */
+:root{--gold:#e2bd72;--gold2:#a8803f;--bronze:#6b4f2c;--parch:#f0e2c4;--line:#5a4226;--panel:#2a1d14;--panel2:#3a2a1c;--ember:#f0cf86;--dim:#bfae8f;--serif:'Cinzel','Trajan Pro',Georgia,'Times New Roman',serif}
+/* fenêtre : bois sombre + cadre peint (coins, bords) */
+#mwin{position:relative;padding:22px;border:0;border-radius:18px;background:radial-gradient(ellipse at 50% 0,#3a2a1c,#1d140d 70%,#120b07);box-shadow:0 12px 44px #000d,inset 0 0 60px #000b;overflow:hidden}
+#mwin::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:
+url(f-fenetre-tl.png) 0 0/99px 90px no-repeat,url(f-fenetre-tr.png) 100% 0/99px 90px no-repeat,url(f-fenetre-bl.png) 0 100%/65px 60px no-repeat,url(f-fenetre-br.png) 100% 100%/65px 60px no-repeat,
+url(f-fenetre-et.png) 0 0/65px 25px repeat-x,url(f-fenetre-eb.png) 0 100%/77px 25px repeat-x,url(f-fenetre-el.png) 0 0/25px 17px repeat-y,url(f-fenetre-er.png) 100% 0/25px 17px repeat-y}
+/* bandeau de titre */
+#mhead{padding:0 4px 6px;background:none;border:0;box-shadow:none;gap:6px}
+#mhead .top{min-height:58px;padding:0 30px 0 0;align-items:center;border:solid transparent;border-width:0 1px;border-image:url(ui-titre.png) 0 70 0 300 fill/0 27px 0 114px/0 stretch}
+#mhead h1{padding-left:46px;word-spacing:34px;font:700 20px var(--serif);letter-spacing:.09em;text-transform:uppercase;color:var(--parch);text-shadow:0 2px 0 #000,0 0 12px #e2bd7255}
+#mhead .lv{color:var(--dim);font-size:12.5px;margin-left:auto;margin-right:8px}#mhead .lv b{color:var(--gold)}
+#mhead .xbtn{width:44px;height:44px;min-height:0;padding:0;border:0;background:url(ui-close.png) center/contain no-repeat;font-size:0;color:transparent;flex:none}
+#mhead .bar{height:8px;border:1px solid #000;border-radius:9px;background:#0009;box-shadow:inset 0 1px 3px #000}
+#mhead .bar i{background:linear-gradient(180deg,#ffe29a,#c8902f);box-shadow:0 0 8px #e6b14a88}
+#mbody{padding:10px 6px 12px}
+/* panneaux */
+#mwin .card{position:relative;padding:18px 18px 16px;background:linear-gradient(180deg,#2c1f15,#1f150d);border:0;border-radius:12px;box-shadow:inset 0 0 22px #000a}
+#mwin .card::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:12px;background:
+url(f-panneau-tl.png) 0 0/34px 34px no-repeat,url(f-panneau-tr.png) 100% 0/34px 34px no-repeat,url(f-panneau-bl.png) 0 100%/34px 34px no-repeat,url(f-panneau-br.png) 100% 100%/34px 34px no-repeat,
+url(f-panneau-et.png) 0 0/45px 17px repeat-x,url(f-panneau-eb.png) 0 100%/45px 17px repeat-x,url(f-panneau-el.png) 0 0/17px 31px repeat-y,url(f-panneau-er.png) 100% 0/17px 31px repeat-y}
+#mwin .card h3{font:700 13px var(--serif);letter-spacing:.12em;color:var(--gold);padding-bottom:6px;border-bottom:1px solid transparent;border-image:linear-gradient(90deg,var(--gold2),#0000) 1}
+/* boutons dorés / sombres */
+#mwin button.pri,#mwin button.on,#mwin .icats button.on{border:solid transparent;border-width:0 1px;border-image:url(ui-btn.png) 0 70 fill/0 18px 0 stretch;background:none;color:#2a1608;padding:8px 22px;box-shadow:none;font-family:var(--serif);letter-spacing:.05em;text-shadow:0 1px 0 #fff6;min-height:44px}
+#mwin .icats button,#mwin .ifilt button,#mwin .mbtns button{border:solid transparent;border-width:0 1px;border-image:url(ui-btn-d.png) 0 70 fill/0 16px 0 stretch;background:none;color:var(--parch);padding:4px 14px;box-shadow:none;font-family:var(--serif);letter-spacing:.03em}
+#mwin .ifilt button{padding:2px 12px;font-size:11px}.icats button.on{border-image-width:0 16px}
+#mwin .icats button.on,#mwin .ifilt button.on{color:#2a1608}
+/* emplacements d'objets */
+#mwin .islot,#mwin .icell{border:2px solid transparent;border-image:url(ui-slot.png) 80 fill/16px/0 stretch;background:none;border-radius:0;box-shadow:inset 0 0 14px color-mix(in srgb,var(--rc,transparent) 55%,transparent)}
+#mwin .islot.sel,#mwin .icell.sel{border-image-source:url(ui-slot-s.png);border-image-slice:110 fill;border-image-width:20px;border-image-outset:4px}
+#mwin .islot.full{background:none}
+#mwin .row,#mwin .lu{background:linear-gradient(180deg,#2a1d13,#1f150d);border:1px solid #5a4226;border-radius:9px;box-shadow:inset 0 1px 0 #ffffff10}
+#mwin .row.esp.on,#mwin button.lu.on{border-color:var(--gold);box-shadow:0 0 12px #e2bd7255,inset 0 0 14px #e2bd7222}
+#mwin .stat{background:#0003;border:1px solid #4a3620;border-radius:8px}.stat b{color:var(--gold);font-family:var(--serif)}
+/* dock d'onglets */
+#tabs{background:none;border:0;box-shadow:none}
+#tabs button{border:solid transparent;border-width:2px;border-image:url(ui-tab-d.png) 60 fill/14px/0 stretch;background:none;border-radius:0}
+#tabs button.sel{border-image-source:url(ui-tab.png);box-shadow:none}#tabs button.sel .nm{color:#2a1608}
