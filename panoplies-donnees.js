@@ -1,0 +1,19 @@
+// Panoplies ajoutées (sans élément auto : pas d entrée dans DATA.setElem, les stats des objets ne changent pas ; seuls les bonus de panoplie sont nouveaux)
+DATA.sets.laine={n:'Panoplie de la laine',bonus:{2:{pv:4},4:{res:3,neutre:1}}};['gilet','chaussons','echarpe','manteau'].forEach(id=>{DATA.objets[id].set='laine'});
+DATA.sets.braise={n:'Panoplie de la braise',bonus:{2:{pv:4},4:{res:2,neutre:1}}};['tisonnier','epee_braise','bague','capuche'].forEach(id=>{DATA.objets[id].set='braise'});
+DATA.sets.champignon={n:'Panoplie du champignon',bonus:{2:{pv:5},3:{res:3,tenebres:1}}};['chapeau','amulette','sceptre'].forEach(id=>{DATA.objets[id].set='champignon'});
+DATA.sets.mycelium={n:'Panoplie du mycélium',bonus:{2:{pv:8},4:{res:4,tenebres:1}}};['coiffe_mycelium','manteau_mycelium','bottes_sporees','sceptre_mere'].forEach(id=>{DATA.objets[id].set='mycelium'});
+DATA.sets.berger={n:'Panoplie du berger',bonus:{2:{pv:9},4:{res:4,vent:1}}};['clochette','guetres_berger','cape','pelisse_bouc','houlette_recenseur'].forEach(id=>{DATA.objets[id].set='berger'});
+DATA.sets.chambellan={n:'Panoplie du Chambellan',bonus:{2:{pv:10},4:{res:5,neutre:2}}};['plume','bottes_cha','lanterne_cha','tampon_chambellan'].forEach(id=>{DATA.objets[id].set='chambellan'});
+DATA.sets.greffier={n:'Panoplie du Greffier',bonus:{2:{pv:9},4:{res:4,neutre:1}}};['regle_greffier','robe_greffier','visiere_clerc','encrier_noir'].forEach(id=>{DATA.objets[id].set='greffier'});
+DATA.sets.brouillard={n:'Panoplie du brouillard',bonus:{2:{pv:11},4:{res:5,vent:1}}};['voile_brume','manteau_brume','bonnet_brume','bottes_vase','perle_marais','lance_libellule','clochette_brume'].forEach(id=>{DATA.objets[id].set='brouillard'});
+DATA.sets.sommeil={n:'Panoplie du sommeil',bonus:{2:{pv:10},4:{res:5,tenebres:1}}};['amulette_dormeur','pantoufles_reve','chaussons_feutres','bonnet_nuit','robe_nuit','plume_insomnie'].forEach(id=>{DATA.objets[id].set='sommeil'});
+DATA.sets.duchesse={n:'Panoplie de la Duchesse',bonus:{2:{pv:12},4:{res:6,tenebres:2}}};['baguette_duchesse','couronne_cendre','robe_duchesse','eventail_cendre'].forEach(id=>{DATA.objets[id].set='duchesse'});
+DATA.sets.sphinx={n:'Panoplie du Sphinx',bonus:{2:{pv:13},4:{res:6,lumiere:2}}};['coiffe_pharaon','bandelettes_sable','sandales_momie','scarabee_dore','sceptre_sphinx'].forEach(id=>{DATA.objets[id].set='sphinx'});
+DATA.sets.caravane={n:'Panoplie de la Caravane',bonus:{2:{pv:12},4:{res:5,vent:2}}};['cape_marchand','bottes_chameau','amulette_mirage','cimeterre_dunes'].forEach(id=>{DATA.objets[id].set='caravane'});
+DATA.sets.piquet={n:'Panoplie du piquet de grève',bonus:{2:{pv:14},4:{res:6,foudre:2}}};['casque_piquet','brassard_greviste','etendard_greve','pancarte_general'].forEach(id=>{DATA.objets[id].set='piquet'});
+DATA.sets.amiral={n:'Panoplie de l’Amiral',bonus:{2:{pv:16},4:{res:7,vent:2}}};['tricorne_amiral','veste_amiral','sabre_maree','ancre_doree','pince_rouille','bottes_maree'].forEach(id=>{DATA.objets[id].set='amiral'});
+DATA.sets.pelerin={n:'Panoplie du pèlerin',bonus:{2:{pv:17},4:{res:7,lumiere:2}}};['baton_pelerin','sandales_pelerin','habit_penitent','collier_parvis','tunique_pretre','sandales_cloitre','cierge_poche'].forEach(id=>{DATA.objets[id].set='pelerin'});
+DATA.sets.eclipse={n:'Panoplie de l’Éclipse',bonus:{2:{pv:18},4:{res:8,tenebres:3}}};['lame_eclipse','manteau_ombre','bottes_eclipse','capuche_veilleur'].forEach(id=>{DATA.objets[id].set='eclipse'});
+DATA.sets.gardien={n:'Panoplie du Gardien',bonus:{2:{pv:19},4:{res:9,lumiere:3}}};['epee_garde','heaume_garde','veilleuse','lanterne_gardien','armure_gardien'].forEach(id=>{DATA.objets[id].set='gardien'});
+DATA.sets.cour={n:'Panoplie de la Cour éteinte',bonus:{2:{pv:20},4:{res:9,tenebres:3,pm:1}}};['masque_bouffon','marotte_bouffon','couronne_eteinte','sceptre_cendres'].forEach(id=>{DATA.objets[id].set='cour'});
